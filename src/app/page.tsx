@@ -1,7 +1,7 @@
 import { ArrowRight, CheckCircle2, ChevronRight } from "lucide-react";
 
 import { AnimatedSection } from "@/components/perinihub/animated-section";
-import { BrandMark, LogoPanel } from "@/components/perinihub/brand";
+import { BrandMark } from "@/components/perinihub/brand";
 import { EcosystemCard, FeatureCard, ProcessStep } from "@/components/perinihub/cards";
 import { ContactForm } from "@/components/perinihub/contact-form";
 import { Footer } from "@/components/perinihub/footer";
@@ -25,24 +25,24 @@ export default function Home() {
     <>
       <Header />
       <main className="flex-1 overflow-hidden">
-        <section id="inicio" className="relative px-5 pb-20 pt-32 sm:px-6 lg:px-8 lg:pb-28 lg:pt-40">
-          <div className="absolute inset-0 -z-10 grid-surface opacity-35" />
-          <div className="absolute left-0 top-28 -z-10 h-64 w-64 rounded-full bg-red-600/8 blur-3xl" />
-          <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[1.02fr_0.98fr]">
+        <section id="inicio" className="relative px-5 pb-14 pt-28 sm:px-6 lg:px-8 lg:pb-16 lg:pt-32">
+          <div className="absolute inset-0 -z-10 grid-surface opacity-30" />
+          <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-white/70" />
+          <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[0.98fr_0.82fr]">
             <div>
-              <Badge className="mb-6 bg-white text-zinc-800 shadow-sm hover:bg-white">
+              <Badge className="mb-5 bg-white text-zinc-800 shadow-sm hover:bg-white">
                 Empresa guarda-chuva digital da marca Perini
               </Badge>
-              <h1 className="text-balance text-5xl font-black tracking-tight text-zinc-950 sm:text-6xl lg:text-7xl">
+              <h1 className="text-balance text-4xl font-black tracking-tight text-zinc-950 sm:text-5xl lg:text-6xl">
                 PERINIHUB
-                <span className="mt-4 block text-3xl leading-tight text-zinc-800 sm:text-4xl lg:text-5xl">
+                <span className="mt-3 block max-w-3xl text-2xl leading-tight text-zinc-800 sm:text-3xl lg:text-4xl">
                   Ecossistema de tecnologia, SaaS e soluções digitais para negócios em crescimento.
                 </span>
               </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-9 text-zinc-600">
+              <p className="mt-6 max-w-2xl text-base leading-8 sm:text-lg text-zinc-600">
                 Criamos, conectamos e escalamos produtos digitais, plataformas web, automações e sistemas sob medida para transformar operação em resultado.
               </p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg" className="rounded-md bg-zinc-950 hover:bg-red-700">
                   <a href="#solucoes">
                     Conhecer soluções
@@ -53,7 +53,7 @@ export default function Home() {
                   <a href="#contato">Falar com especialista</a>
                 </Button>
               </div>
-              <div className="mt-10 flex flex-wrap gap-3">
+              <div className="mt-7 flex flex-wrap gap-3">
                 {heroSignals.map(({ label, icon: Icon }) => (
                   <span
                     key={label}
@@ -65,11 +65,45 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <div className="relative">
+            <div className="relative hidden min-h-[430px] lg:block">
               <div className="absolute -left-5 -top-7 hidden rotate-[-8deg] rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm font-bold text-zinc-800 shadow-xl md:flex">
                 Inteligência Operacional
               </div>
-              <LogoPanel />
+              <div className="absolute inset-0 rounded-lg border border-zinc-200/70 bg-white/35 shadow-[0_30px_90px_rgba(24,24,27,0.08)] backdrop-blur-sm" />
+              <div className="absolute inset-6 grid-surface rounded-lg border border-zinc-200/60 bg-white/45" />
+              <div className="absolute left-12 top-12 flex items-center gap-4">
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-zinc-200 bg-white shadow-lg">
+                  <BrandMark className="h-16 w-14" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.28em] text-red-600">
+                    PeriniHub
+                  </p>
+                  <p className="mt-1 text-lg font-black text-zinc-950">
+                    Digital venture studio
+                  </p>
+                </div>
+              </div>
+              <div className="absolute bottom-12 left-12 right-12 grid grid-cols-2 gap-3">
+                {[
+                  ["MVP", "Validacao rapida"],
+                  ["SaaS", "Recorrencia"],
+                  ["Web", "Sistemas sob medida"],
+                  ["Ops", "Automacao comercial"],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="rounded-lg border border-zinc-200 bg-white/82 p-4 shadow-sm"
+                  >
+                    <p className="font-mono text-xs font-bold text-red-600">
+                      {label}
+                    </p>
+                    <p className="mt-2 text-sm font-bold text-zinc-800">
+                      {value}
+                    </p>
+                  </div>
+                ))}
+              </div>
               <div className="absolute -bottom-5 right-5 flex items-center gap-3 rounded-lg border border-red-100 bg-white px-4 py-3 text-sm font-bold text-zinc-900 shadow-xl">
                 <BrandMark className="h-9 w-8" />
                 SaaS em validação
@@ -230,3 +264,4 @@ export default function Home() {
     </>
   );
 }
+
