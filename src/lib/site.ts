@@ -14,7 +14,7 @@ import {
   Workflow,
 } from "lucide-react";
 
-export const WHATSAPP_NUMBER = "55XXXXXXXXXXX";
+export const WHATSAPP_NUMBER = "5511930230911";
 export const WHATSAPP_MESSAGE =
   "Olá, vim pelo site da PeriniHub e gostaria de falar sobre um projeto digital.";
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(

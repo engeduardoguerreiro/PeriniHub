@@ -71,7 +71,7 @@ export default function Home() {
               </div>
               <LogoPanel />
               <div className="absolute -bottom-5 right-5 flex items-center gap-3 rounded-lg border border-red-100 bg-white px-4 py-3 text-sm font-bold text-zinc-900 shadow-xl">
-                <BrandMark className="w-8 border-2" />
+                <BrandMark className="h-9 w-8" />
                 SaaS em validação
               </div>
             </div>
