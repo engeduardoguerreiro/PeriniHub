@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, ChevronRight } from "lucide-react";
+﻿import { ArrowRight, CheckCircle2, ChevronRight } from "lucide-react";
 
 import { AnimatedSection } from "@/components/perinihub/animated-section";
 import { BrandMark } from "@/components/perinihub/brand";
@@ -36,16 +36,16 @@ export default function Home() {
               <h1 className="text-balance text-4xl font-black tracking-tight text-zinc-950 sm:text-5xl lg:text-6xl">
                 PERINIHUB
                 <span className="mt-3 block max-w-3xl text-2xl leading-tight text-zinc-800 sm:text-3xl lg:text-4xl">
-                  Ecossistema de tecnologia, SaaS e soluções digitais para negócios em crescimento.
+                  Ecossistema de tecnologia, SaaS e soluÃ§Ãµes digitais para negÃ³cios em crescimento.
                 </span>
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-8 sm:text-lg text-zinc-600">
-                Criamos, conectamos e escalamos produtos digitais, plataformas web, automações e sistemas sob medida para transformar operação em resultado.
+                Criamos, conectamos e escalamos produtos digitais, plataformas web, automaÃ§Ãµes e sistemas sob medida para transformar operaÃ§Ã£o em resultado.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg" className="rounded-md bg-zinc-950 hover:bg-red-700">
                   <a href="#solucoes">
-                    Conhecer soluções
+                    Conhecer soluÃ§Ãµes
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </a>
                 </Button>
@@ -66,11 +66,11 @@ export default function Home() {
               </div>
             </div>
             <div className="relative hidden min-h-[430px] lg:block">
-              <div className="absolute -left-5 -top-7 hidden rotate-[-8deg] rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm font-bold text-zinc-800 shadow-xl md:flex">
-                Inteligência Operacional
-              </div>
               <div className="absolute inset-0 rounded-lg border border-zinc-200/70 bg-white/35 shadow-[0_30px_90px_rgba(24,24,27,0.08)] backdrop-blur-sm" />
               <div className="absolute inset-6 grid-surface rounded-lg border border-zinc-200/60 bg-white/45" />
+              <div className="absolute -top-5 right-10 z-10 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm font-bold text-zinc-800 shadow-xl">
+                Inteligência Operacional
+              </div>
               <div className="absolute left-12 top-12 flex items-center gap-4">
                 <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-zinc-200 bg-white shadow-lg">
                   <BrandMark className="h-16 w-14" />
@@ -86,10 +86,10 @@ export default function Home() {
               </div>
               <div className="absolute bottom-12 left-12 right-12 grid grid-cols-2 gap-3">
                 {[
-                  ["MVP", "Validacao rapida"],
-                  ["SaaS", "Recorrencia"],
+                  ["MVP", "Validação rápida"],
+                  ["SaaS", "Recorrência"],
                   ["Web", "Sistemas sob medida"],
-                  ["Ops", "Automacao comercial"],
+                  ["Ops", "Automação comercial"],
                 ].map(([label, value]) => (
                   <div
                     key={label}
@@ -117,7 +117,7 @@ export default function Home() {
             <SectionTitle
               eyebrow="Posicionamento"
               title="Um hub para transformar ideias em produtos digitais reais."
-              subtitle="A PeriniHub nasce para centralizar iniciativas digitais, SaaS e soluções tecnológicas com foco em validação rápida, operação simples e crescimento sustentável."
+              subtitle="A PeriniHub nasce para centralizar iniciativas digitais, SaaS e soluÃ§Ãµes tecnolÃ³gicas com foco em validaÃ§Ã£o rÃ¡pida, operaÃ§Ã£o simples e crescimento sustentÃ¡vel."
             />
             <div className="mt-12 grid gap-5 md:grid-cols-3">
               {positioningCards.map((card) => (
@@ -132,7 +132,7 @@ export default function Home() {
             <SectionTitle
               eyebrow="Produtos"
               title="Ecossistema PeriniHub"
-              subtitle="Diferentes soluções digitais conectadas por uma visão: simplificar operações e gerar novas fontes de receita."
+              subtitle="Diferentes soluÃ§Ãµes digitais conectadas por uma visÃ£o: simplificar operaÃ§Ãµes e gerar novas fontes de receita."
             />
             <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               {ecosystemCards.map((card) => (
@@ -144,7 +144,7 @@ export default function Home() {
 
         <AnimatedSection id="solucoes" className="px-5 py-20 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl">
-            <SectionTitle title="Soluções digitais para empresas que querem operar melhor." />
+            <SectionTitle title="SoluÃ§Ãµes digitais para empresas que querem operar melhor." />
             <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {solutions.map((solution) => (
                 <FeatureCard key={solution.title} {...solution} />
@@ -161,7 +161,7 @@ export default function Home() {
                 eyebrow="Como trabalhamos"
                 tone="dark"
                 title="Processo simples, claro e preparado para evoluir."
-                subtitle="A execução começa pelo essencial: entender o problema, reduzir ruído e construir uma versão que possa ganhar tração."
+                subtitle="A execuÃ§Ã£o comeÃ§a pelo essencial: entender o problema, reduzir ruÃ­do e construir uma versÃ£o que possa ganhar traÃ§Ã£o."
               />
               <div className="relative grid gap-1 lg:grid-cols-4">
                 <div className="absolute left-5 top-0 h-full w-px bg-white/15 lg:left-0 lg:top-5 lg:h-px lg:w-full" />
@@ -179,8 +179,8 @@ export default function Home() {
               <SectionTitle
                 align="left"
                 eyebrow="Por que a PeriniHub"
-                title="Tecnologia aplicada ao negócio, sem estruturas desnecessariamente complexas."
-                subtitle="A PeriniHub une visão comercial, tecnologia e execução prática para tirar projetos do papel sem criar estruturas desnecessariamente complexas."
+                title="Tecnologia aplicada ao negÃ³cio, sem estruturas desnecessariamente complexas."
+                subtitle="A PeriniHub une visÃ£o comercial, tecnologia e execuÃ§Ã£o prÃ¡tica para tirar projetos do papel sem criar estruturas desnecessariamente complexas."
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -204,7 +204,7 @@ export default function Home() {
                 Tem uma ideia de sistema, SaaS ou plataforma digital?
               </h2>
               <p className="mt-4 max-w-2xl text-base leading-8 text-zinc-200">
-                Vamos transformar sua ideia em um produto simples, validável e pronto para evoluir.
+                Vamos transformar sua ideia em um produto simples, validÃ¡vel e pronto para evoluir.
               </p>
             </div>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row lg:mt-0">
@@ -227,15 +227,15 @@ export default function Home() {
                 align="left"
                 eyebrow="Sobre"
                 title="Sobre a PeriniHub"
-                subtitle="A PeriniHub é o braço digital da marca Perini, criado para desenvolver soluções tecnológicas, produtos SaaS e plataformas digitais com foco em eficiência, recorrência e crescimento. Nosso objetivo é construir um ecossistema de produtos e serviços digitais que ajudem empresas a vender mais, operar melhor e criar novas oportunidades."
+                subtitle="A PeriniHub Ã© o braÃ§o digital da marca Perini, criado para desenvolver soluÃ§Ãµes tecnolÃ³gicas, produtos SaaS e plataformas digitais com foco em eficiÃªncia, recorrÃªncia e crescimento. Nosso objetivo Ã© construir um ecossistema de produtos e serviÃ§os digitais que ajudem empresas a vender mais, operar melhor e criar novas oportunidades."
               />
             </div>
             <div className="grid gap-4">
               {[
                 "Marca guarda-chuva",
-                "Produtos digitais próprios",
-                "Soluções sob demanda",
-                "Foco em tecnologia aplicada ao negócio",
+                "Produtos digitais prÃ³prios",
+                "SoluÃ§Ãµes sob demanda",
+                "Foco em tecnologia aplicada ao negÃ³cio",
               ].map((item) => (
                 <div key={item} className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white/86 p-5 font-bold text-zinc-900 shadow-sm">
                   {item}
@@ -251,7 +251,7 @@ export default function Home() {
             <SectionTitle
               eyebrow="Contato"
               title="Vamos construir algo juntos?"
-              subtitle="Envie sua ideia, necessidade ou desafio. A PeriniHub pode ajudar a transformar isso em uma solução digital."
+              subtitle="Envie sua ideia, necessidade ou desafio. A PeriniHub pode ajudar a transformar isso em uma soluÃ§Ã£o digital."
             />
             <div className="mt-12">
               <ContactForm />

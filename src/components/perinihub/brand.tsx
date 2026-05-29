@@ -7,15 +7,28 @@ type BrandProps = {
 
 export function BrandMark({ className = "" }: { className?: string }) {
   return (
-    <span className={`relative block h-12 w-10 shrink-0 ${className}`}>
-      <Image
-        src="/perinihub-shield.png"
-        alt="Escudo PH da PeriniHub"
-        fill
-        sizes="40px"
-        className="object-contain"
+    <svg
+      viewBox="0 0 64 74"
+      className={`block h-12 w-10 shrink-0 ${className}`}
+      fill="none"
+      role="img"
+      aria-label="Escudo PH da PeriniHub"
+    >
+      <path
+        d="M32 4 57 15v25.8c0 15.2-10.2 24.3-25 28.9C17.2 65.1 7 56 7 40.8V15L32 4Z"
+        fill="white"
+        stroke="#242B32"
+        strokeLinejoin="round"
+        strokeWidth="4"
       />
-    </span>
+      <path d="M19 20 32 13l13 7h-9.3L32 18l-3.7 2H19Z" fill="#E4161C" />
+      <path
+        d="M18 31h19c6.2 0 9.7 3.2 9.7 8.2 0 5.1-3.6 8.5-9.8 8.5H27.2v14.1h-8.1V41h17.1c1.8 0 2.7-.7 2.7-2 0-1.2-.9-1.9-2.7-1.9H18V31Z"
+        fill="#242B32"
+      />
+      <path d="M44.2 31h8.1v30.8h-8.1V49H31.8v-7.4h12.4V31Z" fill="#242B32" />
+      <path d="M29.1 51.2h7.8v15.2L32 68l-2.9-.9V51.2Z" fill="#E4161C" />
+    </svg>
   );
 }
 
