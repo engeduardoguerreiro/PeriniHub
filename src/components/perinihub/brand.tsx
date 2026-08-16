@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 type BrandProps = {
   compact?: boolean;
@@ -21,8 +22,8 @@ export function BrandMark({ className = "" }: { className?: string }) {
 
 export function Brand({ compact = false, className = "" }: BrandProps) {
   return (
-    <a
-      href="#inicio"
+    <Link
+      href="/"
       className={`relative block h-14 ${
         compact ? "w-32" : "w-40"
       } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-4 ${className}`}
@@ -36,7 +37,7 @@ export function Brand({ compact = false, className = "" }: BrandProps) {
         sizes={compact ? "128px" : "160px"}
         className="object-contain object-left"
       />
-    </a>
+    </Link>
   );
 }
 

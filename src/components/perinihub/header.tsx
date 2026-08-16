@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Brand } from "@/components/perinihub/brand";
@@ -42,18 +43,18 @@ export function Header() {
           aria-label="Navegação principal"
         >
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               className="transition-colors hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-4"
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
         <div className="hidden items-center gap-3 lg:flex">
           <Button asChild className="rounded-md bg-zinc-900 hover:bg-red-700">
-            <a href="#contato">Fale conosco</a>
+            <Link href="/#contato">Solicitar orçamento</Link>
           </Button>
         </div>
         <Sheet open={open} onOpenChange={setOpen}>
@@ -76,20 +77,20 @@ export function Header() {
             </SheetHeader>
             <nav className="mt-10 grid gap-2" aria-label="Navegação mobile">
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className="rounded-md px-3 py-3 text-base font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-950"
                 >
                   {item.label}
-                </a>
+                </Link>
               ))}
             </nav>
             <Button asChild className="mt-8 w-full bg-red-600 hover:bg-red-700">
-              <a href="#contato" onClick={() => setOpen(false)}>
-                Fale conosco
-              </a>
+              <Link href="/#contato" onClick={() => setOpen(false)}>
+                Solicitar orçamento
+              </Link>
             </Button>
           </SheetContent>
         </Sheet>

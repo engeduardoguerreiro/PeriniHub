@@ -20,12 +20,17 @@ export function SectionTitle({
       }`}
     >
       {eyebrow && (
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-red-600">
+        <p
+          className={`mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.28em] text-red-600 ${
+            align === "center" ? "justify-center" : ""
+          }`}
+        >
+          <span className="h-px w-6 bg-red-600/50" aria-hidden="true" />
           {eyebrow}
         </p>
       )}
       <h2
-        className={`text-balance text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl ${
+        className={`font-display text-balance text-3xl font-extrabold tracking-[-0.03em] sm:text-4xl lg:text-5xl ${
           tone === "dark" ? "text-white" : "text-zinc-950"
         }`}
       >

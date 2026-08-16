@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Brand } from "@/components/perinihub/brand";
 import { Separator } from "@/components/ui/separator";
 import { WHATSAPP_URL, navItems } from "@/lib/site";
@@ -10,7 +12,8 @@ export function Footer() {
           <div>
             <Brand />
             <p className="mt-5 max-w-sm text-sm leading-7 text-zinc-600">
-              Ecossistema de tecnologia, SaaS e soluções digitais.
+              Criação de sites e desenvolvimento de sistemas sob medida para empresas.
+              Atendimento em todo o Brasil.
             </p>
           </div>
           <div>
@@ -18,21 +21,15 @@ export function Footer() {
               Links
             </h3>
             <nav className="mt-5 grid grid-cols-2 gap-3 text-sm text-zinc-600">
-              {navItems
-                .filter((item) =>
-                  ["Início", "Ecossistema", "Soluções", "Produtos", "Contato"].includes(
-                    item.label,
-                  ),
-                )
-                .map((item) => (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    className="transition-colors hover:text-red-600"
-                  >
-                    {item.label}
-                  </a>
-                ))}
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="transition-colors hover:text-red-600"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </nav>
           </div>
           <div>
@@ -46,9 +43,9 @@ export function Footer() {
               <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="hover:text-red-600">
                 WhatsApp
               </a>
-              <a href="#inicio" className="hover:text-red-600">
+              <Link href="/" className="hover:text-red-600">
                 perinihub.com.br
-              </a>
+              </Link>
             </div>
           </div>
         </div>

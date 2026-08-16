@@ -12,12 +12,16 @@ type FeatureCardProps = {
 
 export function FeatureCard({ title, description, icon: Icon }: FeatureCardProps) {
   return (
-    <Card className="group h-full overflow-hidden border-zinc-200/80 bg-white/78 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-red-200 hover:shadow-xl hover:shadow-zinc-900/5">
+    <Card className="group relative h-full overflow-hidden border-zinc-200/80 bg-white/78 shadow-sm backdrop-blur transition-all duration-500 hover:-translate-y-1.5 hover:border-red-200/80 hover:shadow-2xl hover:shadow-zinc-900/10">
+      <span
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/60 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        aria-hidden="true"
+      />
       <CardHeader>
-        <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-md bg-zinc-950 text-white transition-colors group-hover:bg-red-600">
+        <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-md bg-zinc-950 text-white transition-all duration-500 group-hover:scale-105 group-hover:bg-red-600 group-hover:shadow-lg group-hover:shadow-red-600/25">
           <Icon className="h-5 w-5" aria-hidden="true" />
         </div>
-        <CardTitle className="text-xl font-black text-zinc-950">
+        <CardTitle className="font-display text-xl font-extrabold tracking-tight text-zinc-950">
           {title}
         </CardTitle>
       </CardHeader>
@@ -43,13 +47,13 @@ export function EcosystemCard({
   action,
   icon: Icon,
 }: EcosystemCardProps) {
-  const active = status === "Ativo";
+  const active = status === "Ativo" || status === "Em operação";
 
   return (
-    <Card className="group flex h-full flex-col border-zinc-200/80 bg-white/82 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-zinc-900/6">
+    <Card className="group relative flex h-full flex-col overflow-hidden border-zinc-200/80 bg-white/82 shadow-sm backdrop-blur transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-zinc-900/10">
       <CardHeader className="space-y-5">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-zinc-900 group-hover:border-red-200 group-hover:text-red-600">
+          <div className="flex h-12 w-12 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-zinc-900 transition-all duration-500 group-hover:scale-105 group-hover:border-red-200 group-hover:bg-red-50 group-hover:text-red-600">
             <Icon className="h-5 w-5" aria-hidden="true" />
           </div>
           <Badge
@@ -63,7 +67,7 @@ export function EcosystemCard({
             {status}
           </Badge>
         </div>
-        <CardTitle className="text-2xl font-black tracking-tight text-zinc-950">
+        <CardTitle className="font-display text-2xl font-extrabold tracking-[-0.03em] text-zinc-950">
           {name}
         </CardTitle>
       </CardHeader>
@@ -78,6 +82,36 @@ export function EcosystemCard({
         >
           <a href={active ? "#contato" : "#ecossistema"}>{action}</a>
         </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+type ClientCardProps = {
+  name: string;
+  segment: string;
+  description: string;
+  icon: LucideIcon;
+};
+
+export function ClientCard({ name, segment, description, icon: Icon }: ClientCardProps) {
+  return (
+    <Card className="group h-full border-zinc-200/80 bg-white/82 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-red-200 hover:shadow-xl hover:shadow-zinc-900/6">
+      <CardHeader className="space-y-5">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-zinc-900 group-hover:border-red-200 group-hover:text-red-600">
+            <Icon className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <Badge variant="secondary" className="bg-zinc-100 text-zinc-700">
+            {segment}
+          </Badge>
+        </div>
+        <CardTitle className="font-display text-2xl font-extrabold tracking-[-0.03em] text-zinc-950">
+          {name}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm leading-7 text-zinc-600">{description}</p>
       </CardContent>
     </Card>
   );
@@ -109,7 +143,7 @@ export function ProcessStep({
       </div>
       <div className="pb-8 lg:pt-6">
         <h3
-          className={`text-lg font-black ${
+          className={`font-display text-lg font-extrabold tracking-tight ${
             tone === "dark" ? "text-white" : "text-zinc-950"
           }`}
         >

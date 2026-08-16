@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { WHATSAPP_URL, projectTypes } from "@/lib/site";
+import { WHATSAPP_URL, buildWhatsAppUrl, projectTypes } from "@/lib/site";
 
 type FormStatus = "idle" | "success" | "error";
 
@@ -26,7 +26,7 @@ export function ContactForm() {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const required = ["name", "email", "whatsapp", "message"];
+    const required = ["name", "whatsapp", "message"];
     const missingField = required.some(
       (field) => !String(formData.get(field) ?? "").trim(),
     );
@@ -36,16 +36,19 @@ export function ContactForm() {
       return;
     }
 
-    // Placeholder preparado para futura integração com Resend, EmailJS,
-    // Nodemailer, Supabase ou uma rota interna em /api/contact.
-    console.info("PeriniHub contact payload", {
-      name: formData.get("name"),
-      company: formData.get("company"),
-      email: formData.get("email"),
-      whatsapp: formData.get("whatsapp"),
-      projectType,
-      message: formData.get("message"),
-    });
+    const company = String(formData.get("company") ?? "").trim();
+    const lines = [
+      "Olá! Vim pelo site da PeriniHub e gostaria de um orçamento.",
+      "",
+      `Nome: ${formData.get("name")}`,
+      company ? `Empresa: ${company}` : null,
+      `WhatsApp: ${formData.get("whatsapp")}`,
+      `Tipo de projeto: ${projectType}`,
+      "",
+      `Sobre o projeto: ${formData.get("message")}`,
+    ].filter(Boolean);
+
+    window.open(buildWhatsAppUrl(lines.join("\n")), "_blank", "noopener");
 
     setStatus("success");
     form.reset();
@@ -66,11 +69,14 @@ export function ContactForm() {
           <Field label="Empresa" htmlFor="company">
             <Input id="company" name="company" autoComplete="organization" />
           </Field>
-          <Field label="E-mail" htmlFor="email" required>
-            <Input id="email" name="email" type="email" required autoComplete="email" />
-          </Field>
           <Field label="WhatsApp" htmlFor="whatsapp" required>
-            <Input id="whatsapp" name="whatsapp" required autoComplete="tel" />
+            <Input
+              id="whatsapp"
+              name="whatsapp"
+              required
+              autoComplete="tel"
+              placeholder="(11) 90000-0000"
+            />
           </Field>
           <div className="grid gap-2 sm:col-span-2">
             <Label>Tipo de projeto *</Label>
@@ -92,20 +98,20 @@ export function ContactForm() {
             </Select>
           </div>
           <div className="grid gap-2 sm:col-span-2">
-            <Label htmlFor="message">Mensagem *</Label>
+            <Label htmlFor="message">O que você precisa? *</Label>
             <Textarea
               id="message"
               name="message"
               required
-              rows={6}
-              placeholder="Conte rapidamente o que você precisa construir, validar ou automatizar."
+              rows={5}
+              placeholder="Ex.: preciso de um site para minha empresa, ou de um sistema para controlar pedidos."
             />
           </div>
         </div>
         {status === "success" && (
           <p className="mt-5 flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-            Mensagem registrada. A integração de envio está pronta para ser conectada.
+            Abrimos o WhatsApp com seus dados. É só tocar em enviar para falar com a gente.
           </p>
         )}
         {status === "error" && (
@@ -116,21 +122,24 @@ export function ContactForm() {
         )}
         <Button type="submit" className="mt-6 w-full bg-red-600 hover:bg-red-700 sm:w-auto">
           <Send className="h-4 w-4" aria-hidden="true" />
-          Enviar mensagem
+          Solicitar orçamento
         </Button>
+        <p className="mt-3 text-xs text-zinc-500">
+          Ao enviar, abrimos uma conversa no WhatsApp com seus dados preenchidos.
+        </p>
       </form>
 
       <aside className="rounded-lg border border-zinc-200/90 bg-zinc-950 p-6 text-white shadow-xl shadow-zinc-950/10">
         <p className="text-xs font-bold uppercase tracking-[0.28em] text-red-400">
-          Atendimento direto
+          Sem compromisso
         </p>
-        <h3 className="mt-4 text-2xl font-black">Atendimento direto</h3>
+        <h3 className="mt-4 text-2xl font-black">O que você recebe</h3>
         <ul className="mt-6 grid gap-4 text-sm text-zinc-200">
           {[
-            "Análise inicial do projeto",
-            "Sugestão de MVP",
-            "Estimativa de escopo",
-            "Direcionamento técnico",
+            "Retorno em até 24 horas",
+            "Análise gratuita do que você precisa",
+            "Escopo e prazo por escrito",
+            "Orçamento fechado, sem surpresa",
           ].map((item) => (
             <li key={item} className="flex items-center gap-3">
               <CheckCircle2 className="h-4 w-4 text-red-400" aria-hidden="true" />

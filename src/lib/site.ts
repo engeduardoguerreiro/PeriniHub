@@ -1,127 +1,179 @@
 import {
-  Blocks,
   Bot,
+  Building2,
   ChartNoAxesCombined,
   Code2,
-  Gauge,
   Globe2,
-  Layers3,
-  Lightbulb,
-  Network,
-  Rocket,
+  Headset,
+  LayoutDashboard,
+  MessageCircle,
+  Pizza,
+  Scissors,
   ShieldCheck,
-  Sparkles,
-  Workflow,
+  Smartphone,
+  Timer,
+  UtensilsCrossed,
+  Wallet,
 } from "lucide-react";
 
 export const WHATSAPP_NUMBER = "5511930230911";
 export const WHATSAPP_MESSAGE =
-  "Olá, vim pelo site da PeriniHub e gostaria de falar sobre um projeto digital.";
+  "Olá, vim pelo site da PeriniHub e gostaria de um orçamento.";
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
   WHATSAPP_MESSAGE,
 )}`;
 
-export const navItems = [
-  { label: "Início", href: "#inicio" },
-  { label: "Ecossistema", href: "#ecossistema" },
-  { label: "Soluções", href: "#solucoes" },
-  { label: "Produtos", href: "#produtos" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Contato", href: "#contato" },
-];
+export function buildWhatsAppUrl(message: string) {
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
 
-export const positioningCards = [
-  {
-    title: "Produtos próprios",
-    description:
-      "Desenvolvimento de plataformas e SaaS voltados a nichos com potencial de recorrência.",
-    icon: Rocket,
-  },
-  {
-    title: "Soluções sob demanda",
-    description:
-      "Criação de sistemas, sites, aplicações web e automações para empresas que precisam digitalizar processos.",
-    icon: Code2,
-  },
-  {
-    title: "Ecossistema escalável",
-    description:
-      "Estrutura pensada para abrigar diferentes produtos digitais sob uma marca forte e consistente.",
-    icon: Network,
-  },
+export const navItems = [
+  { label: "Início", href: "/" },
+  { label: "Serviços", href: "/#servicos" },
+  { label: "Como trabalhamos", href: "/#processo" },
+  { label: "Produtos", href: "/#produtos" },
+  { label: "Clientes", href: "/clientes" },
+  { label: "Contato", href: "/#contato" },
 ];
 
 export const ecosystemCards = [
   {
-    name: "PeriniFood",
+    name: "Perini Food",
     description:
-      "Solução digital para restaurantes, pizzarias, delivery e negócios de alimentação, com foco em pedidos, cardápio, gestão e integração.",
-    status: "Em desenvolvimento",
-    action: "Em breve",
-    icon: Globe2,
+      "Cardápio digital, pedidos e gestão para restaurantes, pizzarias e delivery.",
+    status: "Em operação",
+    action: "Solicitar demonstração",
+    icon: UtensilsCrossed,
   },
   {
-    name: "PrivacyLog",
+    name: "Perini One",
     description:
-      "Plataforma digital para descoberta, reputação e gestão de presença online em mercados premium e segmentados.",
+      "Clientes, agenda e vendas em um só lugar para negócios de serviços.",
+    status: "Em operação",
+    action: "Solicitar demonstração",
+    icon: LayoutDashboard,
+  },
+  {
+    name: "Perini Barber",
+    description:
+      "Agendamento online, clientes e faturamento para barbearias e salões.",
+    status: "Em desenvolvimento",
+    action: "Em breve",
+    icon: Scissors,
+  },
+  {
+    name: "Privacy Log",
+    description:
+      "Reputação e presença online para mercados premium e segmentados.",
     status: "Em validação",
     action: "Em breve",
     icon: ShieldCheck,
   },
+];
+
+export const clients = [
   {
-    name: "Soluções Web",
+    name: "Pizzaria Forno Nordestino",
+    segment: "Alimentação e delivery",
     description:
-      "Criação de sites institucionais, landing pages, sistemas internos, dashboards e plataformas digitais sob medida.",
-    status: "Ativo",
-    action: "Saiba mais",
-    icon: Layers3,
+      "Operação de pedidos, cardápio digital e atendimento digitalizados com o Perini Food, do balcão ao delivery.",
+    icon: Pizza,
   },
   {
-    name: "Automações Comerciais",
+    name: "Perini Engenharia",
+    segment: "Engenharia elétrica",
     description:
-      "Fluxos digitais, formulários inteligentes, integrações e ferramentas para reduzir processos manuais.",
-    status: "Planejado",
-    action: "Em breve",
-    icon: Workflow,
+      "Presença digital e sistemas internos desenvolvidos pela PeriniHub para apoiar a operação comercial e institucional da empresa.",
+    icon: Building2,
   },
 ];
 
 export const solutions = [
   {
-    title: "Desenvolvimento de SaaS",
+    title: "Sites e landing pages",
     description:
-      "Planejamento e construção de plataformas digitais com foco em recorrência, escalabilidade e usabilidade.",
-    icon: Blocks,
-  },
-  {
-    title: "Sistemas Web Sob Medida",
-    description:
-      "Aplicações personalizadas para gestão, operação, atendimento, cadastro, controle e análise de dados.",
-    icon: Code2,
-  },
-  {
-    title: "Sites e Landing Pages",
-    description:
-      "Páginas modernas, rápidas e comerciais para empresas que precisam melhorar sua presença digital.",
+      "Site institucional ou página de vendas rápida, responsiva e pronta para gerar contatos.",
     icon: Globe2,
   },
   {
-    title: "Dashboards e Painéis",
+    title: "Sistemas web sob medida",
     description:
-      "Interfaces para visualizar indicadores, acompanhar operação e tomar decisões com mais clareza.",
+      "Sistemas de gestão, pedidos, agendamento, cadastro e controle feitos para a sua operação.",
+    icon: Code2,
+  },
+  {
+    title: "Painéis e relatórios",
+    description:
+      "Dashboards que mostram vendas, produtividade e indicadores do negócio em tempo real.",
     icon: ChartNoAxesCombined,
   },
   {
-    title: "Integrações e Automações",
+    title: "Integrações e automações",
     description:
-      "Conexão entre ferramentas, formulários, notificações, WhatsApp, bancos de dados e APIs.",
+      "WhatsApp, formulários, notificações, pagamentos e APIs conectados ao seu dia a dia.",
     icon: Bot,
   },
   {
-    title: "Consultoria de Produto Digital",
+    title: "Aplicações mobile-first",
     description:
-      "Apoio estratégico para transformar ideias em MVPs, organizar escopo e priorizar funcionalidades.",
-    icon: Lightbulb,
+      "Sistemas que funcionam bem no celular, para equipes que trabalham fora do escritório.",
+    icon: Smartphone,
+  },
+  {
+    title: "Manutenção e evolução",
+    description:
+      "Suporte contínuo, correções e novas funcionalidades depois que o projeto entra no ar.",
+    icon: Headset,
+  },
+];
+
+export const differentials = [
+  {
+    title: "Orçamento em até 24h",
+    description:
+      "Você conta o que precisa e recebe escopo e valor rápido, sem enrolação.",
+    icon: Timer,
+  },
+  {
+    title: "Preço fechado, sem surpresa",
+    description:
+      "O valor combinado é o valor final. Mudanças de escopo são sempre acordadas antes.",
+    icon: Wallet,
+  },
+  {
+    title: "Você fala direto com quem desenvolve",
+    description:
+      "Sem call center e sem intermediário: atendimento direto com o time técnico.",
+    icon: MessageCircle,
+  },
+  {
+    title: "Suporte depois da entrega",
+    description:
+      "O projeto não termina no lançamento. Acompanhamos, corrigimos e evoluímos junto.",
+    icon: Headset,
+  },
+];
+
+export const faq = [
+  {
+    question: "Quanto tempo leva para ficar pronto?",
+    answer:
+      "Uma landing page fica pronta em poucos dias. Um site institucional leva de 1 a 3 semanas. Sistemas sob medida dependem do escopo, e por isso começamos sempre por uma primeira versão enxuta que já possa ser usada.",
+  },
+  {
+    question: "Quanto custa um projeto?",
+    answer:
+      "O valor depende do que precisa ser construído. Passamos um orçamento fechado antes de começar, sem custo e sem compromisso, para você decidir com o preço na mão.",
+  },
+  {
+    question: "Vocês dão suporte depois de entregar?",
+    answer:
+      "Sim. Continuamos acompanhando o projeto com correções, ajustes e novas funcionalidades conforme o negócio cresce.",
+  },
+  {
+    question: "Preciso já saber exatamente o que quero?",
+    answer:
+      "Não. A maioria dos clientes chega com um problema, não com uma especificação. Ajudamos a transformar isso em um escopo claro antes de escrever qualquer linha de código.",
   },
 ];
 
@@ -147,30 +199,20 @@ export const processSteps = [
   },
 ];
 
-export const reasons = [
-  "Visão prática de negócio",
-  "Foco em produtos que geram receita",
-  "Desenvolvimento moderno e escalável",
-  "Design limpo e profissional",
-  "Estrutura preparada para novos SaaS",
-  "Mentalidade de MVP e validação rápida",
-];
-
 export const projectTypes = [
-  "SaaS",
-  "Sistema web",
   "Site institucional",
   "Landing page",
-  "Dashboard",
-  "Automação",
-  "Consultoria",
+  "Sistema web sob medida",
+  "Painel / dashboard",
+  "Integração ou automação",
+  "Demonstração do Perini Food",
+  "Demonstração do Perini One",
+  "Manutenção de sistema existente",
   "Outro",
 ];
 
 export const heroSignals = [
-  { label: "SaaS", icon: Sparkles },
-  { label: "Automação", icon: Workflow },
-  { label: "Sistemas Web", icon: Code2 },
-  { label: "Plataformas Digitais", icon: Layers3 },
-  { label: "Inteligência Operacional", icon: Gauge },
+  { label: "Sites e landing pages", icon: Globe2 },
+  { label: "Sistemas sob medida", icon: Code2 },
+  { label: "Integrações e automações", icon: Bot },
 ];
