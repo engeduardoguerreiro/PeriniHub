@@ -16,6 +16,9 @@ import {
   Wallet,
 } from "lucide-react";
 
+// Domínio de produção. Usado em metadados, canonical, sitemap e robots.
+export const SITE_URL = "https://perinihub.com.br";
+
 export const WHATSAPP_NUMBER = "5511930230911";
 export const WHATSAPP_MESSAGE =
   "Olá, vim pelo site da PeriniHub e gostaria de um orçamento.";

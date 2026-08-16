@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,7 +21,6 @@ const displayFont = Bricolage_Grotesque({
   display: "swap",
 });
 
-const SITE_URL = "https://perinihub.vercel.app";
 const SITE_DESCRIPTION =
   "Criação de sites, landing pages e desenvolvimento de sistemas web sob medida para empresas. Painéis, integrações e automações. Orçamento em até 24 horas.";
 
