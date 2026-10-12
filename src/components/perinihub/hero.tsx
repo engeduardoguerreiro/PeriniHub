@@ -8,7 +8,7 @@ export function Hero() {
   return (
     <section
       id="inicio"
-      className="relative isolate overflow-hidden bg-ink-950 px-4 pb-16 pt-28 text-white sm:px-6 sm:pt-32 lg:px-8 lg:pb-24 lg:pt-36"
+      className="relative isolate overflow-hidden bg-ink-950 px-4 pb-16 pt-28 text-white sm:px-6 sm:pt-32 lg:px-8 lg:pb-20 lg:pt-36"
     >
       <div className="hero-glow absolute inset-0 -z-10" aria-hidden="true" />
       <div className="grid-lines-dark absolute inset-0 -z-10" aria-hidden="true" />

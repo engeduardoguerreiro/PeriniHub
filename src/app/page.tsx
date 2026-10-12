@@ -34,14 +34,14 @@ export default function Home() {
       <main id="conteudo" className="flex-1">
         <Hero />
 
-        <AnimatedSection id="servicos" className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+        <AnimatedSection id="servicos" className="px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionTitle
               eyebrow="Serviços"
               title="O que desenvolvemos para você"
               subtitle="Do site institucional ao sistema completo de gestão, tudo feito sob medida para a sua operação."
             />
-            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {solutions.map((solution) => (
                 <FeatureCard key={solution.title} {...solution} />
               ))}
@@ -69,7 +69,7 @@ export default function Home() {
 
         <AnimatedSection
           id="produtos"
-          className="relative isolate overflow-hidden bg-ink-950 px-4 py-20 sm:px-6 sm:py-24 lg:px-8"
+          className="relative isolate overflow-hidden bg-ink-950 px-4 py-14 sm:px-6 sm:py-16 lg:px-8"
         >
           <div className="hero-glow absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
           <div className="mx-auto max-w-7xl">
@@ -79,7 +79,7 @@ export default function Home() {
               title="Não falamos só de tecnologia. Nós construímos."
               subtitle="Além dos projetos sob medida, desenvolvemos e mantemos nossos próprios SaaS, com a mesma tecnologia que aplicamos no seu projeto."
             />
-            <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {ecosystemCards.map((card) => (
                 <ProductCard key={card.name} {...card} />
               ))}
@@ -87,14 +87,14 @@ export default function Home() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection id="processo" className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+        <AnimatedSection id="processo" className="px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionTitle
               eyebrow="Como trabalhamos"
               title="Do primeiro contato ao projeto no ar"
               subtitle="Um processo simples e transparente: você sabe exatamente em que etapa o seu projeto está."
             />
-            <div className="relative mt-14">
+            <div className="relative mt-10">
               <span
                 className="absolute bottom-10 left-6 top-6 w-px bg-gradient-to-b from-brand-400 to-aqua-400 lg:bottom-auto lg:left-6 lg:right-[calc(25%-1.5rem)] lg:top-6 lg:h-px lg:w-auto lg:bg-gradient-to-r"
                 aria-hidden="true"
@@ -108,7 +108,7 @@ export default function Home() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection id="diferenciais" className="bg-white px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+        <AnimatedSection id="diferenciais" className="bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
             <div className="lg:sticky lg:top-28">
               <SectionTitle
@@ -133,10 +133,10 @@ export default function Home() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection id="clientes" className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+        <AnimatedSection id="clientes" className="px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto max-w-5xl">
             <SectionTitle eyebrow="Clientes" title="Projetos funcionando em operações reais" />
-            <div className="mt-12 grid gap-4 md:grid-cols-2">
+            <div className="mt-10 grid gap-4 md:grid-cols-2">
               {clients.map((client) => (
                 <ClientCard key={client.name} {...client} />
               ))}
@@ -144,14 +144,14 @@ export default function Home() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection id="duvidas" className="bg-white px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+        <AnimatedSection id="duvidas" className="bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: jsonLd(faqJsonLd) }}
           />
           <div className="mx-auto max-w-3xl">
             <SectionTitle eyebrow="Dúvidas frequentes" title="Perguntas que sempre recebemos" />
-            <div className="mt-12 divide-y divide-ink-900/8 rounded-2xl border border-ink-900/8 bg-background">
+            <div className="mt-10 divide-y divide-ink-900/8 rounded-2xl border border-ink-900/8 bg-background">
               {faq.map((item) => (
                 <details key={item.question} className="group px-5 sm:px-6">
                   <summary className="cursor-pointer list-none rounded-md py-5 font-display text-base font-semibold text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 sm:text-lg [&::-webkit-details-marker]:hidden">
@@ -170,14 +170,14 @@ export default function Home() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection id="contato" className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+        <AnimatedSection id="contato" className="px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <SectionTitle
               eyebrow="Orçamento"
               title="Conte o que você precisa"
               subtitle="Preencha os dados abaixo e receba um orçamento com escopo e prazo em até 24 horas."
             />
-            <div className="mt-12">
+            <div className="mt-10">
               <ContactForm />
             </div>
           </div>

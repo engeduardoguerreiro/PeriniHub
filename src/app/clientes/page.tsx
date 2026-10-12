@@ -40,7 +40,7 @@ export default function ClientesPage() {
           />
         </section>
 
-        <AnimatedSection className="px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <AnimatedSection className="px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
           <h2 className="sr-only">Nossos clientes</h2>
           <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2">
             {clients.map((client) => (
@@ -49,7 +49,7 @@ export default function ClientesPage() {
           </div>
         </AnimatedSection>
 
-        <AnimatedSection className="px-4 pb-20 sm:px-6 lg:px-8">
+        <AnimatedSection className="px-4 pb-16 sm:px-6 lg:px-8">
           <div className="relative isolate mx-auto max-w-5xl overflow-hidden rounded-3xl bg-ink-900 p-8 text-white sm:p-12 lg:flex lg:items-center lg:justify-between lg:gap-10">
             <div className="hero-glow absolute inset-0 -z-10" aria-hidden="true" />
             <div>
