@@ -31,7 +31,7 @@ const CENTER = { x: 50, y: 52 };
 export function HubDiagram() {
   return (
     <div
-      className="relative aspect-[10/9] w-full rounded-3xl border border-white/10 bg-white/[0.03] shadow-[0_40px_120px_-30px_rgb(22_119_255/0.45)] backdrop-blur-sm"
+      className="relative aspect-[10/9] w-full rounded-3xl border border-white/10 bg-white/[0.03] shadow-[0_40px_120px_-30px_rgb(22_119_255/0.45)]"
       aria-hidden="true"
     >
       <div className="absolute inset-0 rounded-3xl grid-lines-dark" />
@@ -42,7 +42,7 @@ export function HubDiagram() {
         preserveAspectRatio="none"
       >
         <defs>
-          <linearGradient id="hub-line" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id="hub-line" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="100">
             <stop offset="0%" stopColor="#3d93ff" />
             <stop offset="100%" stopColor="#22e3d8" />
           </linearGradient>
@@ -87,7 +87,7 @@ export function HubDiagram() {
       {nodes.map(({ label, detail, icon: Icon, x, y }) => (
         <div
           key={label}
-          className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-2.5 rounded-xl border border-white/10 bg-ink-900/85 py-2 pl-2 pr-3.5 shadow-lg shadow-black/20 backdrop-blur"
+          className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-2.5 rounded-xl border border-white/10 bg-ink-900/90 py-2 pl-2 pr-3.5 shadow-lg shadow-black/20"
           style={{ left: `${x}%`, top: `${y}%` }}
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-brand text-white">

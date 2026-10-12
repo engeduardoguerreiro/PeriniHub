@@ -41,7 +41,7 @@ export function Hero() {
             <Button
               asChild
               size="lg"
-              className="group h-12 rounded-full bg-brand-500 px-6 text-base text-white shadow-[0_10px_30px_-6px_rgb(22_119_255/0.6)] hover:bg-brand-600"
+              className="group h-12 rounded-full bg-brand-600 px-6 text-base text-white shadow-[0_10px_30px_-6px_rgb(22_119_255/0.6)] hover:bg-brand-700"
             >
               <a href="#contato">
                 Solicitar orçamento
@@ -60,6 +60,7 @@ export function Hero() {
               <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="h-4 w-4" aria-hidden="true" />
                 Falar no WhatsApp
+                <span className="sr-only"> (abre em nova aba)</span>
               </a>
             </Button>
           </div>

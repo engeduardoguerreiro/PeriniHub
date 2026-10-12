@@ -7,15 +7,20 @@ import { ClientCard } from "@/components/perinihub/cards";
 import { Footer } from "@/components/perinihub/footer";
 import { Header } from "@/components/perinihub/header";
 import { SectionTitle } from "@/components/perinihub/section-title";
-import { WhatsAppFloatingButton } from "@/components/perinihub/whatsapp-floating-button";
 import { Button } from "@/components/ui/button";
+import { sharedOpenGraph } from "@/lib/metadata";
 import { clients, WHATSAPP_URL } from "@/lib/site";
 
+const title = "Clientes e projetos entregues";
+const description =
+  "Empresas que confiaram na PeriniHub para desenvolver seus sites, sistemas e automações.";
+
 export const metadata: Metadata = {
-  title: "Clientes",
-  description:
-    "Empresas que confiaram na PeriniHub para desenvolver seus sites, sistemas e automações.",
+  title,
+  description,
   alternates: { canonical: "/clientes" },
+  openGraph: { ...sharedOpenGraph, title: `${title} | PeriniHub`, description, url: "/clientes" },
+  twitter: { card: "summary_large_image", title: `${title} | PeriniHub`, description },
 };
 
 export default function ClientesPage() {
@@ -36,6 +41,7 @@ export default function ClientesPage() {
         </section>
 
         <AnimatedSection className="px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+          <h2 className="sr-only">Nossos clientes</h2>
           <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2">
             {clients.map((client) => (
               <ClientCard key={client.name} {...client} />
@@ -55,7 +61,7 @@ export default function ClientesPage() {
               </p>
             </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row lg:mt-0 lg:shrink-0">
-              <Button asChild size="lg" className="h-12 rounded-full bg-brand-500 px-6 text-white hover:bg-brand-600">
+              <Button asChild size="lg" className="h-12 rounded-full bg-brand-600 px-6 text-white hover:bg-brand-700">
                 <Link href="/#contato">
                   Solicitar orçamento
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -70,6 +76,7 @@ export default function ClientesPage() {
                 <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                   <MessageCircle className="h-4 w-4" aria-hidden="true" />
                   Chamar no WhatsApp
+                  <span className="sr-only"> (abre em nova aba)</span>
                 </a>
               </Button>
             </div>
@@ -77,7 +84,6 @@ export default function ClientesPage() {
         </AnimatedSection>
       </main>
       <Footer />
-      <WhatsAppFloatingButton />
     </>
   );
 }

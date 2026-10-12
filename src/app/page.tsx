@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
 
@@ -8,8 +9,8 @@ import { Footer } from "@/components/perinihub/footer";
 import { Header } from "@/components/perinihub/header";
 import { Hero } from "@/components/perinihub/hero";
 import { SectionTitle } from "@/components/perinihub/section-title";
-import { WhatsAppFloatingButton } from "@/components/perinihub/whatsapp-floating-button";
-import { clients, differentials, ecosystemCards, faq, processSteps, solutions } from "@/lib/site";
+import { sharedOpenGraph } from "@/lib/metadata";
+import { clients, differentials, ecosystemCards, faq, jsonLd, processSteps, solutions } from "@/lib/site";
 
 const faqJsonLd = {
   "@context": "https://schema.org",
@@ -19,6 +20,11 @@ const faqJsonLd = {
     name: item.question,
     acceptedAnswer: { "@type": "Answer", text: item.answer },
   })),
+};
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: { ...sharedOpenGraph, url: "/" },
 };
 
 export default function Home() {
@@ -88,15 +94,17 @@ export default function Home() {
               title="Do primeiro contato ao projeto no ar"
               subtitle="Um processo simples e transparente: você sabe exatamente em que etapa o seu projeto está."
             />
-            <ol className="relative mt-14 grid lg:grid-cols-4">
+            <div className="relative mt-14">
               <span
                 className="absolute bottom-10 left-6 top-6 w-px bg-gradient-to-b from-brand-400 to-aqua-400 lg:bottom-auto lg:left-6 lg:right-[calc(25%-1.5rem)] lg:top-6 lg:h-px lg:w-auto lg:bg-gradient-to-r"
                 aria-hidden="true"
               />
-              {processSteps.map((step, index) => (
-                <ProcessStep key={step.title} index={index} {...step} />
-              ))}
-            </ol>
+              <ol className="relative grid lg:grid-cols-4">
+                {processSteps.map((step, index) => (
+                  <ProcessStep key={step.title} index={index} {...step} />
+                ))}
+              </ol>
+            </div>
           </div>
         </AnimatedSection>
 
@@ -139,19 +147,21 @@ export default function Home() {
         <AnimatedSection id="duvidas" className="bg-white px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+            dangerouslySetInnerHTML={{ __html: jsonLd(faqJsonLd) }}
           />
           <div className="mx-auto max-w-3xl">
             <SectionTitle eyebrow="Dúvidas frequentes" title="Perguntas que sempre recebemos" />
             <div className="mt-12 divide-y divide-ink-900/8 rounded-2xl border border-ink-900/8 bg-background">
               {faq.map((item) => (
                 <details key={item.question} className="group px-5 sm:px-6">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 font-display text-base font-semibold text-ink-900 marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 sm:text-lg [&::-webkit-details-marker]:hidden">
-                    {item.question}
-                    <Plus
-                      className="h-5 w-5 shrink-0 text-brand-600 transition-transform duration-200 group-open:rotate-45"
-                      aria-hidden="true"
-                    />
+                  <summary className="cursor-pointer list-none rounded-md py-5 font-display text-base font-semibold text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 sm:text-lg [&::-webkit-details-marker]:hidden">
+                    <span className="flex items-center justify-between gap-4">
+                      {item.question}
+                      <Plus
+                        className="h-5 w-5 shrink-0 text-brand-600 transition-transform duration-200 group-open:rotate-45 motion-reduce:transition-none"
+                        aria-hidden="true"
+                      />
+                    </span>
                   </summary>
                   <p className="pb-5 text-sm leading-7 text-ink-900/70 sm:text-[15px]">{item.answer}</p>
                 </details>
@@ -174,7 +184,6 @@ export default function Home() {
         </AnimatedSection>
       </main>
       <Footer />
-      <WhatsAppFloatingButton />
     </>
   );
 }

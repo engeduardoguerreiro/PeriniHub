@@ -19,7 +19,10 @@ import {
 // Domínio de produção. Usado em metadados, canonical, sitemap e robots.
 export const SITE_URL = "https://perinihub.com.br";
 
+export const CONTACT_EMAIL = "contato@perinihub.com.br";
+
 export const WHATSAPP_NUMBER = "5511930230911";
+export const WHATSAPP_DISPLAY = "+55 11 93023-0911";
 export const WHATSAPP_MESSAGE =
   "Olá, vim pelo site da PeriniHub e gostaria de um orçamento.";
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
@@ -28,6 +31,11 @@ export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURICo
 
 export function buildWhatsAppUrl(message: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+
+/** Serializa JSON-LD escapando `<`, como recomenda o guia de JSON-LD do Next. */
+export function jsonLd(data: unknown) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 export const navItems = [
@@ -93,7 +101,10 @@ export const ecosystemCards: {
 
 export const heroStats = [
   { value: "24h", label: "para receber o orçamento" },
-  { value: "2", label: "SaaS próprios em operação" },
+  {
+    value: String(ecosystemCards.filter((product) => product.status === "live").length),
+    label: "SaaS próprios em operação",
+  },
   { value: "100%", label: "preço fechado antes de começar" },
 ];
 

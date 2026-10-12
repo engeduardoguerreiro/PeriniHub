@@ -1,67 +1,76 @@
 "use client";
 
-import { CheckCircle2, Send, TriangleAlert } from "lucide-react";
+import { CheckCircle2, ChevronDown, ExternalLink, Send, TriangleAlert } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { WHATSAPP_URL, buildWhatsAppUrl, projectTypes } from "@/lib/site";
+import {
+  buildQuoteUrl,
+  fieldErrors,
+  MESSAGE_MAX_LENGTH,
+  QUOTE_FIELDS,
+  type QuoteField,
+  validateQuote,
+} from "@/lib/quote";
+import { projectTypes, WHATSAPP_URL } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
-type FormStatus = "idle" | "success" | "error";
+const fieldLabels: Record<QuoteField, string> = {
+  name: "Nome",
+  whatsapp: "WhatsApp",
+  projectType: "Tipo de projeto",
+  message: "O que você precisa",
+};
 
 export function ContactForm() {
-  const [projectType, setProjectType] = useState("");
-  const [status, setStatus] = useState<FormStatus>("idle");
-  const [missing, setMissing] = useState<Set<string>>(new Set());
-  const invalid = (field: string) => missing.has(field) || undefined;
+  const [invalid, setInvalid] = useState<QuoteField[]>([]);
+  const [submitted, setSubmitted] = useState(false);
+  // URL do WhatsApp gerada no último envio válido. Fica visível como link porque
+  // window.open com noopener não informa se o popup foi bloqueado.
+  const [quoteUrl, setQuoteUrl] = useState<string | null>(null);
+
+  const errorProps = (field: QuoteField) =>
+    invalid.includes(field)
+      ? { "aria-invalid": true, "aria-describedby": `${field}-error` }
+      : {};
+
+  function clearError(field: QuoteField) {
+    if (invalid.includes(field)) setInvalid(invalid.filter((item) => item !== field));
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const formData = new FormData(form);
-    const required = ["name", "whatsapp", "message"];
-    const missingFields = new Set(
-      required.filter((field) => !String(formData.get(field) ?? "").trim()),
-    );
-    if (!projectType) missingFields.add("projectType");
-    setMissing(missingFields);
+    const data = new FormData(form);
+    const input = {
+      name: String(data.get("name") ?? ""),
+      company: String(data.get("company") ?? ""),
+      whatsapp: String(data.get("whatsapp") ?? ""),
+      projectType: String(data.get("projectType") ?? ""),
+      message: String(data.get("message") ?? ""),
+    };
 
-    if (missingFields.size > 0) {
-      setStatus("error");
+    const errors = validateQuote(input);
+    setInvalid(errors);
+    setSubmitted(true);
+
+    if (errors.length > 0) {
+      setQuoteUrl(null);
       // Leva o foco ao primeiro campo pendente para quem navega por teclado.
-      const first = [...required, "projectType"].find((field) => missingFields.has(field));
-      form.querySelector<HTMLElement>(`[name="${first}"], #${first}`)?.focus();
+      const first = QUOTE_FIELDS.find((field) => errors.includes(field));
+      form.querySelector<HTMLElement>(`#${first}`)?.focus();
       return;
     }
 
-    const company = String(formData.get("company") ?? "").trim();
-    const lines = [
-      "Olá! Vim pelo site da PeriniHub e gostaria de um orçamento.",
-      "",
-      `Nome: ${formData.get("name")}`,
-      company ? `Empresa: ${company}` : null,
-      `WhatsApp: ${formData.get("whatsapp")}`,
-      `Tipo de projeto: ${projectType}`,
-      "",
-      `Sobre o projeto: ${formData.get("message")}`,
-    ].filter(Boolean);
-
-    window.open(buildWhatsAppUrl(lines.join("\n")), "_blank", "noopener");
-
-    setStatus("success");
-    setMissing(new Set());
-    form.reset();
-    setProjectType("");
+    const url = buildQuoteUrl(input);
+    setQuoteUrl(url);
+    window.open(url, "_blank", "noopener");
   }
+
+  const hasErrors = submitted && invalid.length > 0;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
@@ -70,14 +79,25 @@ export function ContactForm() {
         className="rounded-2xl border border-ink-900/8 bg-white p-5 shadow-[0_20px_60px_-30px_rgb(8_24_56/0.25)] sm:p-8"
         noValidate
       >
+        <p className="mb-5 text-sm text-ink-900/65">
+          Campos com <span aria-hidden="true">*</span> são obrigatórios.
+        </p>
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Nome completo" htmlFor="name" required>
-            <Input id="name" name="name" required autoComplete="name" className="h-11" aria-invalid={invalid("name")} />
+          <Field label="Nome completo" htmlFor="name" required error={invalid.includes("name")}>
+            <Input
+              id="name"
+              name="name"
+              required
+              autoComplete="name"
+              className="h-11"
+              onChange={() => clearError("name")}
+              {...errorProps("name")}
+            />
           </Field>
           <Field label="Empresa" htmlFor="company">
             <Input id="company" name="company" autoComplete="organization" className="h-11" />
           </Field>
-          <Field label="WhatsApp" htmlFor="whatsapp" required>
+          <Field label="WhatsApp" htmlFor="whatsapp" required error={invalid.includes("whatsapp")}>
             <Input
               id="whatsapp"
               name="whatsapp"
@@ -85,60 +105,107 @@ export function ContactForm() {
               inputMode="tel"
               required
               autoComplete="tel"
+              maxLength={20}
               className="h-11"
-              aria-invalid={invalid("whatsapp")}
               placeholder="(11) 90000-0000"
+              onChange={() => clearError("whatsapp")}
+              {...errorProps("whatsapp")}
             />
           </Field>
-          <div className="grid gap-2 sm:col-span-2">
-            <Label htmlFor="projectType">Tipo de projeto *</Label>
-            <Select
-              value={projectType}
-              onValueChange={(value) => setProjectType(value ?? "")}
-              required
-            >
-              <SelectTrigger id="projectType" aria-label="Tipo de projeto" aria-invalid={invalid("projectType")} className="w-full data-[size=default]:h-11">
-                <SelectValue placeholder="Selecione uma opção" />
-              </SelectTrigger>
-              <SelectContent>
+          <Field
+            label="Tipo de projeto"
+            htmlFor="projectType"
+            required
+            error={invalid.includes("projectType")}
+            className="sm:col-span-2"
+          >
+            {/* <select> nativo: melhor no celular e sem JS extra de dropdown. */}
+            <div className="relative">
+              <select
+                id="projectType"
+                name="projectType"
+                required
+                defaultValue=""
+                onChange={() => clearError("projectType")}
+                className="h-11 w-full appearance-none rounded-lg border border-input bg-transparent pl-2.5 pr-9 text-base text-ink-900 outline-none transition-colors invalid:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm"
+                {...errorProps("projectType")}
+              >
+                <option value="" disabled>
+                  Selecione uma opção
+                </option>
                 {projectTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
+                  <option key={type} value={type} className="text-ink-900">
                     {type}
-                  </SelectItem>
+                  </option>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2 sm:col-span-2">
-            <Label htmlFor="message">O que você precisa? *</Label>
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-900/50"
+                aria-hidden="true"
+              />
+            </div>
+          </Field>
+          <Field
+            label="O que você precisa?"
+            htmlFor="message"
+            required
+            error={invalid.includes("message")}
+            className="sm:col-span-2"
+          >
             <Textarea
               id="message"
               name="message"
               required
               rows={5}
-              aria-invalid={invalid("message")}
+              maxLength={MESSAGE_MAX_LENGTH}
               placeholder="Ex.: preciso de um site para minha empresa, ou de um sistema para controlar pedidos."
+              onChange={() => clearError("message")}
+              {...errorProps("message")}
             />
-          </div>
+          </Field>
         </div>
-        {status === "success" && (
-          <p role="status" className="mt-5 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
-            <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-            Abrimos o WhatsApp com seus dados. É só tocar em enviar para falar com a gente.
-          </p>
-        )}
-        {status === "error" && (
-          <p role="alert" className="mt-5 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
-            <TriangleAlert className="h-4 w-4" aria-hidden="true" />
-            Preencha os campos obrigatórios antes de enviar.
-          </p>
-        )}
-        <Button type="submit" size="lg" className="mt-6 h-12 w-full rounded-full bg-brand-500 px-6 text-base text-white hover:bg-brand-600 sm:w-auto">
+
+        {/* Região sempre montada para que leitores de tela anunciem cada novo resultado. */}
+        <div role="alert" aria-live="assertive" className="empty:hidden">
+          {hasErrors && (
+            <p className="mt-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              Faltam: {invalid.map((field) => fieldLabels[field]).join(", ")}.
+            </p>
+          )}
+        </div>
+        <div role="status" className="empty:hidden">
+          {quoteUrl && (
+            <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+              <p className="flex items-start gap-2 font-medium">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                Tudo certo! Abrimos o WhatsApp com seus dados, é só tocar em enviar.
+              </p>
+              <a
+                href={quoteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 rounded-sm pl-6 font-semibold text-emerald-800 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+              >
+                O WhatsApp não abriu? Toque aqui
+                <span className="sr-only"> (abre em nova aba)</span>
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+              </a>
+            </div>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-6 h-12 w-full rounded-full bg-brand-600 px-6 text-base text-white hover:bg-brand-700 sm:w-auto"
+        >
           <Send className="h-4 w-4" aria-hidden="true" />
           Solicitar orçamento
         </Button>
-        <p className="mt-3 text-xs text-ink-900/60">
-          Ao enviar, abrimos uma conversa no WhatsApp com seus dados preenchidos.
+        <p className="mt-3 text-xs text-ink-900/65">
+          Ao enviar, abrimos uma conversa no WhatsApp com os dados preenchidos. Eles não ficam
+          salvos no site.
         </p>
       </form>
 
@@ -164,6 +231,7 @@ export function ContactForm() {
         <Button asChild className="mt-8 h-11 w-full rounded-full bg-white text-ink-900 hover:bg-brand-50">
           <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
             Falar no WhatsApp
+            <span className="sr-only"> (abre em nova aba)</span>
           </a>
         </Button>
       </aside>
@@ -175,20 +243,29 @@ function Field({
   label,
   htmlFor,
   required,
+  error,
+  className,
   children,
 }: {
   label: string;
-  htmlFor: string;
+  htmlFor: QuoteField | "company";
   required?: boolean;
+  error?: boolean;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid gap-2">
+    <div className={cn("grid content-start gap-2", className)}>
       <Label htmlFor={htmlFor}>
         {label}
-        {required ? " *" : ""}
+        {required && <span aria-hidden="true">*</span>}
       </Label>
       {children}
+      {error && htmlFor !== "company" && (
+        <p id={`${htmlFor}-error`} className="text-sm text-red-700">
+          {fieldErrors[htmlFor]}
+        </p>
+      )}
     </div>
   );
 }
