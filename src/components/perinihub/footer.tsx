@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Brand } from "@/components/perinihub/brand";
 import { WhatsAppFloatingButton } from "@/components/perinihub/whatsapp-floating-button";
-import { CONTACT_EMAIL, ecosystemCards, navItems, WHATSAPP_URL } from "@/lib/site";
+import { CONTACT_EMAIL, liveProducts, navItems, WHATSAPP_URL } from "@/lib/site";
 
 const linkClass =
   "rounded-sm transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400";
@@ -33,7 +33,7 @@ export function Footer() {
           <FooterColumn title="Produtos">
             {/* Sem noreferrer de propósito: os destinos são produtos próprios e o
                 referrer ajuda a medir quanto tráfego vem do site institucional. */}
-            {ecosystemCards.map((product) => (
+            {liveProducts.map((product) => (
               <a key={product.name} href={product.href} target="_blank" rel="noopener" className={linkClass}>
                 {product.name}
                 {newTab}

@@ -35,20 +35,40 @@ type ProductCardProps = {
   name: string;
   description: string;
   highlights: string[];
-  href: string;
+  href?: string;
   icon: LucideIcon;
 };
 
 export function ProductCard({ name, description, highlights, href, icon: Icon }: ProductCardProps) {
+  const live = Boolean(href);
+
   return (
-    <article className="ring-gradient relative flex h-full flex-col rounded-2xl border border-transparent bg-white/[0.06] p-6 sm:p-8">
+    <article
+      className={cn(
+        "relative flex h-full flex-col rounded-2xl border p-6 sm:p-8",
+        live ? "ring-gradient border-transparent bg-white/[0.06]" : "border-white/10 bg-white/[0.03]",
+      )}
+    >
       <div className="flex items-start justify-between gap-4">
-        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-brand text-white">
+        <span
+          className={cn(
+            "flex h-12 w-12 items-center justify-center rounded-xl text-white",
+            live ? "bg-gradient-brand" : "bg-white/10",
+          )}
+        >
           <Icon className="h-5 w-5" aria-hidden="true" />
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-aqua-400/15 px-2.5 py-1 text-xs font-medium text-aqua-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-aqua-400" aria-hidden="true" />
-          Em operação
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+            live ? "bg-aqua-400/15 text-aqua-300" : "bg-white/8 text-white/70",
+          )}
+        >
+          <span
+            className={cn("h-1.5 w-1.5 rounded-full", live ? "bg-aqua-400" : "bg-white/40")}
+            aria-hidden="true"
+          />
+          {live ? "Em operação" : "Em desenvolvimento"}
         </span>
       </div>
       <h3 className="font-display mt-6 text-2xl font-semibold tracking-tight text-white">{name}</h3>
@@ -61,19 +81,23 @@ export function ProductCard({ name, description, highlights, href, icon: Icon }:
           </li>
         ))}
       </ul>
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener"
-        className="group mt-7 inline-flex items-center gap-1.5 self-start rounded-md text-sm font-semibold text-brand-300 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
-      >
-        Conhecer o {name}
-        <span className="sr-only"> (abre em nova aba)</span>
-        <ArrowUpRight
-          className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-          aria-hidden="true"
-        />
-      </a>
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener"
+          className="group mt-7 inline-flex items-center gap-1.5 self-start rounded-md text-sm font-semibold text-brand-300 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+        >
+          Conhecer o {name}
+          <span className="sr-only"> (abre em nova aba)</span>
+          <ArrowUpRight
+            className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            aria-hidden="true"
+          />
+        </a>
+      ) : (
+        <p className="mt-7 text-sm font-medium text-white/60">Lançamento em breve</p>
+      )}
     </article>
   );
 }

@@ -6,6 +6,7 @@ import {
   ecosystemCards,
   heroStats,
   jsonLd,
+  liveProducts,
   projectTypes,
   WHATSAPP_NUMBER,
   WHATSAPP_URL,
@@ -45,13 +46,14 @@ describe("constantes de contato", () => {
 });
 
 describe("produtos", () => {
-  it("todo produto tem link https", () => {
-    for (const product of ecosystemCards) expect(product.href).toMatch(/^https:\/\//);
+  it("produtos com link usam https", () => {
+    for (const product of liveProducts) expect(product.href).toMatch(/^https:\/\//);
   });
 
-  it("o contador do hero acompanha a lista de produtos", () => {
+  it("o contador do hero conta só os produtos em operação", () => {
     const stat = heroStats.find((item) => /SaaS/.test(item.label));
-    expect(stat?.value).toBe(String(ecosystemCards.length));
+    expect(stat?.value).toBe(String(ecosystemCards.filter((product) => product.href).length));
+    expect(liveProducts.length).toBeLessThan(ecosystemCards.length);
   });
 
   it("links de clientes, quando existem, são https", () => {

@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   MessageCircle,
   Pizza,
+  Scissors,
   Smartphone,
   Timer,
   UtensilsCrossed,
@@ -49,7 +50,8 @@ export const ecosystemCards: {
   name: string;
   description: string;
   highlights: string[];
-  href: string;
+  /** Sem link = produto ainda em desenvolvimento. */
+  href?: string;
   icon: typeof UtensilsCrossed;
 }[] = [
   {
@@ -68,11 +70,21 @@ export const ecosystemCards: {
     href: "https://www.perinione.com.br",
     icon: LayoutDashboard,
   },
+  {
+    name: "Perini Barber",
+    description:
+      "Agendamento online, clientes e faturamento para barbearias e salões.",
+    highlights: ["Agenda online", "Clientes", "Faturamento"],
+    icon: Scissors,
+  },
 ];
+
+/** Produtos já em operação (com site no ar). */
+export const liveProducts = ecosystemCards.filter((product) => product.href);
 
 export const heroStats = [
   { value: "24h", label: "para receber o orçamento" },
-  { value: String(ecosystemCards.length), label: "SaaS próprios em operação" },
+  { value: String(liveProducts.length), label: "SaaS próprios em operação" },
   { value: "100%", label: "preço fechado antes de começar" },
 ];
 
