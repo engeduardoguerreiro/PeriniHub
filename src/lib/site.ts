@@ -94,7 +94,7 @@ export const clients = [
     segment: "Alimentação e delivery",
     description:
       "Operação de pedidos, cardápio digital e atendimento digitalizados com o Perini Food, do balcão ao delivery.",
-    link: { label: "Ver o cardápio digital", href: "https://perinifood.com.br/cardapio/forno-nordestino" },
+    link: { label: "Ver o site", href: "https://fornonordestino.com.br/" },
     icon: Pizza,
   },
   {

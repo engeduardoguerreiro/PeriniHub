@@ -81,7 +81,7 @@ src/
     └── metadata.ts           # base de Open Graph compartilhada
 ```
 
-Todo o conteúdo editável (textos, produtos, clientes, FAQ, contatos) fica em `src/lib/site.ts`. Produto com `href` aparece como "Em operação" (e no rodapé); sem `href`, como "Em desenvolvimento". O contador "SaaS próprios" do hero conta só os que têm `href`. Clientes podem ter `link` para o projeto no ar (site da Perini Engenharia, cardápio do Forno Nordestino).
+Todo o conteúdo editável (textos, produtos, clientes, FAQ, contatos) fica em `src/lib/site.ts`. Produto com `href` aparece como "Em operação" (e no rodapé); sem `href`, como "Em desenvolvimento". O contador "SaaS próprios" do hero conta só os que têm `href`. Clientes podem ter `link` para o projeto no ar (sites da Perini Engenharia e do Forno Nordestino).
 
 ## Formulário de contato
 
