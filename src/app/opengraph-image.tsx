@@ -1,10 +1,16 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import { ImageResponse } from "next/og";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "PeriniHub — Criação de sites e desenvolvimento de sistemas";
+export const alt = "PeriniHub: criação de sites e desenvolvimento de sistemas";
 
-export default function OpengraphImage() {
+export default async function OpengraphImage() {
+  const logo = await readFile(join(process.cwd(), "public/perinihub-logo-dark.png"));
+  const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -14,70 +20,56 @@ export default function OpengraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#09090b",
+          background: "#040b1c",
           padding: "72px",
           position: "relative",
         }}
       >
-        {/* Brilho vermelho no canto superior direito */}
+        {/* Halo azul/aqua, como no hero do site */}
         <div
           style={{
             position: "absolute",
-            top: -220,
-            right: -160,
-            width: 620,
-            height: 620,
+            top: -200,
+            right: -140,
+            width: 640,
+            height: 640,
             borderRadius: "50%",
-            background: "rgba(228, 22, 28, 0.30)",
-            filter: "blur(90px)",
+            background: "rgba(22, 119, 255, 0.35)",
+            filter: "blur(100px)",
+            display: "flex",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: -260,
+            right: 120,
+            width: 520,
+            height: 520,
+            borderRadius: "50%",
+            background: "rgba(34, 227, 216, 0.18)",
+            filter: "blur(100px)",
             display: "flex",
           }}
         />
 
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div
-            style={{
-              width: 16,
-              height: 46,
-              borderRadius: 4,
-              background: "#e4161c",
-              display: "flex",
-            }}
-          />
-          <div
-            style={{
-              fontSize: 30,
-              fontWeight: 700,
-              color: "#fafafa",
-              letterSpacing: 10,
-              display: "flex",
-            }}
-          >
-            PERINIHUB
-          </div>
-        </div>
+        <img src={logoSrc} alt="" width={347} height={100} />
 
         <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
           <div
             style={{
-              fontSize: 78,
-              fontWeight: 800,
+              fontSize: 76,
+              fontWeight: 700,
               color: "#ffffff",
               lineHeight: 1.05,
               letterSpacing: -2.5,
-              maxWidth: 960,
+              maxWidth: 980,
               display: "flex",
             }}
           >
-            Sites e sistemas sob medida para a sua empresa.
+            Sites e sistemas sob medida para a sua empresa crescer.
           </div>
-          <div
-            style={{
-              fontSize: 30,
-              color: "#a1a1aa",
-              display: "flex",
-            }}
-          >
+          <div style={{ fontSize: 30, color: "rgba(255,255,255,0.65)", display: "flex" }}>
             Orçamento em até 24 horas, sem compromisso.
           </div>
         </div>
@@ -89,10 +81,11 @@ export default function OpengraphImage() {
               style={{
                 display: "flex",
                 fontSize: 24,
-                color: "#e4e4e7",
-                border: "1px solid rgba(255,255,255,0.18)",
-                borderRadius: 10,
-                padding: "12px 22px",
+                color: "#d9e9ff",
+                border: "1px solid rgba(125,182,255,0.3)",
+                background: "rgba(22,119,255,0.12)",
+                borderRadius: 999,
+                padding: "12px 24px",
               }}
             >
               {item}

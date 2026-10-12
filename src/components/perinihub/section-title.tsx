@@ -1,9 +1,13 @@
+import { cn } from "@/lib/utils";
+
 type SectionTitleProps = {
   eyebrow?: string;
   title: string;
   subtitle?: string;
   align?: "left" | "center";
   tone?: "light" | "dark";
+  /** Usa h1 quando o título é o principal da página. */
+  as?: "h1" | "h2";
 };
 
 export function SectionTitle({
@@ -12,35 +16,42 @@ export function SectionTitle({
   subtitle,
   align = "center",
   tone = "light",
+  as: Heading = "h2",
 }: SectionTitleProps) {
+  const dark = tone === "dark";
+
   return (
-    <div
-      className={`mx-auto max-w-3xl ${
-        align === "center" ? "text-center" : "text-left"
-      }`}
-    >
+    <div className={cn("max-w-3xl", align === "center" ? "mx-auto text-center" : "text-left")}>
       {eyebrow && (
         <p
-          className={`mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.28em] text-red-600 ${
-            align === "center" ? "justify-center" : ""
-          }`}
+          className={cn(
+            "mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]",
+            dark
+              ? "border-white/10 bg-white/5 text-aqua-300"
+              : "border-brand-100 bg-brand-50 text-brand-700",
+          )}
         >
-          <span className="h-px w-6 bg-red-600/50" aria-hidden="true" />
+          <span
+            className={cn("h-1.5 w-1.5 rounded-full", dark ? "bg-aqua-400" : "bg-brand-500")}
+            aria-hidden="true"
+          />
           {eyebrow}
         </p>
       )}
-      <h2
-        className={`font-display text-balance text-3xl font-extrabold tracking-[-0.03em] sm:text-4xl lg:text-5xl ${
-          tone === "dark" ? "text-white" : "text-zinc-950"
-        }`}
+      <Heading
+        className={cn(
+          "font-display text-balance text-3xl font-semibold tracking-[-0.02em] sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]",
+          dark ? "text-white" : "text-ink-900",
+        )}
       >
         {title}
-      </h2>
+      </Heading>
       {subtitle && (
         <p
-          className={`mt-5 text-base leading-8 sm:text-lg ${
-            tone === "dark" ? "text-zinc-300" : "text-zinc-600"
-          }`}
+          className={cn(
+            "mt-4 text-base leading-7 sm:text-lg sm:leading-8",
+            dark ? "text-white/70" : "text-ink-900/65",
+          )}
         >
           {subtitle}
         </p>

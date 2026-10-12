@@ -39,39 +39,62 @@ export const navItems = [
   { label: "Contato", href: "/#contato" },
 ];
 
-export const ecosystemCards = [
+export type ProductStatus = "live" | "building" | "validating";
+
+export const productStatusLabel: Record<ProductStatus, string> = {
+  live: "Em operação",
+  building: "Em desenvolvimento",
+  validating: "Em validação",
+};
+
+export const ecosystemCards: {
+  name: string;
+  description: string;
+  highlights: string[];
+  status: ProductStatus;
+  href?: string;
+  icon: typeof UtensilsCrossed;
+}[] = [
   {
     name: "Perini Food",
     description:
       "Cardápio digital, pedidos e gestão para restaurantes, pizzarias e delivery.",
-    status: "Em operação",
-    action: "Solicitar demonstração",
+    highlights: ["Cardápio online", "Integração iFood", "Pedidos no WhatsApp"],
+    status: "live",
+    href: "https://perinifood.com.br",
     icon: UtensilsCrossed,
   },
   {
     name: "Perini One",
     description:
-      "Clientes, agenda e vendas em um só lugar para negócios de serviços.",
-    status: "Em operação",
-    action: "Solicitar demonstração",
+      "ERP online para pequenas empresas: vendas, estoque, compras, caixa e financeiro.",
+    highlights: ["Vendas e estoque", "Financeiro e caixa", "Relatórios"],
+    status: "live",
+    href: "https://www.perinione.com.br",
     icon: LayoutDashboard,
   },
   {
     name: "Perini Barber",
     description:
       "Agendamento online, clientes e faturamento para barbearias e salões.",
-    status: "Em desenvolvimento",
-    action: "Em breve",
+    highlights: ["Agenda online", "Clientes", "Faturamento"],
+    status: "building",
     icon: Scissors,
   },
   {
     name: "Privacy Log",
     description:
       "Reputação e presença online para mercados premium e segmentados.",
-    status: "Em validação",
-    action: "Em breve",
+    highlights: ["Reputação", "Presença online"],
+    status: "validating",
     icon: ShieldCheck,
   },
+];
+
+export const heroStats = [
+  { value: "24h", label: "para receber o orçamento" },
+  { value: "2", label: "SaaS próprios em operação" },
+  { value: "100%", label: "preço fechado antes de começar" },
 ];
 
 export const clients = [
@@ -212,10 +235,4 @@ export const projectTypes = [
   "Demonstração do Perini One",
   "Manutenção de sistema existente",
   "Outro",
-];
-
-export const heroSignals = [
-  { label: "Sites e landing pages", icon: Globe2 },
-  { label: "Sistemas sob medida", icon: Code2 },
-  { label: "Integrações e automações", icon: Bot },
 ];

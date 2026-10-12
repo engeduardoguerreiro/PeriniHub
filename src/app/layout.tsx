@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono, Outfit } from "next/font/google";
 
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
@@ -14,15 +14,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Fonte de display: dá personalidade aos títulos sem prejudicar a leitura do corpo.
-const displayFont = Bricolage_Grotesque({
-  variable: "--font-display",
+// Fonte de display geométrica e arredondada, próxima do lettering do logotipo.
+const displayFont = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
   display: "swap",
 });
 
 const SITE_DESCRIPTION =
   "Criação de sites, landing pages e desenvolvimento de sistemas web sob medida para empresas. Painéis, integrações e automações. Orçamento em até 24 horas.";
+
+export const viewport: Viewport = {
+  themeColor: "#081838",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -65,7 +69,9 @@ const organizationJsonLd = {
   name: "PeriniHub",
   description: SITE_DESCRIPTION,
   url: SITE_URL,
+  logo: `${SITE_URL}/perinihub-logo.png`,
   image: `${SITE_URL}/perinihub-logo.png`,
+  email: "contato@perinihub.com.br",
   areaServed: "BR",
   serviceType: [
     "Criação de sites",
@@ -90,6 +96,12 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
+        <a
+          href="#conteudo"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-ink-900 focus:shadow-lg"
+        >
+          Pular para o conteúdo
+        </a>
         {children}
       </body>
     </html>

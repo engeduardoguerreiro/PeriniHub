@@ -21,18 +21,25 @@ type FormStatus = "idle" | "success" | "error";
 export function ContactForm() {
   const [projectType, setProjectType] = useState("");
   const [status, setStatus] = useState<FormStatus>("idle");
+  const [missing, setMissing] = useState<Set<string>>(new Set());
+  const invalid = (field: string) => missing.has(field) || undefined;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
     const required = ["name", "whatsapp", "message"];
-    const missingField = required.some(
-      (field) => !String(formData.get(field) ?? "").trim(),
+    const missingFields = new Set(
+      required.filter((field) => !String(formData.get(field) ?? "").trim()),
     );
+    if (!projectType) missingFields.add("projectType");
+    setMissing(missingFields);
 
-    if (missingField || !projectType) {
+    if (missingFields.size > 0) {
       setStatus("error");
+      // Leva o foco ao primeiro campo pendente para quem navega por teclado.
+      const first = [...required, "projectType"].find((field) => missingFields.has(field));
+      form.querySelector<HTMLElement>(`[name="${first}"], #${first}`)?.focus();
       return;
     }
 
@@ -51,6 +58,7 @@ export function ContactForm() {
     window.open(buildWhatsAppUrl(lines.join("\n")), "_blank", "noopener");
 
     setStatus("success");
+    setMissing(new Set());
     form.reset();
     setProjectType("");
   }
@@ -59,33 +67,37 @@ export function ContactForm() {
     <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
       <form
         onSubmit={handleSubmit}
-        className="rounded-lg border border-zinc-200/90 bg-white/86 p-5 shadow-sm backdrop-blur sm:p-7"
+        className="rounded-2xl border border-ink-900/8 bg-white p-5 shadow-[0_20px_60px_-30px_rgb(8_24_56/0.25)] sm:p-8"
         noValidate
       >
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Nome completo" htmlFor="name" required>
-            <Input id="name" name="name" required autoComplete="name" />
+            <Input id="name" name="name" required autoComplete="name" className="h-11" aria-invalid={invalid("name")} />
           </Field>
           <Field label="Empresa" htmlFor="company">
-            <Input id="company" name="company" autoComplete="organization" />
+            <Input id="company" name="company" autoComplete="organization" className="h-11" />
           </Field>
           <Field label="WhatsApp" htmlFor="whatsapp" required>
             <Input
               id="whatsapp"
               name="whatsapp"
+              type="tel"
+              inputMode="tel"
               required
               autoComplete="tel"
+              className="h-11"
+              aria-invalid={invalid("whatsapp")}
               placeholder="(11) 90000-0000"
             />
           </Field>
           <div className="grid gap-2 sm:col-span-2">
-            <Label>Tipo de projeto *</Label>
+            <Label htmlFor="projectType">Tipo de projeto *</Label>
             <Select
               value={projectType}
               onValueChange={(value) => setProjectType(value ?? "")}
               required
             >
-              <SelectTrigger aria-label="Selecionar tipo de projeto">
+              <SelectTrigger id="projectType" aria-label="Tipo de projeto" aria-invalid={invalid("projectType")} className="w-full data-[size=default]:h-11">
                 <SelectValue placeholder="Selecione uma opção" />
               </SelectTrigger>
               <SelectContent>
@@ -104,37 +116,39 @@ export function ContactForm() {
               name="message"
               required
               rows={5}
+              aria-invalid={invalid("message")}
               placeholder="Ex.: preciso de um site para minha empresa, ou de um sistema para controlar pedidos."
             />
           </div>
         </div>
         {status === "success" && (
-          <p className="mt-5 flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+          <p role="status" className="mt-5 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
             Abrimos o WhatsApp com seus dados. É só tocar em enviar para falar com a gente.
           </p>
         )}
         {status === "error" && (
-          <p className="mt-5 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+          <p role="alert" className="mt-5 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
             <TriangleAlert className="h-4 w-4" aria-hidden="true" />
             Preencha os campos obrigatórios antes de enviar.
           </p>
         )}
-        <Button type="submit" className="mt-6 w-full bg-red-600 hover:bg-red-700 sm:w-auto">
+        <Button type="submit" size="lg" className="mt-6 h-12 w-full rounded-full bg-brand-500 px-6 text-base text-white hover:bg-brand-600 sm:w-auto">
           <Send className="h-4 w-4" aria-hidden="true" />
           Solicitar orçamento
         </Button>
-        <p className="mt-3 text-xs text-zinc-500">
+        <p className="mt-3 text-xs text-ink-900/60">
           Ao enviar, abrimos uma conversa no WhatsApp com seus dados preenchidos.
         </p>
       </form>
 
-      <aside className="rounded-lg border border-zinc-200/90 bg-zinc-950 p-6 text-white shadow-xl shadow-zinc-950/10">
-        <p className="text-xs font-bold uppercase tracking-[0.28em] text-red-400">
+      <aside className="relative isolate overflow-hidden rounded-2xl bg-ink-900 p-6 text-white sm:p-8">
+        <span className="hero-glow absolute inset-0 -z-10 opacity-80" aria-hidden="true" />
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-aqua-300">
           Sem compromisso
         </p>
-        <h3 className="mt-4 text-2xl font-black">O que você recebe</h3>
-        <ul className="mt-6 grid gap-4 text-sm text-zinc-200">
+        <h3 className="font-display mt-4 text-2xl font-semibold">O que você recebe</h3>
+        <ul className="mt-6 grid gap-4 text-sm text-white/80">
           {[
             "Retorno em até 24 horas",
             "Análise gratuita do que você precisa",
@@ -142,13 +156,13 @@ export function ContactForm() {
             "Orçamento fechado, sem surpresa",
           ].map((item) => (
             <li key={item} className="flex items-center gap-3">
-              <CheckCircle2 className="h-4 w-4 text-red-400" aria-hidden="true" />
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-aqua-400" aria-hidden="true" />
               {item}
             </li>
           ))}
         </ul>
-        <Button asChild className="mt-8 w-full bg-white text-zinc-950 hover:bg-red-50">
-          <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
+        <Button asChild className="mt-8 h-11 w-full rounded-full bg-white text-ink-900 hover:bg-brand-50">
+          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
             Falar no WhatsApp
           </a>
         </Button>
