@@ -79,7 +79,7 @@ export default function Home() {
               title="Não falamos só de tecnologia. Nós construímos."
               subtitle="Além dos projetos sob medida, desenvolvemos e mantemos nossos próprios SaaS, com a mesma tecnologia que aplicamos no seu projeto."
             />
-            <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mx-auto mt-12 grid max-w-5xl gap-4 md:grid-cols-2">
               {ecosystemCards.map((card) => (
                 <ProductCard key={card.name} {...card} />
               ))}

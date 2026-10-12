@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildWhatsAppUrl,
+  clients,
   ecosystemCards,
   heroStats,
   jsonLd,
@@ -44,16 +45,17 @@ describe("constantes de contato", () => {
 });
 
 describe("produtos", () => {
-  it("todo produto em operação tem link https e os demais não têm", () => {
-    for (const product of ecosystemCards) {
-      if (product.status === "live") expect(product.href).toMatch(/^https:\/\//);
-      else expect(product.href).toBeUndefined();
-    }
+  it("todo produto tem link https", () => {
+    for (const product of ecosystemCards) expect(product.href).toMatch(/^https:\/\//);
   });
 
-  it("o contador do hero acompanha os produtos em operação", () => {
-    const live = ecosystemCards.filter((product) => product.status === "live").length;
-    expect(heroStats.some((stat) => stat.value === String(live) && /SaaS/.test(stat.label))).toBe(true);
+  it("o contador do hero acompanha a lista de produtos", () => {
+    const stat = heroStats.find((item) => /SaaS/.test(item.label));
+    expect(stat?.value).toBe(String(ecosystemCards.length));
+  });
+
+  it("links de clientes, quando existem, são https", () => {
+    for (const client of clients) if (client.link) expect(client.link.href).toMatch(/^https:\/\//);
   });
 });
 

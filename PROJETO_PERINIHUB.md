@@ -4,7 +4,7 @@ Documento consolidado do site institucional PeriniHub.
 
 ## Resumo
 
-A PeriniHub é a frente de tecnologia da marca Perini: criação de sites, sistemas web sob medida, painéis, integrações e automações, além dos produtos SaaS próprios (Perini Food, Perini One, Perini Barber, Privacy Log).
+A PeriniHub é a frente de tecnologia da marca Perini: criação de sites, sistemas web sob medida, painéis, integrações e automações, além dos produtos SaaS próprios (Perini Food e Perini One).
 
 O site não vende serviços de engenharia elétrica. A Perini Engenharia aparece apenas como **cliente** (sistemas e presença digital feitos pela PeriniHub).
 
@@ -81,7 +81,7 @@ src/
     └── metadata.ts           # base de Open Graph compartilhada
 ```
 
-Todo o conteúdo editável (textos, produtos, clientes, FAQ, contatos) fica em `src/lib/site.ts`. Um produto com `status: "live"` precisa de `href`; o contador do hero é calculado a partir disso.
+Todo o conteúdo editável (textos, produtos, clientes, FAQ, contatos) fica em `src/lib/site.ts`. Todo produto listado está em operação e tem `href`; o contador "SaaS próprios" do hero é o tamanho dessa lista. Clientes podem ter `link` para o projeto no ar (site da Perini Engenharia, cardápio do Forno Nordestino).
 
 ## Formulário de contato
 

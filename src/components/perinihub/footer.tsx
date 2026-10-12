@@ -10,8 +10,6 @@ const linkClass =
 const newTab = <span className="sr-only"> (abre em nova aba)</span>;
 
 export function Footer() {
-  const liveProducts = ecosystemCards.filter((product) => product.href);
-
   return (
     <footer className="bg-ink-950 px-4 pb-10 pt-16 text-white/65 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -35,7 +33,7 @@ export function Footer() {
           <FooterColumn title="Produtos">
             {/* Sem noreferrer de propósito: os destinos são produtos próprios e o
                 referrer ajuda a medir quanto tráfego vem do site institucional. */}
-            {liveProducts.map((product) => (
+            {ecosystemCards.map((product) => (
               <a key={product.name} href={product.href} target="_blank" rel="noopener" className={linkClass}>
                 {product.name}
                 {newTab}

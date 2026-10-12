@@ -8,8 +8,6 @@ import {
   LayoutDashboard,
   MessageCircle,
   Pizza,
-  Scissors,
-  ShieldCheck,
   Smartphone,
   Timer,
   UtensilsCrossed,
@@ -47,20 +45,11 @@ export const navItems = [
   { label: "Contato", href: "/#contato" },
 ];
 
-export type ProductStatus = "live" | "building" | "validating";
-
-export const productStatusLabel: Record<ProductStatus, string> = {
-  live: "Em operação",
-  building: "Em desenvolvimento",
-  validating: "Em validação",
-};
-
 export const ecosystemCards: {
   name: string;
   description: string;
   highlights: string[];
-  status: ProductStatus;
-  href?: string;
+  href: string;
   icon: typeof UtensilsCrossed;
 }[] = [
   {
@@ -68,7 +57,6 @@ export const ecosystemCards: {
     description:
       "Cardápio digital, pedidos e gestão para restaurantes, pizzarias e delivery.",
     highlights: ["Cardápio online", "Integração iFood", "Pedidos no WhatsApp"],
-    status: "live",
     href: "https://perinifood.com.br",
     icon: UtensilsCrossed,
   },
@@ -77,34 +65,14 @@ export const ecosystemCards: {
     description:
       "ERP online para pequenas empresas: vendas, estoque, compras, caixa e financeiro.",
     highlights: ["Vendas e estoque", "Financeiro e caixa", "Relatórios"],
-    status: "live",
     href: "https://www.perinione.com.br",
     icon: LayoutDashboard,
-  },
-  {
-    name: "Perini Barber",
-    description:
-      "Agendamento online, clientes e faturamento para barbearias e salões.",
-    highlights: ["Agenda online", "Clientes", "Faturamento"],
-    status: "building",
-    icon: Scissors,
-  },
-  {
-    name: "Privacy Log",
-    description:
-      "Reputação e presença online para mercados premium e segmentados.",
-    highlights: ["Reputação", "Presença online"],
-    status: "validating",
-    icon: ShieldCheck,
   },
 ];
 
 export const heroStats = [
   { value: "24h", label: "para receber o orçamento" },
-  {
-    value: String(ecosystemCards.filter((product) => product.status === "live").length),
-    label: "SaaS próprios em operação",
-  },
+  { value: String(ecosystemCards.length), label: "SaaS próprios em operação" },
   { value: "100%", label: "preço fechado antes de começar" },
 ];
 
@@ -114,13 +82,15 @@ export const clients = [
     segment: "Alimentação e delivery",
     description:
       "Operação de pedidos, cardápio digital e atendimento digitalizados com o Perini Food, do balcão ao delivery.",
+    link: { label: "Ver o cardápio digital", href: "https://perinifood.com.br/cardapio/forno-nordestino" },
     icon: Pizza,
   },
   {
     name: "Perini Engenharia",
     segment: "Engenharia elétrica",
     description:
-      "Presença digital e sistemas internos desenvolvidos pela PeriniHub para apoiar a operação comercial e institucional da empresa.",
+      "Site institucional e sistemas internos desenvolvidos pela PeriniHub para apoiar a operação comercial da empresa.",
+    link: { label: "Ver o site", href: "https://periniengenharia.com.br" },
     icon: Building2,
   },
 ];
