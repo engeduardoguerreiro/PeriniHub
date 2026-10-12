@@ -1,0 +1,108 @@
+// Smoke test do build de produção: sobe `next start` e confere rotas,
+// metadados e o formulário no HTML servido. Uso: npm run build && npm run smoke
+import { spawn } from "node:child_process";
+import http from "node:http";
+
+const PORT = process.env.SMOKE_PORT ?? "3100";
+const BASE = `http://127.0.0.1:${PORT}`;
+const SITE = "https://perinihub.com.br";
+
+// Grupo de processos próprio (detached) para encerrar o next-server junto;
+// matar só o processo pai deixaria o servidor órfão segurando a porta.
+const server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", PORT], {
+  stdio: ["ignore", "inherit", "inherit"],
+  env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
+  detached: true,
+});
+
+const failures = [];
+function check(condition, label) {
+  console.log(`${condition ? "ok  " : "FAIL"} ${label}`);
+  if (!condition) failures.push(label);
+}
+
+async function waitForServer(timeoutMs = 30_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      await fetch(BASE);
+      return;
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }
+  }
+  throw new Error(`next start não respondeu em ${timeoutMs} ms`);
+}
+
+async function get(path) {
+  const response = await fetch(BASE + path, { redirect: "manual" });
+  return { status: response.status, body: await response.text(), headers: response.headers };
+}
+
+try {
+  await waitForServer();
+
+  const home = await get("/");
+  check(home.status === 200, "GET / -> 200");
+  check(home.body.includes('<html lang="pt-BR"'), "/ declara lang pt-BR");
+  check(/<title>PeriniHub \| [^<]+<\/title>/.test(home.body), "/ tem <title> padrão");
+  check(home.body.includes(`<link rel="canonical" href="${SITE}"`), "/ tem canonical");
+  check(home.body.includes('property="og:image"'), "/ tem og:image");
+  check(home.body.includes('id="contato"'), "/ renderiza a seção de contato");
+  check(home.body.includes("Solicitar orçamento"), "/ renderiza o formulário");
+
+  const clientes = await get("/clientes");
+  check(clientes.status === 200, "GET /clientes -> 200");
+  check(
+    clientes.body.includes("<title>Clientes e projetos entregues | PeriniHub</title>"),
+    "/clientes usa o template de título",
+  );
+  check(clientes.body.includes(`property="og:url" content="${SITE}/clientes"`), "/clientes tem og:url próprio");
+  check(clientes.body.includes(`<link rel="canonical" href="${SITE}/clientes"`), "/clientes tem canonical");
+
+  const sitemap = await get("/sitemap.xml");
+  check(sitemap.status === 200 && sitemap.body.includes(`<loc>${SITE}/clientes</loc>`), "sitemap.xml lista /clientes");
+
+  const robots = await get("/robots.txt");
+  check(robots.status === 200 && robots.body.includes(`Sitemap: ${SITE}/sitemap.xml`), "robots.txt aponta o sitemap");
+
+  const og = await get("/opengraph-image");
+  check(og.status === 200 && og.headers.get("content-type")?.startsWith("image/png"), "opengraph-image gera PNG");
+
+  const missing = await get("/rota-que-nao-existe");
+  check(missing.status === 404, "rota inexistente -> 404");
+  check(missing.body.includes("Página não encontrada"), "404 em português");
+
+  const csp = home.headers.get("content-security-policy") ?? "";
+  check(csp.includes("frame-ancestors 'none'"), "CSP com frame-ancestors 'none'");
+  check(home.headers.get("x-content-type-options") === "nosniff", "X-Content-Type-Options: nosniff");
+
+  // fetch() descarta o header Host; node:http permite simular o domínio www.
+  const www = await new Promise((resolve, reject) => {
+    http
+      .get({ host: "127.0.0.1", port: PORT, path: "/clientes", headers: { host: "www.perinihub.com.br" } }, (res) => {
+        res.resume();
+        resolve(res);
+      })
+      .on("error", reject);
+  });
+  check(
+    www.statusCode === 308 && www.headers.location === `${SITE}/clientes`,
+    "host www redireciona 308 para o domínio principal",
+  );
+} catch (error) {
+  failures.push(String(error));
+  console.error(error);
+} finally {
+  try {
+    process.kill(-server.pid, "SIGTERM");
+  } catch {
+    // já encerrado
+  }
+}
+
+if (failures.length > 0) {
+  console.error(`\n${failures.length} verificação(ões) falharam.`);
+  process.exit(1);
+}
+console.log("\nSmoke test OK.");
