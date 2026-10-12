@@ -1,58 +1,78 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { cn } from "@/lib/utils";
+
 type BrandProps = {
-  compact?: boolean;
+  /**
+   * "light" para fundos claros, "dark" para fundos escuros. "adaptive" carrega
+   * as duas variantes e alterna por `onDark`, sem piscar quando o header muda.
+   */
+  tone?: "light" | "dark" | "adaptive";
+  onDark?: boolean;
   className?: string;
+  preload?: boolean;
 };
 
-export function BrandMark({ className = "" }: { className?: string }) {
+// Dimensões do arquivo do logotipo (1235 × 356).
+const LOGO_WIDTH = 1235;
+const LOGO_HEIGHT = 356;
+
+function LogoImage({ variant, preload, className }: { variant: "light" | "dark"; preload: boolean; className?: string }) {
   return (
-    <span className={`relative block h-12 w-10 shrink-0 ${className}`}>
-      <Image
-        src="/perinihub-shield.png"
-        alt="Escudo PH da PeriniHub"
-        fill
-        sizes="64px"
-        className="object-contain"
-      />
-    </span>
+    <Image
+      src={variant === "dark" ? "/perinihub-logo-dark.png" : "/perinihub-logo.png"}
+      alt={variant === "dark" ? "PeriniHub" : ""}
+      width={LOGO_WIDTH}
+      height={LOGO_HEIGHT}
+      preload={preload}
+      // Acima da dobra, mas não é o LCP (o h1 é): carrega cedo sem preload.
+      loading="eager"
+      sizes="140px"
+      className={cn("h-9 w-auto sm:h-10", className)}
+    />
   );
 }
 
-export function Brand({ compact = false, className = "" }: BrandProps) {
+export function Brand({ tone = "light", onDark = true, className, preload = false }: BrandProps) {
   return (
     <Link
       href="/"
-      className={`relative block h-14 ${
-        compact ? "w-32" : "w-40"
-      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-4 ${className}`}
-      aria-label="PeriniHub - voltar ao início"
+      aria-label="PeriniHub, voltar ao início"
+      className={cn(
+        "relative inline-flex shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500",
+        className,
+      )}
     >
-      <Image
-        src="/perinihub-logo-cropped.png"
-        alt="PeriniHub"
-        fill
-        priority
-        sizes={compact ? "128px" : "160px"}
-        className="object-contain object-left"
-      />
+      {tone === "adaptive" ? (
+        <>
+          <LogoImage
+            variant="dark"
+            preload={preload}
+            className={cn("transition-opacity duration-300", !onDark && "opacity-0")}
+          />
+          <LogoImage
+            variant="light"
+            preload={preload}
+            className={cn("absolute inset-0 transition-opacity duration-300", onDark && "opacity-0")}
+          />
+        </>
+      ) : (
+        <LogoImage variant={tone} preload={preload} />
+      )}
     </Link>
   );
 }
 
-export function LogoPanel() {
+export function BrandMark({ className }: { className?: string }) {
   return (
-    <div className="relative mx-auto aspect-[16/9] w-full max-w-2xl overflow-hidden rounded-lg border border-zinc-200/80 bg-white/80 shadow-[0_30px_90px_rgba(24,24,27,0.12)]">
-      <div className="absolute inset-0 grid-surface opacity-45" />
-      <Image
-        src="/perinihub-logo.png"
-        alt="Logo PeriniHub com escudo PH e palavra Perini Hub"
-        fill
-        priority
-        sizes="(max-width: 768px) 92vw, 48vw"
-        className="object-contain p-8 sm:p-10"
-      />
-    </div>
+    <Image
+      src="/perinihub-mark.png"
+      alt=""
+      width={316}
+      height={356}
+      sizes="(max-width: 1024px) 96px, 160px"
+      className={cn("h-auto w-full", className)}
+    />
   );
 }

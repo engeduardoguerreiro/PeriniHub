@@ -1,59 +1,74 @@
 import Link from "next/link";
 
 import { Brand } from "@/components/perinihub/brand";
-import { Separator } from "@/components/ui/separator";
-import { WHATSAPP_URL, navItems } from "@/lib/site";
+import { WhatsAppFloatingButton } from "@/components/perinihub/whatsapp-floating-button";
+import { CONTACT_EMAIL, liveProducts, navItems, WHATSAPP_URL } from "@/lib/site";
+
+const linkClass =
+  "rounded-sm transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400";
+
+const newTab = <span className="sr-only"> (abre em nova aba)</span>;
 
 export function Footer() {
   return (
-    <footer className="border-t border-zinc-200 bg-white/70 px-5 py-10 sm:px-6 lg:px-8">
+    <footer className="bg-ink-950 px-4 pb-10 pt-16 text-white/65 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr_1fr]">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
-            <Brand />
-            <p className="mt-5 max-w-sm text-sm leading-7 text-zinc-600">
-              Criação de sites e desenvolvimento de sistemas sob medida para empresas.
-              Atendimento em todo o Brasil.
+            <Brand tone="dark" />
+            <p className="mt-5 max-w-sm text-sm leading-7">
+              Criação de sites e desenvolvimento de sistemas sob medida para empresas. Atendimento
+              em todo o Brasil.
             </p>
           </div>
-          <div>
-            <h3 className="text-sm font-black uppercase tracking-[0.22em] text-zinc-950">
-              Links
-            </h3>
-            <nav className="mt-5 grid grid-cols-2 gap-3 text-sm text-zinc-600">
+          <FooterColumn title="Navegação">
+            <nav aria-label="Rodapé" className="grid gap-3">
               {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="transition-colors hover:text-red-600"
-                >
+                <Link key={item.href} href={item.href} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
             </nav>
-          </div>
-          <div>
-            <h3 className="text-sm font-black uppercase tracking-[0.22em] text-zinc-950">
-              Contato
-            </h3>
-            <div className="mt-5 grid gap-3 text-sm text-zinc-600">
-              <a href="mailto:contato@perinihub.com.br" className="hover:text-red-600">
-                contato@perinihub.com.br
+          </FooterColumn>
+          <FooterColumn title="Produtos">
+            {/* Sem noreferrer de propósito: os destinos são produtos próprios e o
+                referrer ajuda a medir quanto tráfego vem do site institucional. */}
+            {liveProducts.map((product) => (
+              <a key={product.name} href={product.href} target="_blank" rel="noopener" className={linkClass}>
+                {product.name}
+                {newTab}
               </a>
-              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="hover:text-red-600">
+            ))}
+          </FooterColumn>
+          <FooterColumn title="Contato">
+            <address className="grid gap-3 not-italic">
+              <a href={`mailto:${CONTACT_EMAIL}`} className={linkClass}>
+                {CONTACT_EMAIL}
+              </a>
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>
                 WhatsApp
+                {newTab}
               </a>
-              <Link href="/" className="hover:text-red-600">
-                perinihub.com.br
-              </Link>
-            </div>
-          </div>
+            </address>
+          </FooterColumn>
         </div>
-        <Separator className="my-8" />
-        <p className="text-sm text-zinc-500">
-          © 2026 PeriniHub. Todos os direitos reservados.
-        </p>
+        <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-white/50 sm:flex-row sm:items-center sm:justify-between">
+          {/* Páginas estáticas: o ano é o do build, atualizado a cada deploy. */}
+          <p>© {new Date().getFullYear()} PeriniHub. Todos os direitos reservados.</p>
+          <p>perinihub.com.br</p>
+        </div>
       </div>
+      {/* Dentro do <footer> para ficar em um landmark. */}
+      <WhatsAppFloatingButton />
     </footer>
+  );
+}
+
+function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h2 className="text-sm font-semibold text-white">{title}</h2>
+      <div className="mt-4 grid gap-3 text-sm">{children}</div>
+    </div>
   );
 }

@@ -9,7 +9,6 @@ import {
   MessageCircle,
   Pizza,
   Scissors,
-  ShieldCheck,
   Smartphone,
   Timer,
   UtensilsCrossed,
@@ -19,7 +18,10 @@ import {
 // Domínio de produção. Usado em metadados, canonical, sitemap e robots.
 export const SITE_URL = "https://perinihub.com.br";
 
+export const CONTACT_EMAIL = "contato@perinihub.com.br";
+
 export const WHATSAPP_NUMBER = "5511930230911";
+export const WHATSAPP_DISPLAY = "+55 11 93023-0911";
 export const WHATSAPP_MESSAGE =
   "Olá, vim pelo site da PeriniHub e gostaria de um orçamento.";
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
@@ -28,6 +30,11 @@ export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURICo
 
 export function buildWhatsAppUrl(message: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+
+/** Serializa JSON-LD escapando `<`, como recomenda o guia de JSON-LD do Next. */
+export function jsonLd(data: unknown) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 export const navItems = [
@@ -39,39 +46,46 @@ export const navItems = [
   { label: "Contato", href: "/#contato" },
 ];
 
-export const ecosystemCards = [
+export const ecosystemCards: {
+  name: string;
+  description: string;
+  highlights: string[];
+  /** Sem link = produto ainda em desenvolvimento. */
+  href?: string;
+  icon: typeof UtensilsCrossed;
+}[] = [
   {
     name: "Perini Food",
     description:
       "Cardápio digital, pedidos e gestão para restaurantes, pizzarias e delivery.",
-    status: "Em operação",
-    action: "Solicitar demonstração",
+    highlights: ["Cardápio online", "Integração iFood", "Pedidos no WhatsApp"],
+    href: "https://perinifood.com.br",
     icon: UtensilsCrossed,
   },
   {
     name: "Perini One",
     description:
-      "Clientes, agenda e vendas em um só lugar para negócios de serviços.",
-    status: "Em operação",
-    action: "Solicitar demonstração",
+      "ERP online para pequenas empresas: vendas, estoque, compras, caixa e financeiro.",
+    highlights: ["Vendas e estoque", "Financeiro e caixa", "Relatórios"],
+    href: "https://www.perinione.com.br",
     icon: LayoutDashboard,
   },
   {
     name: "Perini Barber",
     description:
       "Agendamento online, clientes e faturamento para barbearias e salões.",
-    status: "Em desenvolvimento",
-    action: "Em breve",
+    highlights: ["Agenda online", "Clientes", "Faturamento"],
     icon: Scissors,
   },
-  {
-    name: "Privacy Log",
-    description:
-      "Reputação e presença online para mercados premium e segmentados.",
-    status: "Em validação",
-    action: "Em breve",
-    icon: ShieldCheck,
-  },
+];
+
+/** Produtos já em operação (com site no ar). */
+export const liveProducts = ecosystemCards.filter((product) => product.href);
+
+export const heroStats = [
+  { value: "24h", label: "para receber o orçamento" },
+  { value: String(liveProducts.length), label: "SaaS próprios em operação" },
+  { value: "100%", label: "preço fechado antes de começar" },
 ];
 
 export const clients = [
@@ -80,13 +94,15 @@ export const clients = [
     segment: "Alimentação e delivery",
     description:
       "Operação de pedidos, cardápio digital e atendimento digitalizados com o Perini Food, do balcão ao delivery.",
+    link: { label: "Ver o site", href: "https://fornonordestino.com.br/" },
     icon: Pizza,
   },
   {
     name: "Perini Engenharia",
     segment: "Engenharia elétrica",
     description:
-      "Presença digital e sistemas internos desenvolvidos pela PeriniHub para apoiar a operação comercial e institucional da empresa.",
+      "Site institucional e sistemas internos desenvolvidos pela PeriniHub para apoiar a operação comercial da empresa.",
+    link: { label: "Ver o site", href: "https://periniengenharia.com.br" },
     icon: Building2,
   },
 ];
@@ -212,10 +228,4 @@ export const projectTypes = [
   "Demonstração do Perini One",
   "Manutenção de sistema existente",
   "Outro",
-];
-
-export const heroSignals = [
-  { label: "Sites e landing pages", icon: Globe2 },
-  { label: "Sistemas sob medida", icon: Code2 },
-  { label: "Integrações e automações", icon: Bot },
 ];

@@ -1,99 +1,74 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Brand } from "@/components/perinihub/brand";
+import { MobileMenu } from "@/components/perinihub/mobile-menu";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { navItems } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // No topo, o header fica sobre o hero escuro; ao rolar, vira uma barra clara.
+  const onDark = !scrolled;
+
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 border-b transition-all duration-300",
+        "fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-300",
         scrolled
-          ? "border-zinc-200/80 bg-white/82 shadow-sm backdrop-blur-xl"
-          : "border-transparent bg-white/60 backdrop-blur-md",
+          ? "border-ink-900/8 bg-white/85 shadow-[0_1px_24px_rgb(8_24_56/0.06)] backdrop-blur-xl"
+          : "border-transparent bg-transparent",
       )}
     >
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-6 lg:px-8">
-        <Brand />
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:h-20 sm:px-6 lg:px-8">
+        <Brand tone="adaptive" onDark={onDark} />
         <nav
-          className="hidden items-center gap-7 text-sm font-medium text-zinc-600 lg:flex"
+          className={cn(
+            "hidden items-center gap-1 text-sm font-medium lg:flex",
+            onDark ? "text-white/75" : "text-ink-900/70",
+          )}
           aria-label="Navegação principal"
         >
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="transition-colors hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-4"
+              className={cn(
+                "rounded-md px-3 py-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400",
+                onDark ? "hover:bg-white/8 hover:text-white" : "hover:bg-brand-50 hover:text-ink-900",
+              )}
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-3 lg:flex">
-          <Button asChild className="rounded-md bg-zinc-900 hover:bg-red-700">
-            <Link href="/#contato">Solicitar orçamento</Link>
+        <div className="hidden lg:block">
+          <Button
+            asChild
+            className="group h-10 rounded-full bg-brand-600 px-5 text-white shadow-[0_8px_24px_rgb(22_119_255/0.35)] hover:bg-brand-700"
+          >
+            <Link href="/#contato">
+              Solicitar orçamento
+              <ArrowRight
+                className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </Link>
           </Button>
         </div>
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger
-            render={
-              <Button
-                variant="outline"
-                size="icon"
-                className="lg:hidden"
-                aria-label="Abrir menu"
-              />
-            }
-          >
-              <Menu className="h-5 w-5" />
-          </SheetTrigger>
-          <SheetContent side="right" className="w-80 border-zinc-200 bg-white">
-            <SheetHeader>
-              <SheetTitle className="sr-only">Menu PeriniHub</SheetTitle>
-              <Brand />
-            </SheetHeader>
-            <nav className="mt-10 grid gap-2" aria-label="Navegação mobile">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-3 text-base font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-950"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <Button asChild className="mt-8 w-full bg-red-600 hover:bg-red-700">
-              <Link href="/#contato" onClick={() => setOpen(false)}>
-                Solicitar orçamento
-              </Link>
-            </Button>
-          </SheetContent>
-        </Sheet>
+        <MobileMenu onDark={onDark} />
       </div>
     </header>
   );

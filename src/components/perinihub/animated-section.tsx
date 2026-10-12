@@ -1,7 +1,6 @@
-"use client";
-
-import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
+
+import { cn } from "@/lib/utils";
 
 type AnimatedSectionProps = {
   children: ReactNode;
@@ -9,23 +8,15 @@ type AnimatedSectionProps = {
   id?: string;
 };
 
-export function AnimatedSection({
-  children,
-  className = "",
-  id,
-}: AnimatedSectionProps) {
-  const shouldReduceMotion = useReducedMotion();
-
+/**
+ * Seção com entrada suave ao rolar, feita só com CSS (`.reveal` em globals.css).
+ * O conteúdo fica visível mesmo sem JavaScript ou em navegadores sem
+ * scroll-driven animations; a animação é um aprimoramento progressivo.
+ */
+export function AnimatedSection({ children, className, id }: AnimatedSectionProps) {
   return (
-    <motion.section
-      id={id}
-      className={className}
-      initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
-      whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-120px" }}
-      transition={{ duration: 0.55, ease: "easeOut" }}
-    >
+    <section id={id} className={cn("reveal", className)}>
       {children}
-    </motion.section>
+    </section>
   );
 }
