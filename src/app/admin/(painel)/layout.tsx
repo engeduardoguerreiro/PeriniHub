@@ -10,7 +10,7 @@ import { requireEditor } from "@/lib/auth/admin";
 async function CurrentUser() {
   const user = await requireEditor();
   return (
-    <div className="grid gap-2 text-xs text-white/55">
+    <div className="grid min-w-0 gap-2 text-xs text-white/55">
       <p className="truncate" title={user.email ?? undefined}>
         {user.email}
         <span className="ml-1.5 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-aqua-300">
@@ -60,7 +60,7 @@ export default function PainelLayout({ children }: LayoutProps<"/admin">) {
         <div className="mt-4 flex items-end justify-between gap-4 border-t border-white/10 pt-4 lg:block">
           <Link
             href="/tech"
-            className="mb-4 inline-flex items-center gap-1.5 rounded-md text-xs font-medium text-white/70 hover:text-white focus-visible:outline-2 focus-visible:outline-brand-400"
+            className="mb-4 inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md text-xs font-medium text-white/70 hover:text-white focus-visible:outline-2 focus-visible:outline-brand-400"
           >
             Ver portal <ExternalLink className="h-3 w-3" aria-hidden="true" />
           </Link>
