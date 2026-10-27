@@ -12,7 +12,17 @@ import { getSettings, type AgentContext } from "./types";
 // é uma regra fixa (nota mínima e categorias permitidas), não da IA.
 
 const DEDUPE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const STALE_MS = 3 * 24 * 60 * 60 * 1000;
 const BATCH_SIZE = 15;
+
+/** Bônus de prioridade editorial (1 = mais importante), somado à nota da IA. */
+export const PRIORITY_BONUS: Record<number, number> = { 1: 15, 2: 10, 3: 5 };
+
+/** Nota final: a da IA (0–100) mais o bônus da prioridade da categoria, limitada a 100. */
+export function prioritizedScore(score: number, priority: number | undefined) {
+  const base = Math.round(Math.min(100, Math.max(0, score)));
+  return Math.min(100, base + (priority ? (PRIORITY_BONUS[priority] ?? 0) : 0));
+}
 
 type CandidateRow = {
   id: string;
@@ -100,12 +110,12 @@ const scoreSchema = z.object({
     )
 });
 
-const CURATOR_SYSTEM = `Você é o curador editorial do PeriniHub Tech, portal brasileiro de notícias de tecnologia para desenvolvedores e empresas.
+const CURATOR_SYSTEM = `Você é o curador editorial do PeriniHub Tech, portal brasileiro de notícias de tecnologia. O foco editorial, em ordem de prioridade, é: (1) Linux e software livre, e Inteligência Artificial; (2) Segurança Eletrônica (CFTV, videomonitoramento, controle de acesso, alarmes); (3) DevOps e Cibersegurança. Os demais temas de tecnologia são secundários.
 Para cada candidato, avalie de 0 a 100 o valor de publicar uma notícia original em português sobre ele, considerando:
 atualidade, importância técnica, interesse do público brasileiro de tecnologia, credibilidade da fonte, se o documento é a fonte primária do anúncio, originalidade e potencial informativo.
 Notas altas (80+): lançamentos relevantes, mudanças que afetam desenvolvedores, alertas de segurança com ação necessária.
 Notas baixas (abaixo de 50): conteúdo promocional, eventos, cases de cliente, vagas, posts genéricos ou de nicho muito restrito.
-Escolha a categoria mais adequada entre as permitidas.
+Escolha a categoria mais adequada entre as permitidas, pelo assunto principal da notícia (não pela fonte). Avalie a nota sem considerar a prioridade da categoria: ela é aplicada depois, automaticamente.
 Risco editorial "high": segurança com exploração ativa, temas jurídicos, financeiros, saúde ou acusações contra pessoas/empresas; "medium": vulnerabilidades sem exploração, mudanças de preço ou licença; "low": o resto.
 Em same_event_as, informe o id de uma notícia da lista "já cobertas", ou de outro candidato deste lote, apenas se for exatamente o MESMO acontecimento (mesmo produto, mesma versão ou mesmo anúncio). Dentro do lote, aponte sempre do candidato menos informativo para o mais informativo. Atualizações diferentes do mesmo produto são eventos diferentes.
 Responda sobre todos os candidatos recebidos, usando exatamente os ids fornecidos.
@@ -121,12 +131,23 @@ export async function classifyCandidates(ctx: AgentContext, candidateIds?: strin
   const settings = await getSettings(db);
   if (settings.automation_paused) return { scored: 0, eligible: [], discarded: 0, duplicates: 0 };
 
-  const { data: categories, error: catError } = await db.from("news_categories").select("id, slug, name").eq("enabled", true);
+  const { data: categories, error: catError } = await db
+    .from("news_categories")
+    .select("id, slug, name, description, priority")
+    .eq("enabled", true)
+    .order("priority");
   if (catError) throw new Error(`Falha ao ler categorias: ${catError.message}`);
   const allowed = categories.filter(
     (category) => !settings.allowed_categories?.length || settings.allowed_categories.includes(category.id),
   );
   if (allowed.length === 0) return { scored: 0, eligible: [], discarded: 0, duplicates: 0 };
+
+  // Candidatos que não couberam nas rodadas anteriores expiram: notícia velha não vale a redação.
+  await db
+    .from("news_candidates")
+    .update({ processing_status: "discarded", relevance_reason: "Expirou sem avaliação (mais de 3 dias na fila)" })
+    .eq("processing_status", "new")
+    .lt("fetched_at", new Date(now - STALE_MS).toISOString());
 
   let query = db
     .from("news_candidates")
@@ -157,7 +178,8 @@ export async function classifyCandidates(ctx: AgentContext, candidateIds?: strin
     const rowsById = new Map(batch.map((row) => [row.id, row]));
     const markedDuplicate = new Set<string>();
     const prompt = [
-      `Categorias permitidas (use o slug): ${allowed.map((c) => `${c.slug} (${c.name})`).join(", ")}.`,
+      "Categorias permitidas (use o slug):",
+      allowed.map((c) => `- ${c.slug}: ${c.name}${c.description ? ` — ${c.description}` : ""}`).join("\n"),
       "",
       "Notícias já cobertas recentemente (id: título):",
       (covered ?? []).map((row) => `- ${row.id}: ${row.original_title}`).join("\n") || "- nenhuma",
@@ -200,7 +222,8 @@ export async function classifyCandidates(ctx: AgentContext, candidateIds?: strin
         (coveredIds.has(target) || (rowsById.has(target) && !markedDuplicate.has(target)));
       const sameEvent = validTarget ? target : null;
       if (sameEvent) markedDuplicate.add(item.id);
-      const score = Math.round(Math.min(100, Math.max(0, item.score)));
+      const rawScore = Math.round(Math.min(100, Math.max(0, item.score)));
+      const score = prioritizedScore(rawScore, category?.priority);
       const eligible = !sameEvent && Boolean(category) && score >= settings.min_relevance_score;
       const status = sameEvent ? "duplicate" : eligible ? "eligible" : "discarded";
 
@@ -214,6 +237,8 @@ export async function classifyCandidates(ctx: AgentContext, candidateIds?: strin
           metadata: {
             ...row.metadata,
             category_slug: category?.slug ?? null,
+            category_priority: category?.priority ?? null,
+            raw_score: rawScore,
             risk: item.risk,
             primary_source: item.primary_source,
             curated_at: new Date(now).toISOString(),

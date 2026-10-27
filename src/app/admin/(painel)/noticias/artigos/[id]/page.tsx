@@ -4,13 +4,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
+import { ActionButton } from "@/components/admin/action-button";
 import { ArticleActions } from "@/components/admin/article-actions";
 import { ArticleEditor } from "@/components/admin/article-editor";
 import { Empty, formatDateTimeShort, Panel, StatusBadge } from "@/components/admin/ui";
 import { ArticleBody } from "@/components/tech/article-body";
+import { NewsCover } from "@/components/tech/news-cover";
 import { requireEditor } from "@/lib/auth/admin";
 import { parseOriginalSources, parseSeoMetadata } from "@/lib/news/schemas";
 import { createSessionClient } from "@/lib/supabase/server";
+
+import { fetchCoverFromSource, removeCover } from "../../actions";
 
 export const metadata: Metadata = { title: "Revisar artigo" };
 
@@ -90,6 +94,30 @@ export default async function ArticleReviewPage({ params }: PageProps<"/admin/no
         </div>
 
         <div className="grid content-start gap-6">
+          <Panel title="Capa" description={article.cover_image_credit ?? (article.cover_image_url ? undefined : "Sem imagem: o portal usa a capa gerada")}>
+            <NewsCover
+              categorySlug={article.category?.slug}
+              imageUrl={article.cover_image_url}
+              imageAlt={article.cover_image_alt}
+              size="lg"
+              className="aspect-[2/1] rounded-xl"
+            />
+            <div className="mt-4 flex flex-wrap gap-2">
+              <ActionButton action={fetchCoverFromSource.bind(null, article.id)}>
+                {article.cover_image_url ? "Buscar de novo na fonte" : "Buscar imagem da fonte"}
+              </ActionButton>
+              {article.cover_image_url && (
+                <ActionButton
+                  variant="danger"
+                  action={removeCover.bind(null, article.id)}
+                  confirm={{ title: "Remover imagem", description: "A notícia passa a usar a capa gerada pelo portal.", confirmLabel: "Remover" }}
+                >
+                  Remover imagem
+                </ActionButton>
+              )}
+            </div>
+          </Panel>
+
           <Panel
             title="Verificação de fatos"
             description={claims?.length ? `${claims.length} afirmações · ${problems.length} com ressalva` : undefined}

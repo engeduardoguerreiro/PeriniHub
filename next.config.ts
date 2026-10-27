@@ -24,7 +24,7 @@ const csp = [
 
 const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname : null;
 const supabaseStorage = supabaseHost
-  ? new URL(`https://${supabaseHost}/storage/v1/object/public/**`)
+  ? new URL(`https://${supabaseHost}/storage/v1/object/public/news-covers/**`)
   : null;
 
 const nextConfig: NextConfig = {
@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
   images: {
     // Padrão do Next 16, explícito para não liberar outras qualidades por engano.
     qualities: [75],
-    // Capas licenciadas do portal ficam no Storage público do Supabase do projeto.
+    // Capas do portal: só o bucket news-covers do Supabase do projeto, sem query string.
     remotePatterns: supabaseStorage ? [supabaseStorage] : [],
   },
   async headers() {
@@ -65,6 +65,8 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Categoria renomeada (Segurança → Cibersegurança).
+      { source: "/tech/categoria/seguranca", destination: "/tech/categoria/ciberseguranca", permanent: true },
       // Consolida o trafego no dominio principal, evitando conteudo duplicado
       // entre www, o subdominio da Vercel e perinihub.com.br.
       {

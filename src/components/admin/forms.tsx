@@ -66,6 +66,7 @@ export function SourceForm({ categories }: { categories: Category[] }) {
 
 type Settings = {
   approval_required: boolean;
+  source_images_enabled: boolean;
   auto_publish_enabled: boolean;
   daily_publication_limit: number;
   min_relevance_score: number;
@@ -97,6 +98,16 @@ export function SettingsForm({ settings, categories }: { settings: Settings; cat
             <span className="font-medium text-ink-900">Publicação automática</span>
             <span className="block text-ink-900/60">
               Publica sozinho artigos aprovados. Com aprovação humana desligada, publica artigos verificados e sem risco alto.
+            </span>
+          </span>
+        </label>
+        <label className="flex items-start gap-3 text-sm">
+          <input type="checkbox" name="sourceImagesEnabled" defaultChecked={settings.source_images_enabled} className="mt-1 h-4 w-4 accent-brand-600" />
+          <span>
+            <span className="font-medium text-ink-900">Usar imagens das fontes</span>
+            <span className="block text-ink-900/60">
+              Usa a imagem de divulgação da notícia original como capa, com crédito à fonte. Os direitos continuam do autor; desligado, o
+              portal usa capas próprias.
             </span>
           </span>
         </label>

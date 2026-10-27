@@ -115,14 +115,14 @@ isOneToOne: false
                   ]
                 },"news_categories": {
                   Row: {
-                    "created_at": string,"description": string | null,"enabled": boolean,"id": string,"name": string,"slug": string,"sort_order": number
+                    "created_at": string,"description": string | null,"enabled": boolean,"id": string,"name": string,"priority": number,"slug": string,"sort_order": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"description"?: string | null,"enabled"?: boolean,"id"?: string,"name": string,"slug": string,"sort_order"?: number
+                    "created_at"?: string,"description"?: string | null,"enabled"?: boolean,"id"?: string,"name": string,"priority"?: number,"slug": string,"sort_order"?: number
                   }
                   Update: {
-                    "created_at"?: string,"description"?: string | null,"enabled"?: boolean,"id"?: string,"name"?: string,"slug"?: string,"sort_order"?: number
+                    "created_at"?: string,"description"?: string | null,"enabled"?: boolean,"id"?: string,"name"?: string,"priority"?: number,"slug"?: string,"sort_order"?: number
                   }
                   Relationships: [
                     
@@ -169,14 +169,14 @@ isOneToOne: false
                   ]
                 },"news_editorial_settings": {
                   Row: {
-                    "allowed_categories": (string)[] | null,"approval_required": boolean,"auto_publish_enabled": boolean,"automation_paused": boolean,"daily_publication_limit": number,"enabled_sources": (string)[] | null,"id": number,"max_candidates_per_run": number,"min_relevance_score": number,"monthly_cost_limit": number,"schedule_times": (string)[],"timezone": string,"updated_at": string,"updated_by": string | null
+                    "allowed_categories": (string)[] | null,"approval_required": boolean,"auto_publish_enabled": boolean,"automation_paused": boolean,"daily_publication_limit": number,"enabled_sources": (string)[] | null,"id": number,"max_candidates_per_run": number,"min_relevance_score": number,"monthly_cost_limit": number,"schedule_times": (string)[],"source_images_enabled": boolean,"timezone": string,"updated_at": string,"updated_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "allowed_categories"?: (string)[] | null,"approval_required"?: boolean,"auto_publish_enabled"?: boolean,"automation_paused"?: boolean,"daily_publication_limit"?: number,"enabled_sources"?: (string)[] | null,"id"?: number,"max_candidates_per_run"?: number,"min_relevance_score"?: number,"monthly_cost_limit"?: number,"schedule_times"?: (string)[],"timezone"?: string,"updated_at"?: string,"updated_by"?: string | null
+                    "allowed_categories"?: (string)[] | null,"approval_required"?: boolean,"auto_publish_enabled"?: boolean,"automation_paused"?: boolean,"daily_publication_limit"?: number,"enabled_sources"?: (string)[] | null,"id"?: number,"max_candidates_per_run"?: number,"min_relevance_score"?: number,"monthly_cost_limit"?: number,"schedule_times"?: (string)[],"source_images_enabled"?: boolean,"timezone"?: string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "allowed_categories"?: (string)[] | null,"approval_required"?: boolean,"auto_publish_enabled"?: boolean,"automation_paused"?: boolean,"daily_publication_limit"?: number,"enabled_sources"?: (string)[] | null,"id"?: number,"max_candidates_per_run"?: number,"min_relevance_score"?: number,"monthly_cost_limit"?: number,"schedule_times"?: (string)[],"timezone"?: string,"updated_at"?: string,"updated_by"?: string | null
+                    "allowed_categories"?: (string)[] | null,"approval_required"?: boolean,"auto_publish_enabled"?: boolean,"automation_paused"?: boolean,"daily_publication_limit"?: number,"enabled_sources"?: (string)[] | null,"id"?: number,"max_candidates_per_run"?: number,"min_relevance_score"?: number,"monthly_cost_limit"?: number,"schedule_times"?: (string)[],"source_images_enabled"?: boolean,"timezone"?: string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     

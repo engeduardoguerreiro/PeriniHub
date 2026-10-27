@@ -3,12 +3,13 @@ import { z } from "zod";
 import { AgentError } from "@/lib/ai/errors";
 import { runAgent } from "@/lib/ai/run-agent";
 import { UNTRUSTED_RULES, wrapUntrusted } from "@/lib/ai/untrusted";
+import { extractImageCandidates, storeCover } from "@/lib/news/images";
 import { slugify, uniqueSlug } from "@/lib/news/slug";
 import { htmlToText, normalizeText } from "@/lib/news/text";
 import { safeFetch } from "@/lib/security/safe-fetch";
 import type { Json } from "@/lib/supabase/database.types";
 
-import type { AgentContext, Db } from "./types";
+import { getSettings, type AgentContext, type Db } from "./types";
 
 // Agente 3 — Writer. Escreve uma notícia original em português a partir das
 // fontes coletadas. O modelo devolve só o texto de cada seção; estrutura,
@@ -149,10 +150,12 @@ export async function writeArticle(ctx: AgentContext, candidateId: string): Prom
 
   // Texto da página original (fonte primária). Falha aqui não é fatal: sobra o resumo do feed.
   let pageText = typeof metadata.page_text === "string" ? metadata.page_text : "";
+  let imageCandidates = Array.isArray(metadata.page_images) ? metadata.page_images.filter((url): url is string => typeof url === "string") : [];
   if (!pageText) {
     try {
       const page = await safeFetch(candidate.original_url, { accept: ["text/html", "application/xhtml"], maxBytes: 3_000_000 });
       pageText = htmlToText(page.body, PAGE_TEXT_CHARS);
+      imageCandidates = extractImageCandidates(page.body, page.url);
     } catch (fetchError) {
       ctx.log?.("página original indisponível", { url: candidate.original_url, error: String(fetchError) });
     }
@@ -257,7 +260,7 @@ export async function writeArticle(ctx: AgentContext, candidateId: string): Prom
     .update({
       processing_status: "drafted",
       locked_until: null,
-      metadata: { ...metadata, page_text: pageText.slice(0, PAGE_TEXT_CHARS), verbatim_overlap: overlap },
+      metadata: { ...metadata, page_text: pageText.slice(0, PAGE_TEXT_CHARS), page_images: imageCandidates, verbatim_overlap: overlap },
     })
     .eq("id", candidateId);
 
@@ -267,5 +270,59 @@ export async function writeArticle(ctx: AgentContext, candidateId: string): Prom
     if (winnerError) throw new AgentError(`Artigo do candidato não encontrado: ${winnerError.message}`, "db", true);
     return { articleId: winner.id, created: false };
   }
-  return { articleId: inserted[0].id, created: true };
+  const articleId = inserted[0].id;
+  const feedImage = typeof metadata.feed_image === "string" ? metadata.feed_image : null;
+  await attachSourceCover(ctx, articleId, [...imageCandidates, ...(feedImage ? [feedImage] : [])], sources[0].publisher);
+  return { articleId, created: true };
+}
+
+/**
+ * Capa a partir da imagem de divulgação da fonte, se a política permitir.
+ * Falha aqui nunca derruba a redação: o portal usa a capa gerada.
+ */
+export async function attachSourceCover(ctx: AgentContext, articleId: string, candidates: string[], publisher: string) {
+  if (candidates.length === 0) return null;
+  try {
+    const settings = await getSettings(ctx.db);
+    if (!settings.source_images_enabled) return null;
+    const cover = await storeCover(ctx.db, articleId, candidates, ctx.log);
+    if (!cover) return null;
+    await ctx.db
+      .from("news_articles")
+      .update({ cover_image_url: cover.url, cover_image_credit: `Divulgação: ${publisher}`.slice(0, 200) })
+      .eq("id", articleId);
+    return cover;
+  } catch (error) {
+    ctx.log?.("capa não anexada", { articleId, erro: error instanceof Error ? error.message : String(error) });
+    return null;
+  }
+}
+
+/**
+ * (Re)busca a capa de um artigo já existente a partir da fonte: usa as
+ * imagens guardadas na redação ou relê a página original.
+ */
+export async function refreshArticleCover(ctx: AgentContext, articleId: string) {
+  const { db } = ctx;
+  const { data: article, error } = await db
+    .from("news_articles")
+    .select("id, slug, status, candidate_id, original_sources")
+    .eq("id", articleId)
+    .single();
+  if (error) throw new AgentError(`Artigo não encontrado: ${error.message}`, "not_found", false);
+
+  const sources = Array.isArray(article.original_sources) ? (article.original_sources as SourceRef[]) : [];
+  let candidates: string[] = [];
+  if (article.candidate_id) {
+    const { data: candidate } = await db.from("news_candidates").select("metadata").eq("id", article.candidate_id).single();
+    const metadata = (candidate?.metadata ?? {}) as Record<string, Json>;
+    if (Array.isArray(metadata.page_images)) candidates.push(...metadata.page_images.filter((url): url is string => typeof url === "string"));
+    if (typeof metadata.feed_image === "string") candidates.push(metadata.feed_image);
+  }
+  if (candidates.length === 0 && sources[0]?.url) {
+    const page = await safeFetch(sources[0].url, { accept: ["text/html", "application/xhtml"], maxBytes: 3_000_000 });
+    candidates = extractImageCandidates(page.body, page.url);
+  }
+  const cover = await attachSourceCover(ctx, articleId, candidates, sources[0]?.publisher ?? "fonte original");
+  return { articleId, slug: article.slug, published: article.status === "published", cover };
 }

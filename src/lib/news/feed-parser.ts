@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 
+import { resolveUnique } from "./images";
 import { htmlToText, parseFeedDate } from "./text";
 
 export type FeedItem = {
@@ -7,6 +8,8 @@ export type FeedItem = {
   link: string;
   publishedAt: string | null;
   summary: string;
+  /** Imagem declarada no feed (media:content, enclosure, 1ª <img>), se houver. */
+  imageUrl: string | null;
 };
 
 export class FeedParseError extends Error {
@@ -51,6 +54,30 @@ function atomLink(links: unknown): string {
   return text(alternate?.["@_href"]) || text(alternate);
 }
 
+function attr(value: unknown, name: string): string {
+  if (Array.isArray(value)) return value.map((entry) => attr(entry, name)).find(Boolean) ?? "";
+  if (value && typeof value === "object") return text((value as Node)[`@_${name}`]);
+  return "";
+}
+
+/** Imagem do item: media:content/thumbnail, enclosure de imagem ou 1ª <img> do HTML. */
+function itemImage(item: Node, html: string): string {
+  const media = [item["media:content"], (item["media:group"] as Node | undefined)?.["media:content"]].flat().filter(Boolean) as Node[];
+  const fromMedia = media.find((entry) => {
+    const type = text(entry["@_type"]);
+    return text(entry["@_medium"]) === "image" || type.startsWith("image/") || /\.(jpe?g|png|webp|avif)(\?|$)/i.test(text(entry["@_url"]));
+  });
+  const enclosures = [item.enclosure, ...(Array.isArray(item.link) ? item.link : [])].flat().filter(Boolean) as Node[];
+  const fromEnclosure = enclosures.find((entry) => typeof entry === "object" && text(entry["@_type"]).startsWith("image/"));
+  return (
+    (fromMedia && text(fromMedia["@_url"])) ||
+    attr(item["media:thumbnail"], "url") ||
+    (fromEnclosure && (text(fromEnclosure["@_url"]) || text(fromEnclosure["@_href"]))) ||
+    html.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1] ||
+    ""
+  );
+}
+
 function cleanSummary(raw: string) {
   return htmlToText(`<body>${raw}</body>`, 1500);
 }
@@ -68,7 +95,7 @@ export function parseFeed(xml: string, now = Date.now()): FeedItem[] {
   const rdf = doc["rdf:RDF"] as Node | undefined;
   const atom = doc.feed as Node | undefined;
 
-  let raw: { title: string; link: string; date: unknown; summary: string }[];
+  let raw: { title: string; link: string; date: unknown; summary: string; image: string }[];
   if (rss?.channel) {
     const channel = (Array.isArray(rss.channel) ? rss.channel[0] : rss.channel) as Node;
     raw = ((channel.item as Node[] | undefined) ?? []).map((item) => ({
@@ -76,6 +103,7 @@ export function parseFeed(xml: string, now = Date.now()): FeedItem[] {
       link: atomLink(item.link) || text(item.guid),
       date: text(item.pubDate) || text(item["dc:date"]),
       summary: text(item.description) || text(item["content:encoded"]),
+      image: itemImage(item, `${text(item.description)} ${text(item["content:encoded"])}`),
     }));
   } else if (rdf) {
     raw = ((rdf.item as Node[] | undefined) ?? []).map((item) => ({
@@ -83,6 +111,7 @@ export function parseFeed(xml: string, now = Date.now()): FeedItem[] {
       link: atomLink(item.link),
       date: text(item["dc:date"]),
       summary: text(item.description),
+      image: itemImage(item, text(item.description)),
     }));
   } else if (atom) {
     raw = ((atom.entry as Node[] | undefined) ?? []).map((entry) => ({
@@ -90,6 +119,7 @@ export function parseFeed(xml: string, now = Date.now()): FeedItem[] {
       link: atomLink(entry.link),
       date: text(entry.published) || text(entry.updated),
       summary: text(entry.summary) || text(entry.content),
+      image: itemImage(entry, `${text(entry.summary)} ${text(entry.content)}`),
     }));
   } else {
     throw new FeedParseError("Formato de feed não reconhecido");
@@ -99,6 +129,7 @@ export function parseFeed(xml: string, now = Date.now()): FeedItem[] {
     const title = htmlToText(`<body>${item.title}</body>`, 500);
     const link = item.link.trim();
     if (!title || !/^https?:\/\//i.test(link)) return [];
-    return [{ title, link, publishedAt: parseFeedDate(item.date, now), summary: cleanSummary(item.summary) }];
+    const [imageUrl = null] = item.image ? resolveUnique([item.image], link) : [];
+    return [{ title, link, publishedAt: parseFeedDate(item.date, now), summary: cleanSummary(item.summary), imageUrl }];
   });
 }
