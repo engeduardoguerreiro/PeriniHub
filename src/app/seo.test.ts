@@ -13,8 +13,8 @@ describe("SEO", () => {
     expect(SITE_URL).toBe("https://perinihub.com.br");
   });
 
-  it("sitemap lista exatamente as duas páginas públicas, com lastModified", () => {
-    const entries = sitemap();
+  it("sitemap lista exatamente as duas páginas públicas, com lastModified", async () => {
+    const entries = await sitemap();
     expect(entries.map((entry) => entry.url)).toEqual([SITE_URL, `${SITE_URL}/clientes`]);
     for (const entry of entries) expect(entry.lastModified).toBeInstanceOf(Date);
   });

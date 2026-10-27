@@ -7,10 +7,12 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "PeriniHub: criação de sites e desenvolvimento de sistemas";
 
-export default async function OpengraphImage() {
-  const logo = await readFile(join(process.cwd(), "public/perinihub-logo-dark.png"));
-  const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
+// Lido no escopo do módulo: com Cache Components, I/O dentro da função
+// tornaria a rota dinâmica em vez de gerada no build.
+const logo = await readFile(join(process.cwd(), "public/perinihub-logo-dark.png"));
+const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
 
+export default async function OpengraphImage() {
   return new ImageResponse(
     (
       <div

@@ -23,6 +23,9 @@ const csp = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // Cache explícito com `use cache` + cacheTag: as páginas do portal /tech
+  // entram no shell estático e são invalidadas por tag ao publicar.
+  cacheComponents: true,
   images: {
     // Padrão do Next 16, explícito para não liberar outras qualidades por engano.
     qualities: [75],
