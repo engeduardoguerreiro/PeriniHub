@@ -92,8 +92,8 @@ const agent = new Agent({
   bodyTimeout: 15_000,
 });
 
-async function readLimited(body: ReadableStream<Uint8Array> | null, maxBytes: number): Promise<string> {
-  if (!body) return "";
+async function readLimited(body: ReadableStream<Uint8Array> | null, maxBytes: number): Promise<Uint8Array> {
+  if (!body) return new Uint8Array(0);
   const reader = body.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
@@ -113,13 +113,21 @@ async function readLimited(body: ReadableStream<Uint8Array> | null, maxBytes: nu
     merged.set(chunk, offset);
     offset += chunk.byteLength;
   }
-  return new TextDecoder("utf-8", { fatal: false }).decode(merged);
+  return merged;
 }
 
-/** GET seguro para conteúdo externo não confiável (feeds e páginas de notícia). */
-export async function safeFetch(raw: string, options: SafeFetchOptions = {}): Promise<SafeFetchResult> {
-  const { maxBytes = 2_000_000, timeoutMs = 12_000, maxRedirects = 3, accept = [], sniffXml = false } = options;
-  const signal = AbortSignal.timeout(timeoutMs);
+type FetchPublicOptions = {
+  maxBytes: number;
+  timeoutMs: number;
+  maxRedirects: number;
+  acceptHeader: string;
+  /** Recebe o content-type final; lança SafeFetchError se não for aceito. */
+  checkContentType: (contentType: string) => void;
+};
+
+/** GET com todas as proteções: URL pública, IP checado na conexão, redirects revalidados, limites. */
+async function fetchPublic(raw: string, options: FetchPublicOptions) {
+  const signal = AbortSignal.timeout(options.timeoutMs);
   let url = assertPublicUrl(raw);
 
   try {
@@ -128,17 +136,14 @@ export async function safeFetch(raw: string, options: SafeFetchOptions = {}): Pr
         dispatcher: agent,
         redirect: "manual",
         signal,
-        headers: {
-          "user-agent": USER_AGENT,
-          accept: "application/rss+xml, application/atom+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.5",
-        },
+        headers: { "user-agent": USER_AGENT, accept: options.acceptHeader },
       });
 
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("location");
         await response.body?.cancel();
         if (!location) throw new SafeFetchError("http_error", "Redirect sem Location", response.status);
-        if (redirects >= maxRedirects) throw new SafeFetchError("too_many_redirects", "Redirects demais");
+        if (redirects >= options.maxRedirects) throw new SafeFetchError("too_many_redirects", "Redirects demais");
         url = assertPublicUrl(new URL(location, url));
         continue;
       }
@@ -149,30 +154,73 @@ export async function safeFetch(raw: string, options: SafeFetchOptions = {}): Pr
       }
 
       const contentType = (response.headers.get("content-type") ?? "").toLowerCase();
-      const sniffable = sniffXml && contentType.startsWith("application/octet-stream");
-      const isText = /(^text\/|xml|json|html)/.test(contentType) || contentType === "" || sniffable;
-      if (!isText || (!sniffable && accept.length > 0 && !accept.some((prefix) => contentType.startsWith(prefix)))) {
+      try {
+        options.checkContentType(contentType);
+      } catch (error) {
         await response.body?.cancel();
-        throw new SafeFetchError("unsupported_content", `Content-Type não aceito: ${contentType || "?"}`);
+        throw error;
       }
 
       const declared = Number(response.headers.get("content-length"));
-      if (Number.isFinite(declared) && declared > maxBytes) {
+      if (Number.isFinite(declared) && declared > options.maxBytes) {
         await response.body?.cancel();
-        throw new SafeFetchError("too_large", `Resposta maior que ${maxBytes} bytes`);
+        throw new SafeFetchError("too_large", `Resposta maior que ${options.maxBytes} bytes`);
       }
 
-      const body = await readLimited(response.body as ReadableStream<Uint8Array> | null, maxBytes);
-      if (sniffable && !/^\s*(<\?xml|<rss|<feed|<rdf:RDF)/i.test(body.slice(0, 500))) {
-        throw new SafeFetchError("unsupported_content", "Conteúdo binário não é XML");
-      }
-      return { url: url.toString(), status: response.status, contentType, body };
+      const bytes = await readLimited(response.body as ReadableStream<Uint8Array> | null, options.maxBytes);
+      return { url: url.toString(), status: response.status, contentType, bytes };
     }
   } catch (error) {
     if (error instanceof SafeFetchError) throw error;
-    if (signal.aborted) throw new SafeFetchError("timeout", `Tempo esgotado após ${timeoutMs} ms`);
+    if (signal.aborted) throw new SafeFetchError("timeout", `Tempo esgotado após ${options.timeoutMs} ms`);
     const cause = error instanceof Error && error.cause instanceof SafeFetchError ? error.cause : null;
     if (cause) throw cause;
     throw new SafeFetchError("network", error instanceof Error ? error.message : "Falha de rede");
   }
+}
+
+/** GET seguro para conteúdo externo não confiável (feeds e páginas de notícia). */
+export async function safeFetch(raw: string, options: SafeFetchOptions = {}): Promise<SafeFetchResult> {
+  const { maxBytes = 2_000_000, timeoutMs = 12_000, maxRedirects = 3, accept = [], sniffXml = false } = options;
+  let sniffable = false;
+  const result = await fetchPublic(raw, {
+    maxBytes,
+    timeoutMs,
+    maxRedirects,
+    acceptHeader: "application/rss+xml, application/atom+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.5",
+    checkContentType: (contentType) => {
+      sniffable = sniffXml && contentType.startsWith("application/octet-stream");
+      const isText = /(^text\/|xml|json|html)/.test(contentType) || contentType === "" || sniffable;
+      if (!isText || (!sniffable && accept.length > 0 && !accept.some((prefix) => contentType.startsWith(prefix)))) {
+        throw new SafeFetchError("unsupported_content", `Content-Type não aceito: ${contentType || "?"}`);
+      }
+    },
+  });
+  const body = new TextDecoder("utf-8", { fatal: false }).decode(result.bytes);
+  if (sniffable && !/^\s*(<\?xml|<rss|<feed|<rdf:RDF)/i.test(body.slice(0, 500))) {
+    throw new SafeFetchError("unsupported_content", "Conteúdo binário não é XML");
+  }
+  return { url: result.url, status: result.status, contentType: result.contentType, body };
+}
+
+export type SafeFetchBytesResult = { url: string; contentType: string; bytes: Uint8Array };
+
+/** GET seguro de binário (imagens), aceitando só os content-types listados. */
+export async function safeFetchBytes(
+  raw: string,
+  options: { contentTypes: string[]; maxBytes?: number; timeoutMs?: number; maxRedirects?: number },
+): Promise<SafeFetchBytesResult> {
+  const result = await fetchPublic(raw, {
+    maxBytes: options.maxBytes ?? 5_000_000,
+    timeoutMs: options.timeoutMs ?? 15_000,
+    maxRedirects: options.maxRedirects ?? 3,
+    acceptHeader: options.contentTypes.join(", "),
+    checkContentType: (contentType) => {
+      const base = contentType.split(";")[0].trim();
+      if (!options.contentTypes.includes(base)) {
+        throw new SafeFetchError("unsupported_content", `Content-Type não aceito: ${contentType || "?"}`);
+      }
+    },
+  });
+  return { url: result.url, contentType: result.contentType.split(";")[0].trim(), bytes: result.bytes };
 }

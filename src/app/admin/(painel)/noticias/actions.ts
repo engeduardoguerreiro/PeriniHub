@@ -7,7 +7,7 @@ import { parseFeed } from "@/lib/news/feed-parser";
 import { requireAdmin, requireEditor } from "@/lib/auth/admin";
 import { NEWS_TAGS } from "@/lib/news/cache-tags";
 import { isValidSlug } from "@/lib/news/slug";
-import { dispatchGenerate, dispatchResearch, dispatchVerify } from "@/lib/pipeline/dispatch";
+import { dispatchCover, dispatchGenerate, dispatchResearch, dispatchVerify } from "@/lib/pipeline/dispatch";
 import { assertPublicUrl, safeFetch, SafeFetchError } from "@/lib/security/safe-fetch";
 import { createSessionClient } from "@/lib/supabase/server";
 
@@ -202,6 +202,28 @@ export async function reverifyArticle(articleId: string): Promise<ActionResult> 
   }
 }
 
+export async function fetchCoverFromSource(articleId: string): Promise<ActionResult> {
+  await requireEditor();
+  if (!uuid.safeParse(articleId).success) return fail("Artigo inválido.");
+  try {
+    await dispatchCover(articleId);
+    return { ok: true, message: "Buscando a imagem da fonte. Recarregue a página em alguns segundos." };
+  } catch {
+    return fail("Não foi possível iniciar a busca (Trigger.dev configurado?).");
+  }
+}
+
+export async function removeCover(articleId: string): Promise<ActionResult> {
+  await requireEditor();
+  if (!uuid.safeParse(articleId).success) return fail("Artigo inválido.");
+  const { db, article } = await loadArticle(articleId);
+  if (!article) return fail("Artigo não encontrado.");
+  const { error } = await db.from("news_articles").update({ cover_image_url: null, cover_image_credit: null }).eq("id", articleId);
+  if (error) return fail(dbMessage(error.message));
+  if (article.status === "published") invalidateArticle(article.slug);
+  return { ok: true, message: "Imagem removida; o portal usa a capa gerada." };
+}
+
 // --- Candidatos ---------------------------------------------------------------
 
 export async function reprocessCandidate(candidateId: string): Promise<ActionResult> {
@@ -279,6 +301,7 @@ export async function setSourceEnabled(sourceId: string, enabled: boolean): Prom
 
 const settingsSchema = z.object({
   approvalRequired: z.boolean(),
+  sourceImagesEnabled: z.boolean(),
   autoPublishEnabled: z.boolean(),
   dailyPublicationLimit: z.coerce.number().int().min(0).max(50),
   minRelevanceScore: z.coerce.number().int().min(0).max(100),
@@ -295,6 +318,7 @@ export async function updateSettings(_prev: ActionResult | null, formData: FormD
   const user = await requireAdmin();
   const parsed = settingsSchema.safeParse({
     approvalRequired: formData.get("approvalRequired") === "on",
+    sourceImagesEnabled: formData.get("sourceImagesEnabled") === "on",
     autoPublishEnabled: formData.get("autoPublishEnabled") === "on",
     dailyPublicationLimit: formData.get("dailyPublicationLimit"),
     minRelevanceScore: formData.get("minRelevanceScore"),
@@ -313,6 +337,7 @@ export async function updateSettings(_prev: ActionResult | null, formData: FormD
     .from("news_editorial_settings")
     .update({
       approval_required: value.approvalRequired,
+      source_images_enabled: value.sourceImagesEnabled,
       auto_publish_enabled: value.autoPublishEnabled,
       daily_publication_limit: value.dailyPublicationLimit,
       min_relevance_score: value.minRelevanceScore,

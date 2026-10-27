@@ -109,7 +109,7 @@ async function ArticleView({ params }: Pick<PageProps<"/tech/[slug]">, "params">
                 imageAlt={article.coverImageAlt}
                 size="lg"
                 priority
-                className="aspect-[16/7] rounded-b-2xl"
+                className="aspect-[16/9] rounded-b-2xl sm:aspect-[2/1]"
               />
               {article.coverImageCredit && (
                 <figcaption className="mt-2 text-xs text-ink-900/50">Imagem: {article.coverImageCredit}</figcaption>

@@ -3,12 +3,13 @@ import { z } from "zod";
 
 import { classifyCandidates, deduplicateCandidates } from "@/agents/curator";
 import { verifyArticle } from "@/agents/fact-checker";
-import { publishArticle } from "@/agents/publisher";
+import { publishArticle, revalidateSite } from "@/agents/publisher";
 import { researchSources } from "@/agents/researcher";
 import { prepareSeo } from "@/agents/seo-editor";
 import { getSettings, localDate, startOf, type AgentContext, type Db } from "@/agents/types";
-import { writeArticle } from "@/agents/writer";
+import { refreshArticleCover, writeArticle } from "@/agents/writer";
 import { AgentError } from "@/lib/ai/errors";
+import { NEWS_TAGS } from "@/lib/news/cache-tags";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { Json } from "@/lib/supabase/database.types";
 
@@ -277,6 +278,22 @@ export const publishApprovedArticle = schemaTask({
       });
       throw error;
     }
+  },
+});
+
+/** Busca (ou troca) a capa a partir da imagem de divulgação da fonte. Disparada pelo painel. */
+export const fetchArticleCover = schemaTask({
+  id: "fetch-article-cover",
+  schema: z.object({ articleId: z.uuid() }),
+  concurrency: { total: 2 },
+  maxDuration: 120,
+  retry: { maxAttempts: 2, minTimeoutInMs: 5_000, maxTimeoutInMs: 30_000, factor: 2 },
+  run: async ({ articleId }, { ctx }) => {
+    const agent = context(ctx.run.id);
+    const result = await guarded(() => refreshArticleCover(agent, articleId));
+    if (result.cover && result.published) await revalidateSite([NEWS_TAGS.list, NEWS_TAGS.article(result.slug)]);
+    logger.info("capa", { articleId, encontrada: Boolean(result.cover) });
+    return { articleId, found: Boolean(result.cover), url: result.cover?.url ?? null };
   },
 });
 

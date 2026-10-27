@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 import { getArticleBySlug } from "@/lib/news/queries";
+import { isAllowedCoverUrl } from "@/lib/news/schemas";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -17,6 +18,11 @@ export default async function ArticleOgImage({ params }: { params: Promise<{ slu
   const article = await getArticleBySlug((await params).slug);
   const title = article?.title ?? "PeriniHub Tech";
   const category = article?.category?.name ?? "Tecnologia";
+  // O renderizador de OG só lê JPEG/PNG; capas em outros formatos ficam de fora.
+  const photo =
+    article?.coverImageUrl && isAllowedCoverUrl(article.coverImageUrl) && /\.(jpe?g|png)$/i.test(article.coverImageUrl)
+      ? article.coverImageUrl
+      : null;
 
   return new ImageResponse(
     (
@@ -32,6 +38,28 @@ export default async function ArticleOgImage({ params }: { params: Promise<{ slu
           position: "relative",
         }}
       >
+        {photo && (
+          // eslint-disable-next-line jsx-a11y/alt-text -- imagem decorativa dentro do PNG gerado
+          <img
+            src={photo}
+            width={1200}
+            height={630}
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        )}
+        {photo && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              background: "linear-gradient(180deg, rgba(4,11,28,0.55) 0%, rgba(4,11,28,0.35) 40%, rgba(4,11,28,0.92) 100%)",
+            }}
+          />
+        )}
         <div
           style={{
             position: "absolute",

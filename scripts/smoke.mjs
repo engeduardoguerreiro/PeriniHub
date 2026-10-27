@@ -90,6 +90,9 @@ try {
   const slugCase = await get("/tech/Noticia-Teste");
   check(slugCase.status === 308 && slugCase.headers.get("location")?.endsWith("/tech/noticia-teste"), "slug fora do padrão -> 308 canônico");
 
+  const renamed = await get("/tech/categoria/seguranca");
+  check(renamed.status === 308 && renamed.headers.get("location")?.endsWith("/tech/categoria/ciberseguranca"), "categoria renomeada redireciona 308");
+
   const login = await get("/admin/login");
   check(login.status === 200 && login.headers.get("x-robots-tag") === "noindex, nofollow", "/admin/login com X-Robots-Tag noindex");
 

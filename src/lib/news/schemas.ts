@@ -48,5 +48,5 @@ export function parseSeoMetadata(value: unknown): SeoMetadata {
 export function isAllowedCoverUrl(url: string | null | undefined, supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL) {
   if (!url) return false;
   if (/^\/(?!\/)[\w\-./]+$/.test(url)) return true;
-  return Boolean(supabaseUrl) && url.startsWith(`${supabaseUrl}/storage/v1/object/public/`);
+  return Boolean(supabaseUrl) && url.startsWith(`${supabaseUrl}/storage/v1/object/public/`) && !url.includes("?");
 }

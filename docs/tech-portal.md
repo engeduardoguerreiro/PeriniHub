@@ -48,6 +48,33 @@ verificação + SEO). Com o limite padrão de 3 publicações/dia a redação fi
 pela função do banco **antes** de cada chamada e também, de forma
 independente, pelo limite de gasto do workspace na Anthropic.
 
+### Prioridades editoriais
+
+Cada categoria tem uma prioridade (`news_categories.priority`, 1 = mais
+importante). A curadoria dá a nota sem viés e o código soma o bônus da
+prioridade (P1 +15, P2 +10, P3 +5); a redação diária segue essa nota.
+
+| Prioridade | Categorias |
+|---|---|
+| 1 | Linux, Inteligência Artificial |
+| 2 | Segurança Eletrônica |
+| 3 | DevOps, Cibersegurança |
+| 4 | Desenvolvimento Web, Linguagens e Ferramentas, Cloud e Infraestrutura, Dados |
+
+Segurança Eletrônica tem poucas fontes abertas: os principais portais do
+setor bloqueiam robôs (HTTP 403) e o coletor respeita esse bloqueio.
+
+### Imagens das notícias
+
+Com "Usar imagens das fontes" ligado (Configurações), o Writer pega a imagem
+de divulgação da notícia original (`og:image`/`twitter:image`, ou a imagem do
+item no feed), baixa com as mesmas proteções do coletor, valida pelo conteúdo
+(JPEG/PNG/WebP/AVIF/GIF, sem SVG, ≥ 400×200, proporção de capa) e hospeda no
+bucket público `news-covers` do Supabase, com crédito "Divulgação: <fonte>".
+Sem imagem válida, o portal usa a capa gerada. Os direitos da imagem
+continuam do autor; na revisão do artigo há "Buscar imagem da fonte" e
+"Remover imagem".
+
 ## Variáveis de ambiente
 
 Nomes e descrições em `.env.example`. Onde cada uma vive:

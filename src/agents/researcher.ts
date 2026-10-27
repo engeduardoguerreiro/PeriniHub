@@ -73,7 +73,7 @@ export async function researchSources(ctx: AgentContext): Promise<ResearchResult
             source_published_at: item.publishedAt,
             fingerprint: titleFingerprint(item.title),
             title_tokens: titleTokens(item.title),
-            metadata: { feed_url: source.feed_url },
+            metadata: { feed_url: source.feed_url, feed_image: item.imageUrl },
           },
         ];
       });

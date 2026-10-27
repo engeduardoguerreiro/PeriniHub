@@ -3,7 +3,7 @@ import "server-only";
 import { idempotencyKeys, tasks } from "@trigger.dev/sdk";
 
 import { requireSecret } from "@/lib/env";
-import type { fetchNewsSources, generateArticle, publishApprovedArticle, verifyArticleTask } from "@/trigger/news";
+import type { fetchArticleCover, fetchNewsSources, generateArticle, publishApprovedArticle, verifyArticleTask } from "@/trigger/news";
 
 // O site só dispara tarefas no Trigger.dev; nunca executa o pipeline numa
 // requisição. Imports de tipo: o código das tarefas não entra no bundle da Vercel.
@@ -49,5 +49,15 @@ export async function dispatchPublish(articleId: string) {
     "publish-approved-article",
     { articleId, mode: "manual" },
     { idempotencyKey: await key(`publish:${articleId}:manual`) },
+  );
+}
+
+export async function dispatchCover(articleId: string) {
+  ensureConfigured();
+  const minute = new Date().toISOString().slice(0, 16);
+  return tasks.trigger<typeof fetchArticleCover>(
+    "fetch-article-cover",
+    { articleId },
+    { idempotencyKey: await key(`cover:${articleId}:${minute}`) },
   );
 }

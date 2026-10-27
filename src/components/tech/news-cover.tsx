@@ -1,4 +1,4 @@
-import { BrainCircuit, Cloud, Code2, Database, Globe, Newspaper, ShieldCheck } from "lucide-react";
+import { BrainCircuit, Cctv, Cloud, Code2, Container, Database, Globe, Newspaper, ShieldCheck, Terminal } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Image from "next/image";
 import { createElement } from "react";
@@ -7,22 +7,28 @@ import { isAllowedCoverUrl } from "@/lib/news/schemas";
 import { cn } from "@/lib/utils";
 
 const categoryIcons: Record<string, LucideIcon> = {
+  linux: Terminal,
+  "seguranca-eletronica": Cctv,
+  devops: Container,
+  ciberseguranca: ShieldCheck,
   "inteligencia-artificial": BrainCircuit,
   "desenvolvimento-web": Globe,
   "linguagens-e-ferramentas": Code2,
   "cloud-e-infraestrutura": Cloud,
   dados: Database,
-  seguranca: ShieldCheck,
 };
 
 // Variação de cor por categoria dentro da paleta da marca.
 const categoryGlow: Record<string, string> = {
+  linux: "from-aqua-400/40 via-brand-600/25",
+  "seguranca-eletronica": "from-brand-500/50 via-aqua-500/15",
+  devops: "from-brand-400/40 via-aqua-400/20",
+  ciberseguranca: "from-brand-700/60 via-aqua-400/15",
   "inteligencia-artificial": "from-brand-500/45 via-aqua-400/20",
   "desenvolvimento-web": "from-brand-400/45 via-brand-600/20",
   "linguagens-e-ferramentas": "from-aqua-400/35 via-brand-500/25",
   "cloud-e-infraestrutura": "from-brand-300/40 via-aqua-500/20",
   dados: "from-aqua-500/40 via-brand-700/25",
-  seguranca: "from-brand-700/60 via-aqua-400/15",
 };
 
 /** Ícone da categoria (createElement evita criar componente dinâmico no render). */
