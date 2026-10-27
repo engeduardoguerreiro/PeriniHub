@@ -26,11 +26,10 @@ export function dueCollectionSlots(scheduleTimes: string[], timeZone: string, no
 }
 
 /**
- * Quantos artigos novos ainda podem ser redigidos hoje. Escreve um pouco além
- * do limite de publicação (folga para reprovações), mas nunca sem teto:
- * é o principal controle de consumo de IA.
+ * Quantos artigos novos ainda podem ser redigidos hoje: no máximo o limite
+ * diário de publicação. É o principal controle de consumo de IA (medido:
+ * ~US$ 0,05 por artigo entre redação, verificação e SEO; 3/dia ≈ US$ 4,60/mês).
  */
 export function writingCapacity(dailyPublicationLimit: number, draftsCreatedToday: number) {
-  const budget = dailyPublicationLimit === 0 ? 0 : dailyPublicationLimit + 2;
-  return Math.max(0, budget - draftsCreatedToday);
+  return Math.max(0, dailyPublicationLimit - draftsCreatedToday);
 }

@@ -167,8 +167,9 @@ describe("agendador", () => {
   });
 
   it("capacidade de redação respeita o limite diário (controle de consumo)", () => {
-    expect(writingCapacity(3, 0)).toBe(5);
-    expect(writingCapacity(3, 5)).toBe(0);
+    expect(writingCapacity(3, 0)).toBe(3);
+    expect(writingCapacity(3, 2)).toBe(1);
+    expect(writingCapacity(3, 3)).toBe(0);
     expect(writingCapacity(3, 9)).toBe(0);
     expect(writingCapacity(0, 0)).toBe(0);
   });
