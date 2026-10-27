@@ -8,6 +8,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
+    // Integração (Supabase real) roda à parte: npm run test:integration
+    exclude: ["src/**/*.integration.test.ts", "node_modules/**"],
     setupFiles: ["./src/test/setup.ts"],
     restoreMocks: true,
     unstubGlobals: true,

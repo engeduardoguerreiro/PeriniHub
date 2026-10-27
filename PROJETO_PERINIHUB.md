@@ -1,6 +1,6 @@
 # Projeto PeriniHub
 
-Documento consolidado do site institucional PeriniHub.
+Documento consolidado do site institucional PeriniHub e do portal PeriniHub Tech (operação detalhada em [`docs/tech-portal.md`](docs/tech-portal.md)).
 
 ## Resumo
 
@@ -17,7 +17,9 @@ O site não vende serviços de engenharia elétrica. A Perini Engenharia aparece
 
 ## Stack
 
-- Next.js 16.3.8 (App Router, páginas estáticas), React 19.2, TypeScript
+- Next.js 16.4.3 (App Router, Cache Components + Partial Prefetching), React 19.2, TypeScript
+- Supabase (Postgres com RLS + Auth SSR) para o portal e o painel
+- Trigger.dev v4 (pipeline de notícias) e Anthropic (agentes de IA)
 - Tailwind CSS v4, componentes shadcn/Base UI (só `button` e `input`)
 - Lucide React
 - Testes: Vitest 5 + Testing Library (jsdom), smoke test do build, GitHub Actions
@@ -32,6 +34,8 @@ npm run lint
 npm run typecheck
 npm test            # Vitest
 npm run smoke       # após o build: sobe next start e confere rotas/metadata/headers
+npm run test:integration  # Supabase real (RLS, publicação, orçamento); fora do CI
+npm run db:push / db:types # migrations e tipos do banco
 ```
 
 O CI (`.github/workflows/ci.yml`) roda lint → typecheck → test → build → smoke em todo PR e push na main.
@@ -83,6 +87,14 @@ src/
 
 Todo o conteúdo editável (textos, produtos, clientes, FAQ, contatos) fica em `src/lib/site.ts`. Produto com `href` aparece como "Em operação" (e no rodapé); sem `href`, como "Em desenvolvimento". O contador "SaaS próprios" do hero conta só os que têm `href`. Clientes podem ter `link` para o projeto no ar (sites da Perini Engenharia e do Forno Nordestino).
 
+## PeriniHub Tech
+
+- Portal público: `/tech`, `/tech/[slug]`, `/tech/categoria/[slug]`, `/tech/busca`, RSS em `/tech/rss.xml` e sitemap de notícias em `/tech/news-sitemap.xml`.
+- Painel: `/admin/noticias` (visão geral, artigos, fontes, agentes, execuções, configurações), login em `/admin/login`.
+- A home mostra "Últimas notícias de tecnologia" só quando há artigos publicados; com o banco fora do ar a seção some e o resto do site não é afetado.
+- Código: `src/app/tech`, `src/app/admin`, `src/components/{tech,admin}`, `src/lib/{news,ai,security,supabase,auth,pipeline}`, `src/agents`, `src/trigger`, `supabase/migrations`.
+- Arquitetura, variáveis, deploy, rollback e checklist de ativação: `docs/tech-portal.md`.
+
 ## Formulário de contato
 
 Sem backend: valida os campos (nome, WhatsApp com DDD, tipo de projeto, mensagem até 1500 caracteres), monta a mensagem e abre `wa.me` em nova aba. Os dados não são apagados, e aparece um link "O WhatsApp não abriu?" caso o navegador bloqueie o popup. Os erros são mostrados por campo, com `aria-describedby`.
@@ -97,7 +109,7 @@ Próximo passo sugerido: endpoint `src/app/api/contact/route.ts` para também re
 
 - Canonical e `og:url` são declarados em cada página (o layout só tem o que é global, porque o merge de metadata do Next é raso).
 - JSON-LD: `ProfessionalService` + `WebSite` no layout, `FAQPage` na home, sempre via `jsonLd()` (escapa `<`).
-- Sitemap com `/` e `/clientes`.
+- Sitemap com `/`, `/clientes`, `/tech`, categorias e artigos publicados; sitemap de notícias separado para o Google News. `/admin` e `/api` bloqueados no robots e com `X-Robots-Tag: noindex`.
 
 ## Qualidade medida (2026-10-11, build local)
 

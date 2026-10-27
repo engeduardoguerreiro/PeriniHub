@@ -1,0 +1,11 @@
+# Nunca enviar segredos nem artefatos locais no `vercel deploy` (CLI).
+.env*
+!.env.example
+.vercel
+.next
+.trigger
+node_modules
+coverage
+*.tsbuildinfo
+supabase/.temp
+.claude

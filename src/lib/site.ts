@@ -43,6 +43,7 @@ export const navItems = [
   { label: "Como trabalhamos", href: "/#processo" },
   { label: "Produtos", href: "/#produtos" },
   { label: "Clientes", href: "/clientes" },
+  { label: "Tech", href: "/tech" },
   { label: "Contato", href: "/#contato" },
 ];
 

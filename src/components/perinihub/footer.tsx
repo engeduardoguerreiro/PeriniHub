@@ -1,3 +1,4 @@
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 
 import { Brand } from "@/components/perinihub/brand";
@@ -8,6 +9,14 @@ const linkClass =
   "rounded-sm transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400";
 
 const newTab = <span className="sr-only"> (abre em nova aba)</span>;
+
+// Com Cache Components, `new Date()` precisa de um escopo cacheado: o ano entra
+// no shell estático e é recalculado uma vez por dia.
+async function CurrentYear() {
+  "use cache";
+  cacheLife("days");
+  return new Date().getFullYear();
+}
 
 export function Footer() {
   return (
@@ -53,8 +62,7 @@ export function Footer() {
           </FooterColumn>
         </div>
         <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-white/50 sm:flex-row sm:items-center sm:justify-between">
-          {/* Páginas estáticas: o ano é o do build, atualizado a cada deploy. */}
-          <p>© {new Date().getFullYear()} PeriniHub. Todos os direitos reservados.</p>
+          <p>© <CurrentYear /> PeriniHub. Todos os direitos reservados.</p>
           <p>perinihub.com.br</p>
         </div>
       </div>
