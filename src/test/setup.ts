@@ -14,3 +14,6 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
   updateTag: vi.fn(),
 }));
+
+// `server-only` lança erro fora do bundle de servidor do Next; nos testes é neutro.
+vi.mock("server-only", () => ({}));

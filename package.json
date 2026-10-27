@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "smoke": "node scripts/smoke.mjs",
     "db:push": "set -a && . ./.env.local && set +a && npx -y supabase@2.122.0 db push --db-url \"$SUPABASE_DB_URL\"",
-    "db:types": "set -a && . ./.env.local && set +a && npx -y supabase@2.122.0 gen types typescript --db-url \"$SUPABASE_DB_URL\" --schema public > src/lib/supabase/database.types.ts"
+    "db:types": "set -a && . ./.env.local && set +a && npx -y supabase@2.122.0 gen types typescript --db-url \"$SUPABASE_DB_URL\" --schema public > src/lib/supabase/database.types.ts",
+    "test:integration": "vitest run --config vitest.integration.config.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",
