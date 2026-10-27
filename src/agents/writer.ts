@@ -40,7 +40,7 @@ Escreva somente com base nos documentos fornecidos:
 - Preserve exatamente nomes de produtos, versões, comandos, flags e trechos de código técnico (use crases para código).
 - Atribua as afirmações à fonte ("segundo o anúncio", "de acordo com a equipe do projeto").
 - Não inclua links nem referências no texto: as referências são adicionadas automaticamente.
-- Campos: título informativo (sem caixa alta e sem exclamações), subtítulo, resumo inicial (excerpt, 1 a 2 frases), o que aconteceu, principais novidades (itens curtos), contexto técnico (pode ficar vazio se as fontes não derem base), impacto para usuários ou desenvolvedores.
+- Campos: título informativo com no máximo 100 caracteres (sem caixa alta e sem exclamações), subtítulo de até 200 caracteres, resumo inicial (excerpt, 1 a 2 frases), o que aconteceu, principais novidades (itens curtos), contexto técnico (pode ficar vazio se as fontes não derem base), impacto para usuários ou desenvolvedores.
 - Em "caveats", liste o que ficou sem confirmação ou ambíguo nas fontes.
 - Use Markdown simples dentro dos campos de texto (parágrafos, **negrito** pontual, \`código\`); não use títulos (#).
 

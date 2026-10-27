@@ -100,6 +100,11 @@ describe("Fact Checker: notícia sem evidência não passa", () => {
     expect(verdictFor([ok, { ...ok, status: "contradicted" }], [])).toBe("blocked");
   });
 
+  it("números no formato brasileiro casam com o formato da fonte", () => {
+    expect(unmatchedNumbers("Foram 681.280 requisições e 1.048.576 tokens", "681,280 requests and 1048576 tokens")).toEqual([]);
+    expect(unmatchedNumbers("Foram 999.999 requisições", "681,280 requests")).toEqual(["999.999"]);
+  });
+
   it("versão ou ano citado no texto e ausente nas fontes bloqueia", () => {
     const missing = unmatchedNumbers("Node.js 24.1 chega em 2027 com v8 12.4", "Node.js 24.1 release with V8 12.4");
     expect(missing).toEqual(["2027"]);

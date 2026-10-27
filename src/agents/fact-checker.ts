@@ -77,13 +77,23 @@ export function validateClaims(raw: z.infer<typeof claimsSchema>["claims"], docs
   });
 }
 
-/** Versões (1.2, v3.4.5) e anos citados no artigo que não aparecem em nenhuma fonte. */
+/**
+ * Formas equivalentes de um número: "681.280" no texto em português pode estar
+ * como "681,280" ou "681280" na fonte em inglês.
+ */
+function numberVariants(token: string) {
+  const variants = [token];
+  if (/^\d{1,3}(?:\.\d{3})+$/.test(token)) variants.push(token.replace(/\./g, ","), token.replace(/\./g, ""));
+  return variants;
+}
+
+/** Versões (1.2, v3.4.5), números grandes e anos citados no artigo que não aparecem em nenhuma fonte. */
 export function unmatchedNumbers(content: string, evidenceText: string) {
   const tokens = new Set([
     ...(content.match(/\bv?\d+\.\d+(?:\.\d+)*\b/g) ?? []).map((token) => token.replace(/^v/, "")),
     ...(content.match(/\b(?:19|20)\d{2}\b/g) ?? []),
   ]);
-  return [...tokens].filter((token) => !evidenceText.includes(token));
+  return [...tokens].filter((token) => !numberVariants(token).some((variant) => evidenceText.includes(variant)));
 }
 
 export type VerificationVerdict = "verified" | "partially_verified" | "blocked";
