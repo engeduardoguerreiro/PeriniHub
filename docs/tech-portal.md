@@ -102,10 +102,14 @@ npm run test:integration   # Supabase real: RLS, publicação, orçamento (cria 
 ### Worker (Trigger.dev)
 
 1. `npx trigger.dev@4.8.1 login` (uma vez por máquina).
-2. Em cloud.trigger.dev → ambiente **Production** → Environment Variables:
-   cadastrar as variáveis da coluna Trigger.dev (`NEWS_SITE_URL=https://perinihub.com.br`).
-3. `npx trigger.dev@4.8.1 deploy` — publica as tarefas e os agendamentos.
-4. Conferir em Runs que o `news-scheduler` roda a cada 15 minutos.
+2. Implantar com as variáveis carregadas no shell: o `syncEnvVars` do
+   `trigger.config.ts` copia as variáveis da coluna Trigger.dev para o
+   ambiente **Production** (chaves como segredo; `NEWS_SITE_URL` fixo em
+   `https://perinihub.com.br`). O deploy falha se faltar alguma.
+   ```bash
+   set -a && . ./.env.local && set +a && npx trigger.dev@4.8.1 deploy
+   ```
+3. Conferir em Runs que o `news-scheduler` roda a cada 15 minutos.
 
 Agendamentos declarativos só disparam no ambiente onde a versão está
 implantada. Horários de coleta são editados no painel (padrão 06:00, 12:00 e
