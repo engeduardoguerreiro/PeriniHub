@@ -46,6 +46,11 @@ const nextConfig: NextConfig = {
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
         ],
       },
+      {
+        // Painel e APIs internas: fora de buscadores mesmo se um link vazar.
+        source: "/:prefix(admin|api)/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
     ];
   },
   async redirects() {

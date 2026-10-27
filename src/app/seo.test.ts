@@ -19,9 +19,9 @@ describe("SEO", () => {
     for (const entry of entries) expect(entry.lastModified).toBeInstanceOf(Date);
   });
 
-  it("robots libera tudo e aponta para o sitemap", () => {
+  it("robots libera o site, bloqueia painel e APIs e aponta o sitemap", () => {
     const result = robots();
-    expect(result.rules).toEqual({ userAgent: "*", allow: "/" });
+    expect(result.rules).toEqual({ userAgent: "*", allow: "/", disallow: ["/admin", "/api/"] });
     expect(result.sitemap).toBe(`${SITE_URL}/sitemap.xml`);
   });
 

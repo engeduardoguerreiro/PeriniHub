@@ -1,0 +1,51 @@
+import { z } from "zod";
+
+// Variáveis lidas sob demanda (não no import): o build do site institucional
+// e o CI rodam sem as credenciais do portal, e a home precisa continuar
+// renderizando sem notícias nesse caso.
+
+const publicSchema = z.object({
+  NEXT_PUBLIC_SUPABASE_URL: z.url().regex(/^https:\/\/[a-z0-9]+\.supabase\.co$/),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
+});
+
+export type PublicEnv = { supabaseUrl: string; supabaseKey: string };
+
+/** Credenciais públicas do Supabase, ou null quando o portal não está configurado. */
+export function getPublicEnv(): PublicEnv | null {
+  const parsed = publicSchema.safeParse({
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  });
+  if (!parsed.success) return null;
+  return {
+    supabaseUrl: parsed.data.NEXT_PUBLIC_SUPABASE_URL,
+    supabaseKey: parsed.data.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  };
+}
+
+export function requirePublicEnv(): PublicEnv {
+  const env = getPublicEnv();
+  if (!env) throw new Error("Supabase não configurado: defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.");
+  return env;
+}
+
+const secretSchemas = {
+  SUPABASE_SECRET_KEY: z.string().min(20),
+  TRIGGER_SECRET_KEY: z.string().regex(/^tr_(dev|stg|prod|preview)_/),
+  NEWS_REVALIDATE_SECRET: z.string().regex(/^[0-9a-f]{64}$/, "use openssl rand -hex 32"),
+  ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-"),
+  NEWS_SITE_URL: z.url(),
+} as const;
+
+type SecretName = keyof typeof secretSchemas;
+
+/**
+ * Lê um segredo validado. A mensagem de erro cita só o nome da variável,
+ * nunca o valor, para não vazar credenciais em logs.
+ */
+export function requireSecret<K extends SecretName>(name: K): z.infer<(typeof secretSchemas)[K]> {
+  const parsed = secretSchemas[name].safeParse(process.env[name]);
+  if (!parsed.success) throw new Error(`Variável de ambiente ausente ou inválida: ${name}`);
+  return parsed.data as z.infer<(typeof secretSchemas)[K]>;
+}
