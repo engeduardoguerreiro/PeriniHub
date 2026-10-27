@@ -187,17 +187,26 @@ export async function writeArticle(ctx: AgentContext, candidateId: string): Prom
     })),
   ];
 
-  const { data: raw } = await runAgent({
-    db,
-    agent: "writer",
-    system: WRITER_SYSTEM,
-    prompt: `Escreva a notícia sobre o acontecimento descrito na fonte principal.\n\n${wrapUntrusted(documents, PAGE_TEXT_CHARS)}`,
-    schema: articleSchema,
-    effort: "medium",
-    input: { candidate_id: candidateId },
-    idempotencyKey: `writer:${candidateId}`,
-    runId: ctx.runId,
-  });
+  // Falha daqui em diante libera o lease, senão o retry da tarefa encontraria
+  // o candidato "em processamento" e não faria nada.
+  const release = () => db.from("news_candidates").update({ locked_until: null }).eq("id", candidateId);
+  let raw: WrittenArticle;
+  try {
+    ({ data: raw } = await runAgent({
+      db,
+      agent: "writer",
+      system: WRITER_SYSTEM,
+      prompt: `Escreva a notícia sobre o acontecimento descrito na fonte principal.\n\n${wrapUntrusted(documents, PAGE_TEXT_CHARS)}`,
+      schema: articleSchema,
+      effort: "medium",
+      input: { candidate_id: candidateId },
+      idempotencyKey: `writer:${candidateId}:${candidate.attempts}`,
+      runId: ctx.runId,
+    }));
+  } catch (error) {
+    await release();
+    throw error;
+  }
 
   const sources: SourceRef[] = [
     { title: candidate.original_title, url: candidate.original_url, publisher: candidate.source?.name ?? new URL(candidate.original_url).hostname, published_at: candidate.source_published_at },

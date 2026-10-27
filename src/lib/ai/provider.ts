@@ -78,7 +78,10 @@ class AnthropicProvider implements LlmProvider {
 function classifyAnthropicError(error: unknown): AgentError {
   if (error instanceof Anthropic.RateLimitError) return new AgentError("Limite de requisições da API", "rate_limited", true);
   if (error instanceof Anthropic.InternalServerError) return new AgentError(`Erro do provedor (${error.status})`, "provider_5xx", true);
-  if (error instanceof Anthropic.APIConnectionError) return new AgentError("Falha de conexão com o provedor", "connection", true);
+  if (error instanceof Anthropic.APIConnectionError) {
+    const cause = error.cause instanceof Error ? `: ${error.cause.message}${error.cause.cause instanceof Error ? ` (${error.cause.cause.message})` : ""}` : "";
+    return new AgentError(`Falha de conexão com o provedor${cause}`, "connection", true);
+  }
   if (error instanceof Anthropic.AuthenticationError) return new AgentError("Chave da API inválida", "auth", false);
   if (error instanceof Anthropic.PermissionDeniedError) return new AgentError("Sem permissão no provedor (limite de gasto?)", "permission", false);
   if (error instanceof Anthropic.BadRequestError) return new AgentError(`Requisição inválida: ${error.message}`, "bad_request", false);
