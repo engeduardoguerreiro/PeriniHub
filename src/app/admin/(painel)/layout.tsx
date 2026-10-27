@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { signOut } from "@/app/admin/login/actions";
-import { AdminNav } from "@/components/admin/admin-nav";
+import { AdminNav, AdminNavList } from "@/components/admin/admin-nav";
 import { Brand } from "@/components/perinihub/brand";
 import { requireEditor } from "@/lib/auth/admin";
 
@@ -53,7 +53,9 @@ export default function PainelLayout({ children }: LayoutProps<"/admin">) {
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-aqua-300 lg:mt-3">Tech · Painel</p>
         </div>
         <div className="mt-4 lg:mt-8 lg:flex-1">
-          <AdminNav />
+          <Suspense fallback={<AdminNavList />}>
+            <AdminNav />
+          </Suspense>
         </div>
         <div className="mt-4 flex items-end justify-between gap-4 border-t border-white/10 pt-4 lg:block">
           <Link

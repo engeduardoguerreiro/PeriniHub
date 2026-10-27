@@ -16,12 +16,15 @@ export const adminNavItems = [
 ] as const;
 
 export function AdminNav() {
-  const pathname = usePathname();
+  return <AdminNavList pathname={usePathname()} />;
+}
 
+/** Sem pathname (fallback do Suspense) nenhum item fica destacado. */
+export function AdminNavList({ pathname }: { pathname?: string }) {
   return (
     <nav aria-label="Painel" className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
       {adminNavItems.map(({ href, label, icon: Icon }) => {
-        const active = href === "/admin/noticias" ? pathname === href : pathname.startsWith(href);
+        const active = pathname ? (href === "/admin/noticias" ? pathname === href : pathname.startsWith(href)) : false;
         return (
           <Link
             key={href}
