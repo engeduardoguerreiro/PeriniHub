@@ -22,13 +22,23 @@ const csp = [
   ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
+const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname : null;
+const supabaseStorage = supabaseHost
+  ? new URL(`https://${supabaseHost}/storage/v1/object/public/**`)
+  : null;
+
 const nextConfig: NextConfig = {
   // Cache explícito com `use cache` + cacheTag: as páginas do portal /tech
   // entram no shell estático e são invalidadas por tag ao publicar.
   cacheComponents: true,
+  // Prefetch do App Shell por rota (padrão da próxima major); artigos fora do
+  // generateStaticParams recebem o shell na hora e viram estáticos após a 1ª visita.
+  partialPrefetching: true,
   images: {
     // Padrão do Next 16, explícito para não liberar outras qualidades por engano.
     qualities: [75],
+    // Capas licenciadas do portal ficam no Storage público do Supabase do projeto.
+    remotePatterns: supabaseStorage ? [supabaseStorage] : [],
   },
   async headers() {
     return [

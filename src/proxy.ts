@@ -1,13 +1,54 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { isValidSlug, slugify } from "@/lib/news/slug";
+
 const LOGIN_PATH = "/admin/login";
+const TECH_RESERVED = new Set(["busca", "categoria", "rss.xml", "news-sitemap.xml"]);
+
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/tech/")) return techSlugGuard(request);
+  return refreshAdminSession(request);
+}
+
+/**
+ * Com Cache Components a página do artigo faz streaming, e um notFound()
+ * lá dentro sai com status 200 (noindex). Aqui, antes do render, garantimos
+ * 404 real para slugs malformados e 308 para variações (maiúsculas, acentos)
+ * do slug canônico. Slugs bem formados seguem para a página.
+ */
+function techSlugGuard(request: NextRequest) {
+  const segments = request.nextUrl.pathname.split("/").filter(Boolean);
+  const raw = segments[1];
+  if (segments.length !== 2 || TECH_RESERVED.has(raw)) return NextResponse.next();
+
+  let slug: string;
+  try {
+    slug = decodeURIComponent(raw);
+  } catch {
+    return notFound(request);
+  }
+  if (isValidSlug(slug)) return NextResponse.next();
+
+  const canonical = slugify(slug, 120);
+  if (canonical && isValidSlug(canonical)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/tech/${canonical}`;
+    return NextResponse.redirect(url, 308);
+  }
+  return notFound(request);
+}
+
+function notFound(request: NextRequest) {
+  return NextResponse.rewrite(new URL("/tech/__placeholder__", request.url), { status: 404 });
+}
 
 // Renova o token do Supabase antes de renderizar o painel. Server Components
 // não conseguem gravar cookies, então sem isso a sessão expiraria no meio do uso.
 // Não é a barreira de autorização: cada página, action e route handler
 // confere o papel no servidor (lib/auth/admin.ts).
-export async function proxy(request: NextRequest) {
+async function refreshAdminSession(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) return NextResponse.next({ request });
@@ -37,5 +78,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/tech/:path+"],
 };

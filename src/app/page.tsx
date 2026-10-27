@@ -9,6 +9,7 @@ import { Footer } from "@/components/perinihub/footer";
 import { Header } from "@/components/perinihub/header";
 import { Hero } from "@/components/perinihub/hero";
 import { SectionTitle } from "@/components/perinihub/section-title";
+import { LatestNewsSection } from "@/components/tech/latest-news-section";
 import { sharedOpenGraph } from "@/lib/metadata";
 import { clients, differentials, ecosystemCards, faq, jsonLd, processSteps, solutions } from "@/lib/site";
 
@@ -143,6 +144,8 @@ export default function Home() {
             </div>
           </div>
         </AnimatedSection>
+
+        <LatestNewsSection />
 
         <AnimatedSection id="duvidas" className="bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <script

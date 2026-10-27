@@ -64,7 +64,7 @@ try {
   check(sitemap.status === 200 && sitemap.body.includes(`<loc>${SITE}/clientes</loc>`), "sitemap.xml lista /clientes");
 
   const robots = await get("/robots.txt");
-  check(robots.status === 200 && robots.body.includes(`Sitemap: ${SITE}/sitemap.xml`), "robots.txt aponta o sitemap");
+  check(robots.status === 200 && robots.body.includes(`Sitemap: ${SITE}/sitemap.xml`) && robots.body.includes(`Sitemap: ${SITE}/tech/news-sitemap.xml`), "robots.txt aponta os sitemaps");
 
   const og = await get("/opengraph-image");
   check(og.status === 200 && og.headers.get("content-type")?.startsWith("image/png"), "opengraph-image gera PNG");
