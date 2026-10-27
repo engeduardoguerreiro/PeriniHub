@@ -13,8 +13,10 @@ import type { Database } from "./database.types";
  * Criar um por requisição; nunca compartilhar entre requisições.
  */
 export async function createSessionClient() {
-  const { supabaseUrl, supabaseKey } = requirePublicEnv();
+  // cookies() primeiro: torna a rota dinâmica antes de qualquer validação,
+  // então o build (inclusive no CI, sem credenciais) não executa este trecho.
   const cookieStore = await cookies();
+  const { supabaseUrl, supabaseKey } = requirePublicEnv();
 
   return createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {

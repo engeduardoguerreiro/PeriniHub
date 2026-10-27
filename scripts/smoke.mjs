@@ -73,6 +73,29 @@ try {
   check(missing.status === 404, "rota inexistente -> 404");
   check(missing.body.includes("Página não encontrada"), "404 em português");
 
+  // PeriniHub Tech: funciona com ou sem Supabase configurado (no CI, sem notícias).
+  const tech = await get("/tech");
+  check(tech.status === 200 && tech.body.includes("Notícias de tecnologia"), "GET /tech -> 200");
+  check(tech.body.includes(`<link rel="canonical" href="${SITE}/tech"`), "/tech tem canonical");
+  check(tech.body.includes('type="application/rss+xml"'), "/tech anuncia o RSS");
+  check(home.body.includes('href="/tech"'), "menu do site leva ao portal");
+
+  const rss = await get("/tech/rss.xml");
+  check(rss.status === 200 && rss.headers.get("content-type")?.includes("application/rss+xml"), "RSS do portal");
+  const newsSitemap = await get("/tech/news-sitemap.xml");
+  check(newsSitemap.status === 200 && newsSitemap.body.includes("sitemap-news"), "sitemap de notícias");
+  check(sitemap.body.includes(`<loc>${SITE}/tech</loc>`), "sitemap.xml lista /tech");
+  check(robots.body.includes("Disallow: /admin"), "robots.txt bloqueia /admin");
+
+  const slugCase = await get("/tech/Noticia-Teste");
+  check(slugCase.status === 308 && slugCase.headers.get("location")?.endsWith("/tech/noticia-teste"), "slug fora do padrão -> 308 canônico");
+
+  const login = await get("/admin/login");
+  check(login.status === 200 && login.headers.get("x-robots-tag") === "noindex, nofollow", "/admin/login com X-Robots-Tag noindex");
+
+  const revalidate = await fetch(BASE + "/api/news/revalidate", { method: "POST", body: "{}" });
+  check([401, 503].includes(revalidate.status), "revalidação sem assinatura é recusada");
+
   const csp = home.headers.get("content-security-policy") ?? "";
   check(csp.includes("frame-ancestors 'none'"), "CSP com frame-ancestors 'none'");
   check(home.headers.get("x-content-type-options") === "nosniff", "X-Content-Type-Options: nosniff");
