@@ -289,7 +289,8 @@ export const publishApprovedArticle = schemaTask({
  */
 export const newsScheduler = schedules.task({
   id: "news-scheduler",
-  cron: { pattern: "*/15 * * * *", timezone: TZ },
+  // Só em ambientes implantados: em DEV os ticks se acumulariam enquanto o CLI está parado.
+  cron: { pattern: "*/15 * * * *", timezone: TZ, environments: ["PRODUCTION", "STAGING"] },
   maxDuration: 120,
   run: async (_payload, { ctx }) => {
     const db = createServiceClient();
@@ -376,7 +377,7 @@ export const newsScheduler = schedules.task({
 
 export const dailyNewsReport = schedules.task({
   id: "daily-news-report",
-  cron: { pattern: "0 20 * * *", timezone: TZ },
+  cron: { pattern: "0 20 * * *", timezone: TZ, environments: ["PRODUCTION", "STAGING"] },
   maxDuration: 60,
   run: async (_payload, { ctx }) => {
     const db = createServiceClient();
