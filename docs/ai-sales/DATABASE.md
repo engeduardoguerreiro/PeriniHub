@@ -129,7 +129,14 @@ Legenda: **G** = global (sem tenant), **T** = de empresa (tenant_id + RLS).
 | `privacy_requests` | `kind` (`access`,`correction`,`deletion`,`portability`,`opposition`), `subject_identifier`, `status`, `due_at` (prazo), `handled_by`, `result_path`. |
 | `data_retention_policies` | `entity` (`messages`,`webhook_events`,`agent_executions`,`leads_inactive`,...), `retain_days`, `action` (`delete`,`anonymize`). Defaults de plataforma + override por empresa (nunca acima do máximo da plataforma). |
 
-### 4.4 WhatsApp — Fase 3
+### 4.4 WhatsApp — Fase 3 (implementado)
+
+> Implementado em `20261030120000_sales_whatsapp.sql`. Diferenças:
+> `whatsapp_accounts.provider` (`meta_cloud`/`sandbox`) e `coexistence`;
+> o app secret fica em variável de ambiente (app único da PeriniHub);
+> `messages.phone_number_id` para a chave única do webhook; conversa guarda
+> `last_message_preview`/`unread_count`; plano interno libera 1 número e
+> 1.000 mensagens/mês.
 
 | Tabela | Colunas principais / regras |
 |---|---|

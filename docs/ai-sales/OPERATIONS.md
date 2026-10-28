@@ -48,6 +48,21 @@ Configuration): **Site URL** do ambiente e **Redirect URLs** com
 `https://perinihub.com.br/ai-sales/auth/callback`. Sem isso o link de
 recuperação de senha é recusado. Cadastro público: **desligado**.
 
+## 2.2 WhatsApp (Fase 3)
+
+| Variável | Valor |
+|---|---|
+| `WHATSAPP_MODE` | `mock` (dev/preview) ou `live` (produção, desliga o simulado) |
+| `WHATSAPP_GRAPH_API_VERSION` | `v26.0` |
+| `WHATSAPP_APP_SECRET` | App Secret do app da Meta |
+| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | `openssl rand -hex 24` |
+
+No app da Meta (WhatsApp → Configuração): URL de callback
+`https://perinihub.com.br/api/ai-sales/webhooks/whatsapp`, o verify token
+acima e assinatura dos campos `messages` (e `smb_message_echoes` em
+coexistência). Eventos com falha ficam em `webhook_events` (5 tentativas →
+`dead_letter`); o reprocessamento automático entra na Fase 5.
+
 ## 3. Deploy
 
 - **Site**: igual ao atual — PR → preview automático → merge na `main` →

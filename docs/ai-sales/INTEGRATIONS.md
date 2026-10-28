@@ -14,8 +14,8 @@
 | Anthropic | ✅ portal (teto US$ 5/mês compartilhado — D-04) | 4 | Fase 4 |
 | Embeddings (Voyage AI ou OpenAI) | ⛔ (D-06) | 4 | só RAG semântico |
 | OpenAI (geração) | ⛔ opcional | 4+ | — |
-| WhatsApp Business Platform (Cloud API) | ⛔ (D-05) | 3 | Fases 3 e 5 |
-| E-mail transacional (convites/recuperação) | 🟡 SMTP padrão do Supabase (limite baixo) — D-07 | 1 | convites em escala |
+| WhatsApp Business Platform (Cloud API) | ⛔ coexistência decidida (D-05), Embedded Signup a viabilizar | 3 | Fases 3 e 5 |
+| E-mail transacional (convites/recuperação) | 🟡 SMTP próprio da Hostinger decidido (nao-responda@perinihub.com.br); falta configurar no Supabase | 1 | convites por e-mail |
 | Fontes de dados de empresas | ⛔ (D-12) | 6 | Fase 6 |
 | Meta Lead Ads / outros anúncios | ⛔ | 6 | — |
 | Gateway de pagamento | ⛔ fora do escopo atual | futura | — |
@@ -140,6 +140,25 @@ retry só para erros transitórios.
   qualidade pausa campanhas automaticamente (Fase 5).
 - Proibido: aquecimento artificial, rotação de números para driblar limites,
   scraping, envio a listas sem opt-in.
+
+### 4.3.1 Coexistência (decisão D-05)
+
+O número da PeriniHub (+55 11 97541-8690) segue no app WhatsApp Business
+e é ligado à Cloud API pelo QR Code do fluxo oficial. Pontos a tratar na
+Fase 3 (confirmar na documentação da Meta ao implementar):
+
+- Embedded Signup com `featureType: whatsapp_business_app_onboarding`;
+  exige app da Meta habilitado para Embedded Signup (Tech Provider) ou um
+  provedor parceiro.
+- Após o QR, o número fica em sincronização (`sync_pending`) e a API só
+  envia quando ativo; prazo de 24 h, senão refazer a conexão.
+- Mensagens enviadas pelo celular chegam pelo webhook `smb_message_echoes`
+  e entram na inbox como mensagens da empresa (autor "celular").
+- Histórico importado pode vir sem mídia antiga; editar e apagar mensagens
+  deixa de funcionar no app.
+- A desconexão é feita no próprio app (Configurações da conta), não pela API.
+- Coexistência é pensada para atendimento humano + automação, não para
+  alto volume: campanhas ficam com limites baixos.
 
 ### 4.4 Multiempresa
 

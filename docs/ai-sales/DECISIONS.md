@@ -21,6 +21,8 @@ partir das fases 3–4).
 | D-14 | Primeiras empresas (tenants): **PeriniHub, PeriniFood e Perini Engenharia**, para atender os respectivos clientes. |
 | D-09 | **Aceita**: `libphonenumber-js` (metadados "min") para telefones em E.164. |
 | D-15 | **Decidida**: Kanban com arrastar nativo + seletor por teclado; barras do dashboard em CSS. Sem biblioteca de gráficos por enquanto. |
+| D-05 | **WhatsApp oficial (Cloud API) por coexistência** (2026-10-29): o número **+55 11 97541-8690** continua no app WhatsApp Business e é conectado à API escaneando um QR Code no fluxo oficial da Meta (Embedded Signup, `featureType: whatsapp_business_app_onboarding`). O usuário pediu QR Code; a conexão não oficial (WhatsApp Web/Baileys) foi descartada por violar as regras 7 e 8 do briefing e arriscar o banimento do número. Pendente: viabilizar o Embedded Signup (PeriniHub como Tech Provider, com verificação da empresa e revisão do app, ou por um provedor parceiro como a 360dialog). Até lá, a Fase 3 é construída em modo simulado. |
+| D-07 | **SMTP próprio na Hostinger**, remetente **nao-responda@perinihub.com.br** (caixa a criar). Domínio já tem MX, SPF, DKIM (`hostingermail-a`) e DMARC `p=none` (conferido em 2026-10-29). Configuração do SMTP no Supabase Auth feita pelo usuário (senha não passa pelo agente). |
 | D-16 | **MFA do superadmin adiado** (pedido do usuário). Exigência implementada atrás de `AI_SALES_PLATFORM_REQUIRE_MFA` (padrão `false`); o painel mostra aviso. Ativar TOTP no Supabase e ligar a flag antes de atender clientes externos. Superadmin: `contato@perinihub.com.br`. |
 
 ### Histórico das opções (antes da Fase 1)
@@ -63,9 +65,7 @@ partir das fases 3–4).
 | Id | Decisão | Fase | Recomendação |
 |---|---|---|---|
 | D-04 | Orçamento de IA do AI Sales: workspace e chave Anthropic separados do portal (o teto atual de US$ 5/mês é compartilhado), valores de limite global e por empresa | 4 | Workspace próprio "ai-sales" com limite de gasto; limite interno inicial a definir pelo usuário |
-| D-05 | WhatsApp: qual Business Portfolio/WABA/número; status da verificação da empresa na Meta; virar Tech Provider (Embedded Signup) ou conectar clientes manualmente | 3 | Começar com a WABA da PeriniHub e o número de teste da Meta; Tech Provider só quando houver clientes externos |
 | D-06 | Embeddings para RAG: Voyage AI, OpenAI ou adiar | 4 | Começar com full-text do Postgres; adicionar embeddings só se a qualidade das buscas exigir |
-| D-07 | SMTP próprio para e-mails do Auth (Resend, SES...) | 1→8 | SMTP padrão no uso interno; próprio antes de convidar clientes |
 | D-08 | Aprovação de campanha por pessoa diferente de quem criou | 5 | Exigir quando a empresa tem 2+ MANAGER/ADMIN; senão, confirmação explícita com motivo |
 | D-10 | Revisão jurídica: termos, política de privacidade, contrato de operador, prazos de retenção | 8 (antes do 1º cliente externo) | Contratar revisão |
 | D-11 | Captcha (Cloudflare Turnstile) nos formulários públicos | 6 | Só se houver abuso; CSP precisa liberar o domínio |

@@ -42,6 +42,11 @@ export function isPlatformMfaRequired() {
   return process.env.AI_SALES_PLATFORM_REQUIRE_MFA === "true";
 }
 
+/** WhatsApp: "mock" (padrão) libera o modo simulado; "live" só conexões reais. */
+export function whatsappMode(): "mock" | "live" {
+  return process.env.WHATSAPP_MODE === "live" ? "live" : "mock";
+}
+
 const salesPublicSchema = z.object({
   NEXT_PUBLIC_SALES_SUPABASE_URL: z.url().regex(/^https:\/\/[a-z0-9]+\.supabase\.co$/),
   NEXT_PUBLIC_SALES_SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
@@ -71,6 +76,8 @@ export function requireSalesPublicEnv(): PublicEnv {
 const secretSchemas = {
   SUPABASE_SECRET_KEY: z.string().min(20),
   SALES_SUPABASE_SECRET_KEY: z.string().min(20),
+  WHATSAPP_APP_SECRET: z.string().regex(/^[0-9a-f]{32}$/, "App Secret do app da Meta (32 hex)"),
+  WHATSAPP_WEBHOOK_VERIFY_TOKEN: z.string().min(32),
   TRIGGER_SECRET_KEY: z.string().regex(/^tr_(dev|stg|prod|preview)_/),
   NEWS_REVALIDATE_SECRET: z.string().regex(/^[0-9a-f]{64}$/, "use openssl rand -hex 32"),
   ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-"),

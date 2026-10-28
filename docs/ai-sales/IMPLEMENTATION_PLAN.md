@@ -3,7 +3,8 @@
 > Estado: **Fase 0 concluída (documentação)** em 2026-10-28, branch
 > `feature/ai-sales-fase-0`. **Fase 1 concluída** em 2026-10-28 e **Fase 2**
 > em 2026-10-29 (branch `feature/ai-sales-fase-2`). Próxima: Fase 3
-> (WhatsApp oficial), aguardando autorização e as decisões D-05 e D-07.
+> (WhatsApp oficial). **Fase 3 em modo simulado** em 2026-10-30 (branch
+> `feature/ai-sales-fase-3`); modo real aguarda credenciais da Meta.
 
 Regras para todas as fases:
 
@@ -131,7 +132,43 @@ linhas rejeitadas; consentimento separado da qualificação; SALES respeita a
 visibilidade; exportação só MANAGER+ e auditada; Kanban operável por teclado;
 isolamento A×B em todas as tabelas novas; estados de vazio/erro/carregamento.
 
-## Fase 3 — WhatsApp oficial e inbox
+## Fase 3 — WhatsApp oficial e inbox ✅ em modo simulado (2026-10-30, branch `feature/ai-sales-fase-3`)
+
+**Entregue:** migrations `20261030120000_sales_whatsapp.sql`,
+`20261030120100_sales_whatsapp_enum_casts.sql` e
+`20261030120200_sales_function_privileges.sql` (correção de segurança, ver
+abaixo). Webhook `/api/ai-sales/webhooks/whatsapp` (verificação GET,
+assinatura `X-Hub-Signature-256` sobre o corpo bruto, deduplicação,
+processamento após a resposta com `after()`), transporte isolado (Cloud API
+v26.0 e simulado), gate de envio no banco, descadastro por "SAIR", status
+monotônico, ecos do celular (coexistência), token no Vault, inbox com abas,
+conversa com janela de 24 h, templates aprovados com variáveis, atribuição,
+encerramento, simulador e tela de conexão (simulado, manual pela Cloud API,
+QR Code oficial aguardando Embedded Signup).
+
+**Testes:** 11 de integração do WhatsApp (cenários críticos 3, 4, 5, 6 e 7
+do briefing), 16 de privilégios de funções, 15 unitários novos (213 no
+total), E2E HTTP com webhook assinado real (falso → 401; assinado entregue
+2× → 1 mensagem) e as telas de inbox, conversa e configuração.
+
+**Incidente de segurança encontrado e corrigido (antes de produção):** as
+funções criadas nas Fases 2 e 3 estavam executáveis por anônimo/logado,
+porque o Postgres concede EXECUTE a PUBLIC por padrão e o
+`alter default privileges in schema ...` da Fase 1 não remove esse padrão.
+Mais grave: `whatsapp_get_access_token`, `whatsapp_record_inbound` e
+`whatsapp_apply_status`. Nenhum token real existia e nada estava em
+produção. Correção: revogação global + concessões explícitas
+(migration `..._function_privileges`) e o teste permanente
+`security/privileges.integration.test.ts`.
+
+**Pendente (depende de credenciais/decisão):** cadastro por QR Code
+(Embedded Signup — Tech Provider ou parceiro, D-05); configurar o webhook
+no app da Meta; reprocessamento automático de eventos com falha pelo
+Trigger.dev (Fase 5 — hoje os eventos falhos ficam registrados com
+tentativas e dead letter); envio de template a contato sem conversa
+(entra com as campanhas, Fase 5); mídia (só registro do tipo/id).
+
+**Plano original da fase (referência):**
 
 **Objetivo:** receber e responder mensagens com segurança.
 Entregas: conexão da WABA (Vault), webhook com assinatura e dedupe, processamento

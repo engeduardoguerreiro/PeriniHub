@@ -29,7 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { path: "contacts", label: "Contatos", icon: Contact },
   { path: "companies", label: "Empresas", icon: Building2 },
   { path: "pipeline", label: "Pipeline", icon: KanbanSquare },
-  { path: "inbox", label: "Inbox", icon: Inbox, phase: 3 },
+  { path: "inbox", label: "Inbox", icon: Inbox },
   { path: "agents", label: "Agentes", icon: Bot, phase: 4 },
   { path: "knowledge", label: "Conhecimento", icon: Library, phase: 4 },
   { path: "campaigns", label: "Campanhas", icon: Megaphone, phase: 5 },

@@ -150,6 +150,44 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"conversations": {
+                  Row: {
+                    "assigned_user_id": string | null,"contact_id": string,"created_at": string,"handled_by": string,"id": string,"last_inbound_at": string | null,"last_message_at": string,"last_message_preview": string | null,"phone_number_id": string,"status": Database["public"]['Enums']["conversation_status"],"tenant_id": string,"unread_count": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "assigned_user_id"?: string | null,"contact_id": string,"created_at"?: string,"handled_by"?: string,"id"?: string,"last_inbound_at"?: string | null,"last_message_at"?: string,"last_message_preview"?: string | null,"phone_number_id": string,"status"?: Database["public"]['Enums']["conversation_status"],"tenant_id": string,"unread_count"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "assigned_user_id"?: string | null,"contact_id"?: string,"created_at"?: string,"handled_by"?: string,"id"?: string,"last_inbound_at"?: string | null,"last_message_at"?: string,"last_message_preview"?: string | null,"phone_number_id"?: string,"status"?: Database["public"]['Enums']["conversation_status"],"tenant_id"?: string,"unread_count"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "conversations_tenant_id_assigned_user_id_fkey"
+      columns: ["tenant_id","assigned_user_id"]
+isOneToOne: false
+      referencedRelation: "organization_members"
+      referencedColumns: ["tenant_id","user_id"]
+    },{
+      foreignKeyName: "conversations_tenant_id_contact_id_fkey"
+      columns: ["tenant_id","contact_id"]
+isOneToOne: false
+      referencedRelation: "contacts"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "conversations_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "conversations_tenant_id_phone_number_id_fkey"
+      columns: ["tenant_id","phone_number_id"]
+isOneToOne: false
+      referencedRelation: "whatsapp_phone_numbers"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
                 },"imports": {
                   Row: {
                     "consent_declared": boolean,"created_at": string,"created_by": string | null,"created_contacts": number,"created_leads": number,"declared_origin": string,"errors": NonNullable<Json>,"file_name": string,"id": string,"lead_source_id": string | null,"rejected_rows": number,"tenant_id": string,"total_rows": number,"updated_contacts": number
@@ -244,6 +282,108 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pipeline_stages"
       referencedColumns: ["tenant_id","pipeline_id","id"]
+    }
+                  ]
+                },"message_delivery_events": {
+                  Row: {
+                    "created_at": string,"errors": Json | null,"id": string,"occurred_at": string,"pricing": Json | null,"status": Database["public"]['Enums']["message_status"],"tenant_id": string,"wa_message_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"errors"?: Json | null,"id"?: string,"occurred_at": string,"pricing"?: Json | null,"status": Database["public"]['Enums']["message_status"],"tenant_id": string,"wa_message_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"errors"?: Json | null,"id"?: string,"occurred_at"?: string,"pricing"?: Json | null,"status"?: Database["public"]['Enums']["message_status"],"tenant_id"?: string,"wa_message_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "message_delivery_events_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"message_send_requests": {
+                  Row: {
+                    "attempts": number,"body": string | null,"checks": NonNullable<Json>,"contact_id": string,"conversation_id": string | null,"created_at": string,"created_by": string | null,"decision": Database["public"]['Enums']["send_decision"],"error": string | null,"finished_at": string | null,"id": string,"idempotency_key": string,"kind": Database["public"]['Enums']["send_kind"],"origin": Database["public"]['Enums']["send_origin"],"phone_number_id": string,"purpose": Database["public"]['Enums']["consent_purpose"] | null,"status": string,"template_id": string | null,"tenant_id": string,"wa_message_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempts"?: number,"body"?: string | null,"checks": NonNullable<Json>,"contact_id": string,"conversation_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision": Database["public"]['Enums']["send_decision"],"error"?: string | null,"finished_at"?: string | null,"id"?: string,"idempotency_key": string,"kind": Database["public"]['Enums']["send_kind"],"origin": Database["public"]['Enums']["send_origin"],"phone_number_id": string,"purpose"?: Database["public"]['Enums']["consent_purpose"] | null,"status"?: string,"template_id"?: string | null,"tenant_id": string,"wa_message_id"?: string | null
+                  }
+                  Update: {
+                    "attempts"?: number,"body"?: string | null,"checks"?: NonNullable<Json>,"contact_id"?: string,"conversation_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision"?: Database["public"]['Enums']["send_decision"],"error"?: string | null,"finished_at"?: string | null,"id"?: string,"idempotency_key"?: string,"kind"?: Database["public"]['Enums']["send_kind"],"origin"?: Database["public"]['Enums']["send_origin"],"phone_number_id"?: string,"purpose"?: Database["public"]['Enums']["consent_purpose"] | null,"status"?: string,"template_id"?: string | null,"tenant_id"?: string,"wa_message_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "message_send_requests_tenant_id_contact_id_fkey"
+      columns: ["tenant_id","contact_id"]
+isOneToOne: false
+      referencedRelation: "contacts"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "message_send_requests_tenant_id_conversation_id_fkey"
+      columns: ["tenant_id","conversation_id"]
+isOneToOne: false
+      referencedRelation: "conversations"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "message_send_requests_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "message_send_requests_tenant_id_phone_number_id_fkey"
+      columns: ["tenant_id","phone_number_id"]
+isOneToOne: false
+      referencedRelation: "whatsapp_phone_numbers"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "message_send_requests_tenant_id_template_id_fkey"
+      columns: ["tenant_id","template_id"]
+isOneToOne: false
+      referencedRelation: "whatsapp_templates"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"messages": {
+                  Row: {
+                    "body": string | null,"conversation_id": string,"created_at": string,"direction": Database["public"]['Enums']["message_direction"],"error": Json | null,"id": string,"media": Json | null,"occurred_at": string,"phone_number_id": string,"send_request_id": string | null,"sender_type": Database["public"]['Enums']["message_sender"],"sender_user_id": string | null,"status": Database["public"]['Enums']["message_status"],"template_name": string | null,"tenant_id": string,"type": string,"wa_message_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body"?: string | null,"conversation_id": string,"created_at"?: string,"direction": Database["public"]['Enums']["message_direction"],"error"?: Json | null,"id"?: string,"media"?: Json | null,"occurred_at"?: string,"phone_number_id": string,"send_request_id"?: string | null,"sender_type": Database["public"]['Enums']["message_sender"],"sender_user_id"?: string | null,"status": Database["public"]['Enums']["message_status"],"template_name"?: string | null,"tenant_id": string,"type"?: string,"wa_message_id"?: string | null
+                  }
+                  Update: {
+                    "body"?: string | null,"conversation_id"?: string,"created_at"?: string,"direction"?: Database["public"]['Enums']["message_direction"],"error"?: Json | null,"id"?: string,"media"?: Json | null,"occurred_at"?: string,"phone_number_id"?: string,"send_request_id"?: string | null,"sender_type"?: Database["public"]['Enums']["message_sender"],"sender_user_id"?: string | null,"status"?: Database["public"]['Enums']["message_status"],"template_name"?: string | null,"tenant_id"?: string,"type"?: string,"wa_message_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "messages_tenant_id_conversation_id_fkey"
+      columns: ["tenant_id","conversation_id"]
+isOneToOne: false
+      referencedRelation: "conversations"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "messages_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "messages_tenant_id_phone_number_id_fkey"
+      columns: ["tenant_id","phone_number_id"]
+isOneToOne: false
+      referencedRelation: "whatsapp_phone_numbers"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "messages_tenant_id_send_request_id_fkey"
+      columns: ["tenant_id","send_request_id"]
+isOneToOne: false
+      referencedRelation: "message_send_requests"
+      referencedColumns: ["tenant_id","id"]
     }
                   ]
                 },"opportunities": {
@@ -592,6 +732,86 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"webhook_events": {
+                  Row: {
+                    "attempts": number,"dedupe_key": string,"id": string,"kind": string,"last_error": string | null,"payload": NonNullable<Json>,"phone_number_id": string | null,"processed_at": string | null,"provider": string,"received_at": string,"status": string,"tenant_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempts"?: number,"dedupe_key": string,"id"?: string,"kind": string,"last_error"?: string | null,"payload": NonNullable<Json>,"phone_number_id"?: string | null,"processed_at"?: string | null,"provider"?: string,"received_at"?: string,"status"?: string,"tenant_id"?: string | null
+                  }
+                  Update: {
+                    "attempts"?: number,"dedupe_key"?: string,"id"?: string,"kind"?: string,"last_error"?: string | null,"payload"?: NonNullable<Json>,"phone_number_id"?: string | null,"processed_at"?: string | null,"provider"?: string,"received_at"?: string,"status"?: string,"tenant_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "webhook_events_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"whatsapp_accounts": {
+                  Row: {
+                    "access_token_secret_id": string | null,"coexistence": boolean,"connected_at": string | null,"connected_by": string | null,"created_at": string,"display_name": string | null,"id": string,"last_error": string | null,"provider": Database["public"]['Enums']["whatsapp_provider"],"status": Database["public"]['Enums']["whatsapp_status"],"tenant_id": string,"token_last4": string | null,"updated_at": string,"waba_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "access_token_secret_id"?: string | null,"coexistence"?: boolean,"connected_at"?: string | null,"connected_by"?: string | null,"created_at"?: string,"display_name"?: string | null,"id"?: string,"last_error"?: string | null,"provider": Database["public"]['Enums']["whatsapp_provider"],"status"?: Database["public"]['Enums']["whatsapp_status"],"tenant_id": string,"token_last4"?: string | null,"updated_at"?: string,"waba_id"?: string | null
+                  }
+                  Update: {
+                    "access_token_secret_id"?: string | null,"coexistence"?: boolean,"connected_at"?: string | null,"connected_by"?: string | null,"created_at"?: string,"display_name"?: string | null,"id"?: string,"last_error"?: string | null,"provider"?: Database["public"]['Enums']["whatsapp_provider"],"status"?: Database["public"]['Enums']["whatsapp_status"],"tenant_id"?: string,"token_last4"?: string | null,"updated_at"?: string,"waba_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "whatsapp_accounts_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"whatsapp_phone_numbers": {
+                  Row: {
+                    "account_id": string,"created_at": string,"display_phone": string,"id": string,"messaging_limit_tier": string | null,"phone_number_id": string,"quality_rating": string | null,"status": Database["public"]['Enums']["whatsapp_status"],"tenant_id": string,"updated_at": string,"verified_name": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id": string,"created_at"?: string,"display_phone": string,"id"?: string,"messaging_limit_tier"?: string | null,"phone_number_id": string,"quality_rating"?: string | null,"status"?: Database["public"]['Enums']["whatsapp_status"],"tenant_id": string,"updated_at"?: string,"verified_name"?: string | null
+                  }
+                  Update: {
+                    "account_id"?: string,"created_at"?: string,"display_phone"?: string,"id"?: string,"messaging_limit_tier"?: string | null,"phone_number_id"?: string,"quality_rating"?: string | null,"status"?: Database["public"]['Enums']["whatsapp_status"],"tenant_id"?: string,"updated_at"?: string,"verified_name"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "whatsapp_phone_numbers_tenant_id_account_id_fkey"
+      columns: ["tenant_id","account_id"]
+isOneToOne: false
+      referencedRelation: "whatsapp_accounts"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"whatsapp_templates": {
+                  Row: {
+                    "account_id": string,"category": Database["public"]['Enums']["template_category"],"components": NonNullable<Json>,"id": string,"language": string,"meta_template_id": string | null,"name": string,"status": string,"synced_at": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id": string,"category": Database["public"]['Enums']["template_category"],"components"?: NonNullable<Json>,"id"?: string,"language": string,"meta_template_id"?: string | null,"name": string,"status": string,"synced_at"?: string,"tenant_id": string
+                  }
+                  Update: {
+                    "account_id"?: string,"category"?: Database["public"]['Enums']["template_category"],"components"?: NonNullable<Json>,"id"?: string,"language"?: string,"meta_template_id"?: string | null,"name"?: string,"status"?: string,"synced_at"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "whatsapp_templates_tenant_id_account_id_fkey"
+      columns: ["tenant_id","account_id"]
+isOneToOne: false
+      referencedRelation: "whatsapp_accounts"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -681,10 +901,54 @@ isOneToOne: false
                            },
 "settle_usage":
 { Args: { "p_actual": number,"p_reservation": string,"p_source_id"?: string,"p_source_type"?: string,"p_tenant": string }; Returns: undefined
+                           },
+"whatsapp_apply_status":
+{ Args: { "p_errors": Json,"p_occurred_at": string,"p_pricing": Json,"p_status": Database["public"]['Enums']["message_status"],"p_wa_message_id": string }; Returns: string
+                           },
+"whatsapp_get_access_token":
+{ Args: { "p_account": string }; Returns: string
+                           },
+"whatsapp_opt_out":
+{ Args: { "p_contact": string,"p_source": string,"p_tenant": string }; Returns: undefined
+                           },
+"whatsapp_record_inbound":
+{ Args: { "p_body": string,"p_from_e164": string,"p_media": Json,"p_occurred_at": string,"p_phone_number_id": string,"p_profile_name": string,"p_sender"?: Database["public"]['Enums']["message_sender"],"p_type": string,"p_wa_message_id": string }; Returns: Json
+                           },
+"whatsapp_send_gate":
+{ Args: { "p_body"?: string,"p_campaign_active"?: boolean,"p_contact": string,"p_idempotency_key": string,"p_kind": Database["public"]['Enums']["send_kind"],"p_origin": Database["public"]['Enums']["send_origin"],"p_phone_number": string,"p_purpose"?: Database["public"]['Enums']["consent_purpose"],"p_template"?: string,"p_tenant": string }; Returns: {
+              "attempts": number,
+"body": string | null,
+"checks": NonNullable<Json>,
+"contact_id": string,
+"conversation_id": string | null,
+"created_at": string,
+"created_by": string | null,
+"decision": Database["public"]['Enums']["send_decision"],
+"error": string | null,
+"finished_at": string | null,
+"id": string,
+"idempotency_key": string,
+"kind": Database["public"]['Enums']["send_kind"],
+"origin": Database["public"]['Enums']["send_origin"],
+"phone_number_id": string,
+"purpose": Database["public"]['Enums']["consent_purpose"] | null,
+"status": string,
+"template_id": string | null,
+"tenant_id": string,
+"wa_message_id": string | null
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "message_send_requests"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"whatsapp_set_access_token":
+{ Args: { "p_account": string,"p_tenant": string,"p_token": string }; Returns: undefined
                            }
           }
           Enums: {
-            "activity_kind": "note"|"call"|"email"|"meeting"|"message"|"stage_change"|"consent_change"|"task"|"import"|"system","actor_type": "user"|"agent"|"system"|"platform_admin","billing_mode": "manual"|"gateway","consent_channel": "whatsapp"|"email"|"phone","consent_purpose": "marketing"|"sales_followup"|"service"|"transactional","consent_status": "granted"|"revoked","discovery_stage": "company_identified"|"contact_found"|"contact_authorized"|"qualified_opportunity","lead_qualification": "unknown"|"cold"|"warm"|"hot","lead_source_kind": "manual"|"form"|"csv"|"ads"|"api"|"research"|"whatsapp_inbound"|"referral","legal_basis": "consent"|"legitimate_interest"|"contract"|"legal_obligation","member_status": "active"|"disabled","opportunity_status": "open"|"won"|"lost","org_role": "viewer"|"sales"|"manager"|"admin"|"owner","org_status": "active"|"suspended"|"closed","reservation_status": "reserved"|"settled"|"released","sales_visibility": "all"|"assigned","subscription_status": "trial"|"active"|"past_due"|"canceled"|"internal","suppression_reason": "opt_out"|"complaint"|"blocked"|"invalid"|"legal_request","task_status": "open"|"done"|"canceled"
+            "activity_kind": "note"|"call"|"email"|"meeting"|"message"|"stage_change"|"consent_change"|"task"|"import"|"system","actor_type": "user"|"agent"|"system"|"platform_admin","billing_mode": "manual"|"gateway","consent_channel": "whatsapp"|"email"|"phone","consent_purpose": "marketing"|"sales_followup"|"service"|"transactional","consent_status": "granted"|"revoked","conversation_status": "open"|"pending_human"|"closed","discovery_stage": "company_identified"|"contact_found"|"contact_authorized"|"qualified_opportunity","lead_qualification": "unknown"|"cold"|"warm"|"hot","lead_source_kind": "manual"|"form"|"csv"|"ads"|"api"|"research"|"whatsapp_inbound"|"referral","legal_basis": "consent"|"legitimate_interest"|"contract"|"legal_obligation","member_status": "active"|"disabled","message_direction": "inbound"|"outbound","message_sender": "contact"|"user"|"agent"|"system"|"business_app","message_status": "received"|"queued"|"sent"|"delivered"|"read"|"failed","opportunity_status": "open"|"won"|"lost","org_role": "viewer"|"sales"|"manager"|"admin"|"owner","org_status": "active"|"suspended"|"closed","reservation_status": "reserved"|"settled"|"released","sales_visibility": "all"|"assigned","send_decision": "allowed"|"blocked","send_kind": "free_text"|"template","send_origin": "user"|"agent"|"campaign"|"followup"|"system","subscription_status": "trial"|"active"|"past_due"|"canceled"|"internal","suppression_reason": "opt_out"|"complaint"|"blocked"|"invalid"|"legal_request","task_status": "open"|"done"|"canceled","template_category": "marketing"|"utility"|"authentication","whatsapp_provider": "meta_cloud"|"sandbox","whatsapp_status": "pending"|"syncing"|"active"|"disconnected"|"error"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -800,7 +1064,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "activity_kind": ["note", "call", "email", "meeting", "message", "stage_change", "consent_change", "task", "import", "system"],"actor_type": ["user", "agent", "system", "platform_admin"],"billing_mode": ["manual", "gateway"],"consent_channel": ["whatsapp", "email", "phone"],"consent_purpose": ["marketing", "sales_followup", "service", "transactional"],"consent_status": ["granted", "revoked"],"discovery_stage": ["company_identified", "contact_found", "contact_authorized", "qualified_opportunity"],"lead_qualification": ["unknown", "cold", "warm", "hot"],"lead_source_kind": ["manual", "form", "csv", "ads", "api", "research", "whatsapp_inbound", "referral"],"legal_basis": ["consent", "legitimate_interest", "contract", "legal_obligation"],"member_status": ["active", "disabled"],"opportunity_status": ["open", "won", "lost"],"org_role": ["viewer", "sales", "manager", "admin", "owner"],"org_status": ["active", "suspended", "closed"],"reservation_status": ["reserved", "settled", "released"],"sales_visibility": ["all", "assigned"],"subscription_status": ["trial", "active", "past_due", "canceled", "internal"],"suppression_reason": ["opt_out", "complaint", "blocked", "invalid", "legal_request"],"task_status": ["open", "done", "canceled"]
+            "activity_kind": ["note", "call", "email", "meeting", "message", "stage_change", "consent_change", "task", "import", "system"],"actor_type": ["user", "agent", "system", "platform_admin"],"billing_mode": ["manual", "gateway"],"consent_channel": ["whatsapp", "email", "phone"],"consent_purpose": ["marketing", "sales_followup", "service", "transactional"],"consent_status": ["granted", "revoked"],"conversation_status": ["open", "pending_human", "closed"],"discovery_stage": ["company_identified", "contact_found", "contact_authorized", "qualified_opportunity"],"lead_qualification": ["unknown", "cold", "warm", "hot"],"lead_source_kind": ["manual", "form", "csv", "ads", "api", "research", "whatsapp_inbound", "referral"],"legal_basis": ["consent", "legitimate_interest", "contract", "legal_obligation"],"member_status": ["active", "disabled"],"message_direction": ["inbound", "outbound"],"message_sender": ["contact", "user", "agent", "system", "business_app"],"message_status": ["received", "queued", "sent", "delivered", "read", "failed"],"opportunity_status": ["open", "won", "lost"],"org_role": ["viewer", "sales", "manager", "admin", "owner"],"org_status": ["active", "suspended", "closed"],"reservation_status": ["reserved", "settled", "released"],"sales_visibility": ["all", "assigned"],"send_decision": ["allowed", "blocked"],"send_kind": ["free_text", "template"],"send_origin": ["user", "agent", "campaign", "followup", "system"],"subscription_status": ["trial", "active", "past_due", "canceled", "internal"],"suppression_reason": ["opt_out", "complaint", "blocked", "invalid", "legal_request"],"task_status": ["open", "done", "canceled"],"template_category": ["marketing", "utility", "authentication"],"whatsapp_provider": ["meta_cloud", "sandbox"],"whatsapp_status": ["pending", "syncing", "active", "disconnected", "error"]
           }
         }
 } as const

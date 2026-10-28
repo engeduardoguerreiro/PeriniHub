@@ -64,6 +64,7 @@ const platform = await import("./platform/actions");
 const login = await import("./login/actions");
 const crm = await import("./[org]/crm-actions");
 const exportRoute = await import("./[org]/leads/exportar/route");
+const whatsapp = await import("./[org]/whatsapp-actions");
 const { proxy } = await import("@/proxy");
 
 const ORG = { id: "11111111-1111-4111-8111-111111111111", slug: "acme", name: "Acme", status: "active" };
@@ -274,5 +275,36 @@ describe("ações do CRM protegidas no servidor", () => {
     state.memberships = [{ role: "sales", organization: ORG }];
     expect((await exportRoute.GET(request, context)).status).toBe(404);
     expect(state.rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("ações do WhatsApp protegidas no servidor", () => {
+  const CONVERSATION = "44444444-4444-4444-8444-444444444444";
+
+  it("vendedor não conecta número, não ativa simulado nem sincroniza templates", async () => {
+    state.userId = "u1";
+    state.memberships = [{ role: "sales", organization: ORG }];
+    expect(await whatsapp.connectSandbox("acme")).toMatchObject({ ok: false });
+    expect(await whatsapp.connectMetaManual("acme", null, form({ wabaId: "123456", phoneNumberId: "123456", token: "x".repeat(30) }))).toMatchObject({ ok: false });
+    expect(await whatsapp.syncTemplates("acme", CONVERSATION)).toMatchObject({ ok: false });
+    expect(state.writes).toHaveLength(0);
+    expect(state.rpc).not.toHaveBeenCalled();
+  });
+
+  it("leitura (viewer) não envia nem assume conversas", async () => {
+    state.userId = "u1";
+    state.memberships = [{ role: "viewer", organization: ORG }];
+    expect(await whatsapp.sendText("acme", CONVERSATION, null, form({ body: "oi" }))).toMatchObject({ ok: false });
+    expect(await whatsapp.assignConversation("acme", CONVERSATION, null)).toMatchObject({ ok: false });
+    expect(state.rpc).not.toHaveBeenCalled();
+  });
+
+  it("modo live desliga o simulado, mesmo para o proprietário", async () => {
+    vi.stubEnv("WHATSAPP_MODE", "live");
+    state.userId = "u1";
+    state.memberships = [{ role: "owner", organization: ORG }];
+    expect(await whatsapp.connectSandbox("acme")).toMatchObject({ ok: false, message: "Modo simulado desativado neste ambiente." });
+    expect(await whatsapp.simulateInbound("acme", null, form({ phone: "11987654321", body: "oi" }))).toMatchObject({ ok: false });
+    expect(state.writes).toHaveLength(0);
   });
 });

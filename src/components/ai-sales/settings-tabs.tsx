@@ -9,6 +9,7 @@ const TABS = [
   { path: "membros", label: "Membros" },
   { path: "empresa", label: "Empresa" },
   { path: "pipeline", label: "Pipeline" },
+  { path: "whatsapp", label: "WhatsApp" },
   { path: "auditoria", label: "Auditoria" },
 ] as const;
 

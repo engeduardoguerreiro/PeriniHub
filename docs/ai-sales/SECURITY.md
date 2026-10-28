@@ -93,7 +93,18 @@ Rotação documentada em OPERATIONS.md.
    que o estado atual + alerta para eventos com `timestamp` muito antigo.
 6. `phone_number_id` desconhecido → evento guardado sem tenant e ignorado.
 
-## 6. Gate de envio (Fase 3, usado pela Fase 5)
+## 5.1 Privilégios de funções (incidente da Fase 3)
+
+No Postgres, `CREATE FUNCTION` concede EXECUTE a PUBLIC. Regra do projeto:
+toda migration nova que cria função termina com `revoke execute ... from
+public, anon[, authenticated]` e concede só o necessário; a migration
+`20261030120200_sales_function_privileges.sql` também removeu o padrão
+global (`alter default privileges revoke execute on functions from public`).
+O teste `security/privileges.integration.test.ts` chama cada função
+restrita como anônimo e como usuário logado e exige `42501`; função nova
+só do servidor entra na lista.
+
+## 6. Gate de envio (Fase 3, usado pela Fase 5) — implementado em `whatsapp_send_gate`
 
 Função única no servidor (`features/ai-sales/whatsapp/send-gate.ts` +
 função SQL transacional) chamada **imediatamente antes** de cada envio
