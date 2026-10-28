@@ -34,8 +34,8 @@ function variablesOf(body: string) {
  * Caixa de envio. Dentro da janela de 24 h: texto livre. Fora dela: só
  * template aprovado (o gate do banco confere de novo, inclusive consentimento).
  */
-export function Composer({ slug, conversationId, inWindow, templates, disabledReason }: { slug: string; conversationId: string; inWindow: boolean; templates: Template[]; disabledReason?: string }) {
-  const [mode, setMode] = useState<"text" | "template">(inWindow ? "text" : "template");
+export function Composer({ slug, conversationId, inWindow, templates, disabledReason, unofficial = false }: { slug: string; conversationId: string; inWindow: boolean; templates: Template[]; disabledReason?: string; unofficial?: boolean }) {
+  const [mode, setMode] = useState<"text" | "template">(inWindow || unofficial ? "text" : "template");
   const [textResult, textAction, textPending] = useActionState<ActionResult | null, FormData>(sendText.bind(null, slug, conversationId), null);
   const [tplResult, tplAction, tplPending] = useActionState<ActionResult | null, FormData>(sendTemplateMessage.bind(null, slug, conversationId), null);
   const [templateId, setTemplateId] = useState(templates[0]?.id ?? "");
@@ -60,15 +60,20 @@ export function Composer({ slug, conversationId, inWindow, templates, disabledRe
         <button type="button" role="tab" aria-selected={mode === "text"} onClick={() => setMode("text")} className={`rounded-full px-3 py-1 font-medium ${mode === "text" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
           Mensagem
         </button>
-        <button type="button" role="tab" aria-selected={mode === "template"} onClick={() => setMode("template")} className={`rounded-full px-3 py-1 font-medium ${mode === "template" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+        {!unofficial && <button type="button" role="tab" aria-selected={mode === "template"} onClick={() => setMode("template")} className={`rounded-full px-3 py-1 font-medium ${mode === "template" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
           Template aprovado
-        </button>
+        </button>}
       </div>
 
       {mode === "text" ? (
         <form ref={textRef} action={textAction} className="grid gap-2">
           <input type="hidden" name="requestId" value={requestId} />
-          {!inWindow && <p className="text-xs text-amber-700 dark:text-amber-300">Fora da janela de 24 h: mensagem livre será bloqueada. Use um template aprovado.</p>}
+          {!inWindow && !unofficial && <p className="text-xs text-amber-700 dark:text-amber-300">Fora da janela de 24 h: mensagem livre será bloqueada. Use um template aprovado.</p>}
+          {!inWindow && unofficial && (
+            <p className="text-xs text-amber-700 dark:text-amber-300">
+              Conexão não oficial, contato sem mensagem nas últimas 24 h: envio manual só com consentimento, até 2 por semana para este contato e dentro do limite diário do número.
+            </p>
+          )}
           <textarea name="body" required maxLength={4096} rows={3} aria-label="Mensagem" placeholder="Escreva a resposta…" className={`${inputClass} h-auto py-2`} />
           <div className="flex flex-wrap items-center gap-3">
             <button type="submit" className={buttonClass("primary")} disabled={textPending}>

@@ -7,7 +7,7 @@ import { createFixtures, type TestUser } from "../testing/fixtures";
 // send.ts é server-only; fora do Next o pacote lança, então é neutralizado aqui.
 vi.mock("server-only", () => ({}));
 
-const { ingestPayload, processEvents } = await import("./processor");
+const { ingestEvents, ingestPayload, processEvents } = await import("./processor");
 const { sendWhatsApp } = await import("./send");
 
 // WhatsApp contra o Supabase "AI Sales", em modo simulado (nada sai para a
@@ -220,5 +220,63 @@ describe("cenário 7: segredos", () => {
     expect((await fx.service.rpc("whatsapp_get_access_token", { p_account: account!.id })).data).toBe(token);
     expect((await ownerA.client.from("webhook_events").select("id").limit(1)).data ?? []).toEqual([]);
     await fx.service.from("whatsapp_accounts").delete().eq("id", account!.id);
+  });
+});
+
+describe("Evolution (não oficial): regras do gate", () => {
+  let evolution: { id: string; phone_number_id: string };
+
+  beforeAll(async () => {
+    const { data: account } = await fx.service.from("whatsapp_accounts").insert({ tenant_id: orgA.id, provider: "evolution", status: "active" }).select("id").single();
+    const id = randomUUID();
+    const { data } = await fx.service
+      .from("whatsapp_phone_numbers")
+      .insert({ id, tenant_id: orgA.id, account_id: account!.id, phone_number_id: `evolution-${id}`, display_phone: "evo", status: "active" })
+      .select("id, phone_number_id")
+      .single();
+    evolution = data!;
+  });
+
+  const gate = (contactId: string, origin: "user" | "campaign" | "agent" | "followup", kind: "free_text" | "template" = "free_text") =>
+    salesA.client.rpc("whatsapp_send_gate", { p_tenant: orgA.id, p_contact: contactId, p_phone_number: evolution.id, p_kind: kind, p_origin: origin, p_idempotency_key: `evo-${randomUUID()}`, p_body: "Olá" });
+
+  it("proativo exige envio manual e consentimento; campanha e agente nunca iniciam conversa", async () => {
+    const { data: contact } = await fx.service.from("contacts").insert({ tenant_id: orgA.id, full_name: "Evo 1", phone_e164: "+5511922220001" }).select("id").single();
+    expect((await gate(contact!.id, "user")).data?.checks).toMatchObject({ consent: { ok: false } });
+    await salesA.client.from("consent_records").insert({ tenant_id: orgA.id, contact_id: contact!.id, channel: "whatsapp", purpose: "sales_followup", legal_basis: "consent", status: "granted", source: "teste" });
+    for (const origin of ["campaign", "agent", "followup"] as const) {
+      const { data } = await gate(contact!.id, origin);
+      expect(data).toMatchObject({ decision: "blocked", checks: { manual_only: { ok: false } } });
+    }
+    expect((await gate(contact!.id, "user")).data).toMatchObject({ decision: "allowed", proactive: true });
+    expect((await gate(contact!.id, "user", "template")).data).toMatchObject({ decision: "blocked", checks: { provider_kind: { ok: false } } });
+  });
+
+  it("limite diário por número e no máximo 2 proativas por contato em 7 dias", async () => {
+    await ownerA.client.from("organization_settings").update({ evolution_daily_proactive_limit: 3 }).eq("tenant_id", orgA.id);
+    const contacts = [];
+    for (const suffix of ["11", "12", "13"]) {
+      const { data } = await fx.service.from("contacts").insert({ tenant_id: orgA.id, full_name: `Evo ${suffix}`, phone_e164: `+55119222200${suffix}` }).select("id").single();
+      await fx.service.from("consent_records").insert({ tenant_id: orgA.id, contact_id: data!.id, channel: "whatsapp", purpose: "marketing", legal_basis: "consent", status: "granted", source: "teste" });
+      contacts.push(data!.id);
+    }
+    // Já houve 1 proativa permitida neste número no teste anterior.
+    expect((await gate(contacts[0], "user")).data?.decision).toBe("allowed");
+    expect((await gate(contacts[0], "user")).data?.decision).toBe("allowed");
+    expect((await gate(contacts[1], "user")).data).toMatchObject({ decision: "blocked", checks: { daily_limit: { ok: false, limit: 3 } } });
+
+    await ownerA.client.from("organization_settings").update({ evolution_daily_proactive_limit: 30 }).eq("tenant_id", orgA.id);
+    expect((await gate(contacts[0], "user")).data).toMatchObject({ decision: "blocked", checks: { frequency: { ok: false } } });
+    expect((await ownerA.client.from("organization_settings").update({ evolution_daily_proactive_limit: 50 }).eq("tenant_id", orgA.id)).error).not.toBeNull();
+  });
+
+  it("dentro da janela, a resposta vale para qualquer origem", async () => {
+    const id = `wamid.${randomUUID()}`;
+    const { queued } = await ingestEvents([
+      { kind: "message", dedupeKey: `evo:msg:${id}`, phoneNumberId: evolution.phone_number_id, contactPhone: "+5511922220021", profileName: "Evo janela", waMessageId: id, type: "text", body: "Oi", media: null, occurredAt: new Date().toISOString() },
+    ]);
+    await processEvents(queued);
+    const contactId = await contactByPhone(orgA.id, "+5511922220021");
+    expect((await gate(contactId, "agent")).data).toMatchObject({ decision: "allowed", proactive: false });
   });
 });

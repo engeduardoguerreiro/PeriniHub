@@ -160,6 +160,21 @@ Fase 3 (confirmar na documentação da Meta ao implementar):
 - Coexistência é pensada para atendimento humano + automação, não para
   alto volume: campanhas ficam com limites baixos.
 
+### 4.3.2 Evolution API (não oficial, D-17)
+
+- Servidor: o mesmo do PeriniFood (`EVOLUTION_API_URL`/`EVOLUTION_API_KEY`).
+  Instâncias do AI Sales: `ais-<id do número>` (as do PeriniFood são `pf-`).
+- Conexão por QR Code em Configurações → WhatsApp; a tela acompanha a
+  leitura e grava o número real quando conecta.
+- Webhook `/api/ai-sales/webhooks/evolution` (header `x-webhook-secret`),
+  eventos `MESSAGES_UPSERT`, `MESSAGES_UPDATE`, `CONNECTION_UPDATE`,
+  normalizados para os mesmos eventos do webhook oficial (mesma
+  deduplicação, mesmo descadastro por "SAIR").
+- Em desenvolvimento local o servidor Evolution não alcança `localhost`:
+  recebimento só funciona em preview/produção (ou com um túnel).
+- Risco: banimento do número. Mitigação: limites do gate (D-17), envio
+  com pausa de "digitando" e volume baixo.
+
 ### 4.4 Multiempresa
 
 - **Fase 3**: a PeriniHub conecta a própria WABA (credenciais via tela de

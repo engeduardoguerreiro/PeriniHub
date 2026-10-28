@@ -63,6 +63,19 @@ acima e assinatura dos campos `messages` (e `smb_message_echoes` em
 coexistência). Eventos com falha ficam em `webhook_events` (5 tentativas →
 `dead_letter`); o reprocessamento automático entra na Fase 5.
 
+## 2.3 Evolution (D-17)
+
+| Variável | Valor |
+|---|---|
+| `EVOLUTION_API_URL` | URL do servidor (a mesma do PeriniFood) |
+| `EVOLUTION_API_KEY` | chave do servidor (64 hex) |
+| `EVOLUTION_WEBHOOK_SECRET` | `openssl rand -hex 24` |
+
+Limite diário de mensagens proativas por número: Configurações → WhatsApp
+(padrão 10, máximo 30). Se o número for banido ou desconectar, a conversa
+fica sem envio até reconectar; não reaproveitar o número na API oficial
+sem migrá-lo.
+
 ## 3. Deploy
 
 - **Site**: igual ao atual — PR → preview automático → merge na `main` →

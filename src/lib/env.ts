@@ -78,6 +78,10 @@ const secretSchemas = {
   SALES_SUPABASE_SECRET_KEY: z.string().min(20),
   WHATSAPP_APP_SECRET: z.string().regex(/^[0-9a-f]{32}$/, "App Secret do app da Meta (32 hex)"),
   WHATSAPP_WEBHOOK_VERIFY_TOKEN: z.string().min(32),
+  // Servidor Evolution API (o mesmo do PeriniFood), conexão não oficial (D-17).
+  EVOLUTION_API_URL: z.url().regex(/^https:\/\//, "use https"),
+  EVOLUTION_API_KEY: z.string().regex(/^[0-9a-f]{64}$/i, "64 hex (openssl rand -hex 32)"),
+  EVOLUTION_WEBHOOK_SECRET: z.string().min(32),
   TRIGGER_SECRET_KEY: z.string().regex(/^tr_(dev|stg|prod|preview)_/),
   NEWS_REVALIDATE_SECRET: z.string().regex(/^[0-9a-f]{64}$/, "use openssl rand -hex 32"),
   ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-"),

@@ -8,6 +8,8 @@ import { z } from "zod";
 import { dbMessage, fail, type ActionResult } from "@/features/ai-sales/action-result";
 import { findMembership } from "@/features/ai-sales/auth/dal";
 import { normalizePhone } from "@/features/ai-sales/crm/phone";
+import { requestOrigin } from "@/features/ai-sales/origin";
+import { evolutionConfigured, evolutionOwner, evolutionPhoneNumberId, evolutionState, startEvolutionConnection, stopEvolutionConnection } from "@/features/ai-sales/whatsapp/evolution";
 import { ingestPayload, processEvents } from "@/features/ai-sales/whatsapp/processor";
 import { sendWhatsApp } from "@/features/ai-sales/whatsapp/send";
 import { fetchPhoneNumber, fetchTemplates, TransportError } from "@/features/ai-sales/whatsapp/transport";
@@ -124,11 +126,102 @@ export async function connectMetaManual(slug: string, _prev: ActionResult | null
   return { ok: true, message: `Número ${info.display_phone_number ?? ""} conectado.` };
 }
 
+// --- Evolution (não oficial, D-17) -------------------------------------------------
+
+/** Cria (ou retoma) a conexão Evolution e devolve o QR Code para ler no celular. */
+export async function connectEvolution(slug: string): Promise<ActionResult> {
+  const m = await member(slug, "admin");
+  if (!m) return fail(NO_PERMISSION);
+  if (!evolutionConfigured()) return fail("Servidor Evolution não configurado (EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_WEBHOOK_SECRET).");
+  const service = createSalesServiceClient();
+  let { data: existing } = await service
+    .from("whatsapp_phone_numbers")
+    .select("id, account_id, whatsapp_accounts!inner(provider)")
+    .eq("tenant_id", m.tenantId)
+    .eq("whatsapp_accounts.provider", "evolution")
+    .neq("status", "disconnected")
+    .limit(1)
+    .maybeSingle();
+  if (!existing) {
+    if (!(await numbersWithinLimit(m.tenantId))) return fail("Limite de números do plano atingido.");
+    const { data: account, error } = await m.db
+      .from("whatsapp_accounts")
+      .insert({ tenant_id: m.tenantId, provider: "evolution", display_name: "WhatsApp (Evolution, não oficial)", status: "pending", connected_by: m.user.id })
+      .select("id")
+      .single();
+    if (error) return fail(dbMessage(error.message));
+    const numberId = randomUUID();
+    const number = await m.db.from("whatsapp_phone_numbers").insert({
+      id: numberId,
+      tenant_id: m.tenantId,
+      account_id: account.id,
+      phone_number_id: evolutionPhoneNumberId(numberId),
+      display_phone: "aguardando QR Code",
+      status: "pending",
+    });
+    if (number.error) return fail(dbMessage(number.error.message));
+    existing = { id: numberId, account_id: account.id, whatsapp_accounts: { provider: "evolution" } };
+  }
+  try {
+    const { state, qr } = await startEvolutionConnection(existing.id, `${await requestOrigin()}/api/ai-sales/webhooks/evolution`);
+    return { ok: true, message: state === "open" ? "Número já conectado." : "Leia o QR Code no WhatsApp do celular: Aparelhos conectados → Conectar aparelho.", qr, state };
+  } catch (error) {
+    return fail(error instanceof TransportError ? error.message : "Falha ao falar com o servidor Evolution.");
+  }
+}
+
+/** Consulta o estado (polling da tela) e, quando conectar, grava o número real. */
+export async function evolutionConnectionStatus(slug: string): Promise<ActionResult> {
+  const m = await member(slug, "admin");
+  if (!m) return fail(NO_PERMISSION);
+  const service = createSalesServiceClient();
+  const { data: number } = await service
+    .from("whatsapp_phone_numbers")
+    .select("id, account_id, status, whatsapp_accounts!inner(provider)")
+    .eq("tenant_id", m.tenantId)
+    .eq("whatsapp_accounts.provider", "evolution")
+    .neq("status", "disconnected")
+    .limit(1)
+    .maybeSingle();
+  if (!number) return fail("Nenhuma conexão Evolution em andamento.");
+  try {
+    const state = await evolutionState(number.id);
+    if (state === "open" && number.status !== "active") {
+      const owner = await evolutionOwner(number.id);
+      await Promise.all([
+        service.from("whatsapp_phone_numbers").update({ status: "active", display_phone: owner.phone ?? "conectado", verified_name: owner.name }).eq("id", number.id),
+        service.from("whatsapp_accounts").update({ status: "active", connected_at: new Date().toISOString() }).eq("id", number.account_id),
+      ]);
+      refresh();
+    }
+    return { ok: true, message: state === "open" ? "Conectado." : "Aguardando a leitura do QR Code…", state };
+  } catch (error) {
+    return fail(error instanceof TransportError ? error.message : "Falha ao consultar o servidor Evolution.");
+  }
+}
+
+export async function setEvolutionDailyLimit(slug: string, limit: number): Promise<ActionResult> {
+  const m = await member(slug, "admin");
+  if (!m) return fail(NO_PERMISSION);
+  if (!Number.isInteger(limit) || limit < 0 || limit > 30) return fail("Use um número entre 0 e 30.");
+  const { error } = await m.db.from("organization_settings").update({ evolution_daily_proactive_limit: limit, updated_by: m.user.id }).eq("tenant_id", m.tenantId);
+  if (error) return fail(dbMessage(error.message));
+  refresh();
+  return { ok: true, message: `Limite diário: ${limit} mensagem(ns) proativa(s) por número.` };
+}
+
 export async function disconnectAccount(slug: string, accountId: string, reason?: string): Promise<ActionResult> {
   const m = await member(slug, "admin");
   if (!m) return fail(NO_PERMISSION);
   if (!uuid.safeParse(accountId).success) return fail("Conta inválida.");
   if (!reason || reason.trim().length < 3) return fail("Informe o motivo.");
+  const { data: evolutionNumbers } = await m.db
+    .from("whatsapp_phone_numbers")
+    .select("id, whatsapp_accounts!inner(provider)")
+    .eq("tenant_id", m.tenantId)
+    .eq("account_id", accountId)
+    .eq("whatsapp_accounts.provider", "evolution");
+  for (const number of evolutionNumbers ?? []) await stopEvolutionConnection(number.id).catch(() => undefined);
   const [account, numbers] = await Promise.all([
     m.db.from("whatsapp_accounts").update({ status: "disconnected", last_error: `Desconectado: ${reason.trim().slice(0, 400)}` }).eq("tenant_id", m.tenantId).eq("id", accountId).select("id"),
     m.db.from("whatsapp_phone_numbers").update({ status: "disconnected" }).eq("tenant_id", m.tenantId).eq("account_id", accountId),

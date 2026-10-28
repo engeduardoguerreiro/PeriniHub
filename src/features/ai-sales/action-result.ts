@@ -5,6 +5,10 @@ export type ActionResult = {
   message: string;
   /** Link de convite: mostrado uma única vez para quem convidou. */
   inviteUrl?: string;
+  /** QR Code (data URL) da conexão Evolution, quando houver. */
+  qr?: string | null;
+  /** Estado da conexão Evolution. */
+  state?: string;
 };
 
 export function fail(message: string): ActionResult {

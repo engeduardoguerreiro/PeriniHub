@@ -7,6 +7,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSalesServiceClient } from "@/lib/supabase/sales-service";
 import type { Database } from "@/lib/supabase/sales.types";
 
+import { EvolutionTransport } from "./evolution";
 import { MetaCloudTransport, SandboxTransport, TransportError, type WhatsAppTransport } from "./transport";
 
 // Envio de mensagens. Ordem fixa: (1) gate no banco com a sessão de quem
@@ -27,6 +28,9 @@ export const CHECK_LABELS: Record<string, string> = {
   consent: "sem consentimento vigente para essa finalidade",
   frequency: "limite de mensagens proativas da semana atingido",
   campaign_active: "campanha pausada ou cancelada",
+  provider_kind: "templates não existem na conexão não oficial",
+  manual_only: "conexão não oficial: só envio manual inicia conversa",
+  daily_limit: "limite diário de mensagens proativas deste número atingido",
 };
 
 export type SendInput = {
@@ -41,8 +45,9 @@ export type SendInput = {
 
 export type SendOutcome = { ok: true; messageId: string } | { ok: false; reason: string; blocked?: string[] };
 
-async function transportFor(accountId: string, provider: string, phoneNumberId: string): Promise<WhatsAppTransport> {
+async function transportFor(accountId: string, provider: string, phoneNumberId: string, numberRowId: string): Promise<WhatsAppTransport> {
   if (provider === "sandbox") return new SandboxTransport();
+  if (provider === "evolution") return new EvolutionTransport(numberRowId);
   const { data: token, error } = await createSalesServiceClient().rpc("whatsapp_get_access_token", { p_account: accountId });
   if (error || !token) throw new TransportError("Conta sem token de acesso configurado.", "auth", false);
   return new MetaCloudTransport(token, phoneNumberId);
@@ -91,7 +96,7 @@ export async function sendWhatsApp(input: SendInput): Promise<SendOutcome> {
   }
 
   try {
-    const transport = await transportFor(number.account.id, number.account.provider, number.phone_number_id);
+    const transport = await transportFor(number.account.id, number.account.provider, number.phone_number_id, number.id);
     const sent =
       input.kind === "free_text"
         ? await transport.sendText(contact.phone_e164, input.body)

@@ -10,9 +10,13 @@ import { isOptOutText, parseWebhook, type WebhookEvent } from "./webhook";
 
 const MAX_ATTEMPTS = 5;
 
-/** Grava cada evento uma vez (dedupe) e devolve os ids novos para processar. */
+/** Webhook oficial: grava cada evento uma vez (dedupe) e devolve os ids novos. */
 export async function ingestPayload(payload: unknown) {
-  const events = parseWebhook(payload);
+  return ingestEvents(parseWebhook(payload));
+}
+
+/** Grava eventos já normalizados (oficial ou Evolution) com deduplicação. */
+export async function ingestEvents(events: WebhookEvent[]) {
   const db = createSalesServiceClient();
   const ids: string[] = [];
   for (const event of events) {

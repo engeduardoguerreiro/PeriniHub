@@ -23,6 +23,7 @@ const SERVER_ONLY: Record<string, Record<string, unknown>> = {
   settle_usage: { p_tenant: ZERO, p_reservation: ZERO, p_actual: 1 },
   release_usage: { p_tenant: ZERO, p_reservation: ZERO },
   consume_rate_limit: { p_key: "x:y", p_window_seconds: 60, p_max: 1 },
+  whatsapp_set_connection_state: { p_phone_number_id: "evolution-xxxx", p_status: "active" },
 };
 
 const SIGNED_IN_ONLY: Record<string, Record<string, unknown>> = {

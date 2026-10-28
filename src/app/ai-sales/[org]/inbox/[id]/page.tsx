@@ -32,7 +32,7 @@ async function ConversationContent({ params }: Pick<PageProps<"/ai-sales/[org]/i
   const db = await createSalesSessionClient();
   const { data: conversation } = await db
     .from("conversations")
-    .select("id, status, assigned_user_id, last_inbound_at, phone_number_id, contact:contacts(id, full_name, phone_e164, email_normalized), number:whatsapp_phone_numbers(account_id, status, display_phone)")
+    .select("id, status, assigned_user_id, last_inbound_at, phone_number_id, contact:contacts(id, full_name, phone_e164, email_normalized), number:whatsapp_phone_numbers(account_id, status, display_phone, account:whatsapp_accounts(provider))")
     .eq("tenant_id", membership.tenantId)
     .eq("id", id)
     .maybeSingle();
@@ -90,6 +90,7 @@ async function ConversationContent({ params }: Pick<PageProps<"/ai-sales/[org]/i
               slug={org}
               conversationId={id}
               inWindow={inWindow}
+              unofficial={conversation.number?.account?.provider === "evolution"}
               disabledReason={!numberActive ? "Número desconectado: não é possível enviar por esta conversa." : conversation.status === "closed" ? "Conversa encerrada. Reabra para responder." : undefined}
               templates={(templates ?? []).map((template) => ({ id: template.id, name: template.name, category: template.category, body: templateBody(template.components) }))}
             />
