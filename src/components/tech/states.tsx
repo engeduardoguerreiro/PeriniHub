@@ -38,9 +38,9 @@ export function CardSkeleton({ className }: { className?: string }) {
   );
 }
 
-export function GridSkeleton({ count = 6 }: { count?: number }) {
+export function GridSkeleton({ count = 6, className }: { count?: number; className?: string }) {
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Carregando notícias">
+    <div className={cn("grid gap-5 sm:grid-cols-2 lg:grid-cols-3", className)} role="status" aria-label="Carregando notícias">
       {Array.from({ length: count }, (_, index) => (
         <CardSkeleton key={index} />
       ))}

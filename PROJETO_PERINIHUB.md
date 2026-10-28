@@ -89,7 +89,7 @@ Todo o conteúdo editável (textos, produtos, clientes, FAQ, contatos) fica em `
 
 ## PeriniHub Tech
 
-- Portal público: `/tech`, `/tech/[slug]`, `/tech/categoria/[slug]`, `/tech/busca`, RSS em `/tech/rss.xml` e sitemap de notícias em `/tech/news-sitemap.xml`.
+- Portal público: `/tech` (página única com as 4 notícias mais recentes, paginada de 4 em 4 por data/hora de publicação), `/tech/[slug]`, `/tech/busca`; as antigas `/tech/categoria/*` redirecionam 308 para `/tech`, RSS em `/tech/rss.xml` e sitemap de notícias em `/tech/news-sitemap.xml`.
 - Painel: `/admin/noticias` (visão geral, artigos, fontes, agentes, execuções, configurações), login em `/admin/login`.
 - A home mostra "Últimas notícias de tecnologia" só quando há artigos publicados; com o banco fora do ar a seção some e o resto do site não é afetado.
 - Código: `src/app/tech`, `src/app/admin`, `src/components/{tech,admin}`, `src/lib/{news,ai,security,supabase,auth,pipeline}`, `src/agents`, `src/trigger`, `supabase/migrations`.
@@ -109,7 +109,7 @@ Próximo passo sugerido: endpoint `src/app/api/contact/route.ts` para também re
 
 - Canonical e `og:url` são declarados em cada página (o layout só tem o que é global, porque o merge de metadata do Next é raso).
 - JSON-LD: `ProfessionalService` + `WebSite` no layout, `FAQPage` na home, sempre via `jsonLd()` (escapa `<`).
-- Sitemap com `/`, `/clientes`, `/tech`, categorias e artigos publicados; sitemap de notícias separado para o Google News. `/admin` e `/api` bloqueados no robots e com `X-Robots-Tag: noindex`.
+- Sitemap com `/`, `/clientes`, `/tech` e artigos publicados; sitemap de notícias separado para o Google News. `/admin` e `/api` bloqueados no robots e com `X-Robots-Tag: noindex`.
 
 ## Qualidade medida (2026-10-11, build local)
 

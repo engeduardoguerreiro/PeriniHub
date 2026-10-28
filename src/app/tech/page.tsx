@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
 import { Rss } from "lucide-react";
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { ArticleCard } from "@/components/tech/article-card";
-import { CategoryNav } from "@/components/tech/category-nav";
 import { TechPageHeader } from "@/components/tech/page-header";
 import { Pagination, parsePageParam } from "@/components/tech/pagination";
 import { EmptyState, GridSkeleton } from "@/components/tech/states";
 import { TechCta } from "@/components/tech/tech-cta";
 import { sharedOpenGraph } from "@/lib/metadata";
-import { getArticlesPage, getCategories, getLatestArticles } from "@/lib/news/queries";
+import { getArticlesPage, PORTAL_PAGE_SIZE } from "@/lib/news/queries";
 import { pagedPath, TECH_DESCRIPTION, TECH_NAME, techAlternates } from "@/lib/news/seo";
 
 const TITLE = `${TECH_NAME}: notícias de tecnologia`;
@@ -26,17 +24,7 @@ export async function generateMetadata({ searchParams }: PageProps<"/tech">): Pr
   };
 }
 
-async function Featured() {
-  const [featured] = await getLatestArticles(1);
-  if (!featured) return null;
-  return (
-    <div className="mt-10">
-      <h2 className="sr-only">Destaque</h2>
-      <ArticleCard article={featured} variant="featured" tone="dark" priority />
-    </div>
-  );
-}
-
+/** As 4 matérias mais recentes; as anteriores ficam nas páginas seguintes. */
 async function Latest({ searchParams }: Pick<PageProps<"/tech">, "searchParams">) {
   const page = parsePageParam((await searchParams).pagina);
   const result = await getArticlesPage(page);
@@ -55,56 +43,14 @@ async function Latest({ searchParams }: Pick<PageProps<"/tech">, "searchParams">
 
   return (
     <>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {result.items.map((article) => (
-          <ArticleCard key={article.id} article={article} />
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {result.items.map((article, index) => (
+          <ArticleCard key={article.id} article={article} priority={result.page === 1 && index === 0} />
         ))}
       </div>
       <Pagination page={result.page} pageCount={result.pageCount} hrefFor={(n) => pagedPath("/tech", n)} />
     </>
   );
-}
-
-/** Três matérias por assunto, só das categorias que têm conteúdo. */
-async function ByCategory() {
-  const categories = await getCategories();
-  const sections = await Promise.all(
-    categories.map(async (category) => ({ category, page: await getArticlesPage(1, category.slug) })),
-  );
-  const filled = sections.filter((section) => section.page.items.length > 0);
-  if (filled.length < 2) return null;
-
-  return (
-    <section aria-labelledby="por-assunto" className="mt-16">
-      <h2 id="por-assunto" className="font-display text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">
-        Por assunto
-      </h2>
-      <div className="mt-6 grid gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
-        {filled.map(({ category, page }) => (
-          <div key={category.slug}>
-            <div className="flex items-baseline justify-between gap-4 border-b border-ink-900/10 pb-3">
-              <h3 className="font-display text-lg font-semibold text-ink-900">{category.name}</h3>
-              <Link
-                href={`/tech/categoria/${category.slug}`}
-                className="rounded-sm text-sm font-medium text-brand-700 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-brand-500"
-              >
-                Ver tudo<span className="sr-only"> de {category.name}</span>
-              </Link>
-            </div>
-            <div className="mt-3 grid gap-2">
-              {page.items.slice(0, 3).map((article) => (
-                <ArticleCard key={article.id} article={article} variant="compact" headingLevel="h3" />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-async function Categories() {
-  return <CategoryNav categories={await getCategories()} />;
 }
 
 export default function TechPage({ searchParams }: PageProps<"/tech">) {
@@ -114,14 +60,11 @@ export default function TechPage({ searchParams }: PageProps<"/tech">) {
         eyebrow={TECH_NAME}
         title="Notícias de tecnologia, com fonte"
         description="Lançamentos, atualizações e alertas de segurança, explicados em português e sempre com link para o anúncio original."
-      >
-        <Featured />
-      </TechPageHeader>
+      />
 
       <div className="px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <Categories />
-          <section aria-labelledby="mais-recentes" className="mt-8">
+          <section aria-labelledby="mais-recentes">
             <div className="mb-6 flex items-center justify-between gap-4">
               <h2 id="mais-recentes" className="font-display text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">
                 Mais recentes
@@ -134,11 +77,10 @@ export default function TechPage({ searchParams }: PageProps<"/tech">) {
                 RSS
               </a>
             </div>
-            <Suspense fallback={<GridSkeleton />}>
+            <Suspense fallback={<GridSkeleton count={PORTAL_PAGE_SIZE} className="lg:grid-cols-2 xl:grid-cols-4" />}>
               <Latest searchParams={searchParams} />
             </Suspense>
           </section>
-          <ByCategory />
           <div className="mt-16">
             <TechCta />
           </div>

@@ -54,13 +54,14 @@ export async function prepareSeo(ctx: AgentContext, articleId: string): Promise<
     return { articleId, slug: article.slug, status: article.status };
   }
 
-  const [{ data: categories }, { data: recent }] = await Promise.all([
-    db.from("news_categories").select("name, slug").eq("enabled", true),
-    db.from("news_articles").select("title, slug").eq("status", "published").order("published_at", { ascending: false }).limit(12),
-  ]);
+  const { data: recent } = await db
+    .from("news_articles")
+    .select("title, slug")
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .limit(12);
   const internalTargets = [
     { href: "/tech", label: "PeriniHub Tech" },
-    ...(categories ?? []).map((category) => ({ href: `/tech/categoria/${category.slug}`, label: category.name })),
     ...(recent ?? []).map((item) => ({ href: `/tech/${item.slug}`, label: item.title })),
   ];
   const allowedHrefs = new Set(internalTargets.map((target) => target.href));

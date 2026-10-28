@@ -49,12 +49,12 @@ export default async function SettingsPage() {
           categories={enabledCategories.map(({ id, name }) => ({ id, name }))}
         />
       </Panel>
-      <Panel title="Categorias do portal" description="Categorias desativadas somem do portal e da curadoria.">
+      <Panel title="Categorias do portal" description="Categorias desativadas deixam de ser usadas pela curadoria.">
         <ul className="divide-y divide-ink-900/6">
           {(categories ?? []).map((category) => (
             <li key={category.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
               <span className={category.enabled ? "text-ink-900" : "text-ink-900/50"}>
-                {category.name} <span className="text-xs text-ink-900/45">/tech/categoria/{category.slug}</span>
+                {category.name}
               </span>
               <ActionButton
                 action={setCategoryEnabled.bind(null, category.id, !category.enabled)}
@@ -62,7 +62,7 @@ export default async function SettingsPage() {
                   category.enabled
                     ? {
                         title: `Desativar ${category.name}`,
-                        description: "A página da categoria sai do ar e a curadoria deixa de usá-la. Artigos publicados continuam acessíveis pelo link.",
+                        description: "A curadoria deixa de usá-la para novas matérias. Artigos já publicados continuam no portal.",
                         confirmLabel: "Desativar",
                       }
                     : undefined
