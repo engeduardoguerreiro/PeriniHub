@@ -14,6 +14,8 @@ import { isValidSlug } from "./slug";
 // Erro de banco lança exceção: um artigo publicado não pode virar 404 cacheado.
 
 export const PAGE_SIZE = 12;
+/** A capa do portal mostra as 4 mais recentes e navega de 4 em 4. */
+export const PORTAL_PAGE_SIZE = 4;
 
 export type CategoryRef = { name: string; slug: string };
 
@@ -98,7 +100,7 @@ export async function getLatestArticles(limit = 6): Promise<ArticleCard[]> {
   return data.map(toCard);
 }
 
-export async function getArticlesPage(page: number, categorySlug?: string): Promise<ArticlePage> {
+export async function getArticlesPage(page: number): Promise<ArticlePage> {
   "use cache";
   cacheLife("hours");
   cacheTag(NEWS_TAGS.list);
@@ -107,27 +109,24 @@ export async function getArticlesPage(page: number, categorySlug?: string): Prom
   const db = createPublicClient();
   if (!db) return { items: [], total: 0, page: current, pageCount: 0 };
 
-  const from = (current - 1) * PAGE_SIZE;
-  // !inner transforma o join em filtro: só artigos da categoria pedida.
-  const query = categorySlug
-    ? db
-        .from("news_articles")
-        .select(CARD_FIELDS.replace("news_categories(", "news_categories!inner("), { count: "exact" })
-        .eq("news_categories.slug", categorySlug)
-    : db.from("news_articles").select(CARD_FIELDS, { count: "exact" });
-
-  const { data, error, count } = await query
+  const from = (current - 1) * PORTAL_PAGE_SIZE;
+  // Data e hora de publicação, da mais nova para a mais antiga; o id desempata
+  // para que nenhuma matéria se repita ou suma entre uma página e outra.
+  const { data, error, count } = await db
+    .from("news_articles")
+    .select(CARD_FIELDS, { count: "exact" })
     .eq("status", "published")
     .order("published_at", { ascending: false })
-    .range(from, from + PAGE_SIZE - 1);
+    .order("id", { ascending: false })
+    .range(from, from + PORTAL_PAGE_SIZE - 1);
   if (error) throw new NewsQueryError("page", error.message);
 
   const total = count ?? 0;
   return {
-    items: (data as CardRow[]).map(toCard),
+    items: data.map(toCard),
     total,
     page: current,
-    pageCount: Math.ceil(total / PAGE_SIZE),
+    pageCount: Math.ceil(total / PORTAL_PAGE_SIZE),
   };
 }
 
@@ -218,12 +217,6 @@ export async function getCategories(): Promise<Category[]> {
     .order("sort_order");
   if (error) throw new NewsQueryError("categories", error.message);
   return data;
-}
-
-export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  if (!isValidSlug(slug)) return null;
-  const categories = await getCategories();
-  return categories.find((category) => category.slug === slug) ?? null;
 }
 
 /** Normaliza a busca do usuário: texto curto, sem caracteres de controle. */

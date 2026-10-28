@@ -112,7 +112,7 @@ describe("proxy", () => {
   });
 
   it("rotas do portal com slug válido seguem normalmente", async () => {
-    for (const path of ["/tech/nodejs-24", "/tech/busca", "/tech/categoria/dados"]) {
+    for (const path of ["/tech/nodejs-24", "/tech/busca"]) {
       expect((await proxy(new NextRequest(`https://perinihub.com.br${path}`))).status).toBe(200);
     }
   });

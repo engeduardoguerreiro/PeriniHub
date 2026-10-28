@@ -65,8 +65,8 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // Categoria renomeada (Segurança → Cibersegurança).
-      { source: "/tech/categoria/seguranca", destination: "/tech/categoria/ciberseguranca", permanent: true },
+      // O portal virou página única: as antigas páginas por categoria levam a /tech.
+      { source: "/tech/categoria/:path*", destination: "/tech", permanent: true },
       // Consolida o trafego no dominio principal, evitando conteudo duplicado
       // entre www, o subdominio da Vercel e perinihub.com.br.
       {

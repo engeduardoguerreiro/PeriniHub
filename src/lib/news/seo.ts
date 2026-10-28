@@ -79,17 +79,7 @@ export function articleJsonLd(article: Article) {
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Início", item: SITE_URL },
           { "@type": "ListItem", position: 2, name: TECH_NAME, item: `${SITE_URL}/tech` },
-          ...(article.category
-            ? [
-                {
-                  "@type": "ListItem",
-                  position: 3,
-                  name: article.category.name,
-                  item: `${SITE_URL}/tech/categoria/${article.category.slug}`,
-                },
-              ]
-            : []),
-          { "@type": "ListItem", position: article.category ? 4 : 3, name: article.title, item: url },
+          { "@type": "ListItem", position: 3, name: article.title, item: url },
         ],
       },
     ],

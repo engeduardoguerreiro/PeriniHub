@@ -74,12 +74,7 @@ async function ArticleView({ params }: Pick<PageProps<"/tech/[slug]">, "params">
                   <>
                     <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                     <li>
-                      <Link
-                        href={`/tech/categoria/${article.category.slug}`}
-                        className="rounded-sm text-aqua-300 hover:text-white focus-visible:outline-2 focus-visible:outline-brand-400"
-                      >
-                        {article.category.name}
-                      </Link>
+                      <span className="text-aqua-300">{article.category.name}</span>
                     </li>
                   </>
                 )}

@@ -20,13 +20,12 @@ describe("SEO", () => {
     expect(SITE_URL).toBe("https://perinihub.com.br");
   });
 
-  it("sitemap lista páginas institucionais, portal, categorias e artigos publicados", async () => {
+  it("sitemap lista páginas institucionais, portal e artigos publicados", async () => {
     const entries = await sitemap();
     expect(entries.map((entry) => entry.url)).toEqual([
       SITE_URL,
       `${SITE_URL}/clientes`,
       `${SITE_URL}/tech`,
-      `${SITE_URL}/tech/categoria/seguranca`,
       `${SITE_URL}/tech/node-24-lts`,
     ]);
     for (const entry of entries) expect(entry.lastModified).toBeInstanceOf(Date);
