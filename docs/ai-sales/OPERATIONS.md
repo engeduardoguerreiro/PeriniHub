@@ -76,6 +76,20 @@ Limite diário de mensagens proativas por número: Configurações → WhatsApp
 fica sem envio até reconectar; não reaproveitar o número na API oficial
 sem migrá-lo.
 
+## 2.4 Tarefas agendadas do AI Sales (Fase 5)
+
+| Tarefa | Quando | O que faz |
+|---|---|---|
+| `ai-sales-reprocess-events` | a cada 10 min | reprocessa eventos do WhatsApp com falha/pendentes (5 tentativas → dead letter) |
+| `ai-sales-campaign-tick` | a cada 10 min | próximo lote de cada campanha agendada/em execução |
+| `ai-sales-followup-tick` | 9h15–18h15, dias úteis (São Paulo) | regras ativas de follow-up |
+
+Rodam no mesmo worker do portal. Sem `AI_SALES_ENABLED=true` e as chaves do
+Supabase "AI Sales" no ambiente de quem implanta, ficam inertes (o
+`trigger.config.ts` só envia essas variáveis se existirem). Nas telas há
+"Enviar próximo lote agora" e "Rodar regras ativas agora" para operar sem o
+worker.
+
 ## 3. Deploy
 
 - **Site**: igual ao atual — PR → preview automático → merge na `main` →

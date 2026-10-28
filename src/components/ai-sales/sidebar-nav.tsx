@@ -32,8 +32,8 @@ const NAV_ITEMS: NavItem[] = [
   { path: "inbox", label: "Inbox", icon: Inbox },
   { path: "agents", label: "Agentes", icon: Bot },
   { path: "knowledge", label: "Conhecimento", icon: Library },
-  { path: "campaigns", label: "Campanhas", icon: Megaphone, phase: 5 },
-  { path: "analytics", label: "Analytics", icon: BarChart3, phase: 5 },
+  { path: "campaigns", label: "Campanhas", icon: Megaphone },
+  { path: "analytics", label: "Analytics", icon: BarChart3, phase: 7 },
   { path: "settings", label: "Configurações", icon: Settings },
 ];
 

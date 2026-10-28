@@ -6,7 +6,8 @@
 > (WhatsApp oficial). **Fase 3 em modo simulado** em 2026-10-30 (branch
 > `feature/ai-sales-fase-3`); modo real aguarda credenciais da Meta.
 > **Fase 4** em 2026-11-01 (branch `feature/ai-sales-fase-4`), agentes em modo
-> simulado até a chave própria da Anthropic (D-04).
+> simulado até a chave própria da Anthropic (D-04). **Fase 5** em 2026-11-02
+> (branch `feature/ai-sales-fase-5`).
 
 Regras para todas as fases:
 
@@ -224,7 +225,39 @@ resposta sobre preço/prazo sem fonte → handoff; limite de gasto bloqueia ante
 da chamada; toda ação registrada em `agent_tool_calls`.
 **Depende de:** D-04 (chave/orçamento), D-06 (opcional).
 
-## Fase 5 — Automações e campanhas
+## Fase 5 — Automações e campanhas ✅ (2026-11-02, branch `feature/ai-sales-fase-5`)
+
+**Entregue:** migrations `20261102120000_sales_campaigns.sql` e
+`20261102120100_sales_campaign_claim_fix.sql`. Campanhas com ciclo
+rascunho → aguardando aprovação → agendada → em execução → pausada →
+concluída/cancelada (`campaign_transition` valida transição, papel,
+aprovação por outro gestor quando existe — D-08 —, motivo obrigatório para
+parar; pausa de emergência não pode ser retomada). Público com elegíveis e
+excluídos com motivo (sem telefone, descadastrado, sem consentimento para a
+finalidade). Despacho em lotes (máx. 20) dentro da janela de horário e dos
+limites por hora/dia/total, relendo o status antes de cada envio; cada
+mensagem passa pelo gate na hora. Follow-up automático por regras (dias
+parado, etapas, tentativas, intervalo), com a tentativa reservada antes do
+envio. Tarefas do Trigger.dev em `src/trigger/ai-sales.ts`
+(reprocessamento de eventos a cada 10 min, campanhas a cada 10 min,
+follow-up em dias úteis 9h–18h), inertes enquanto o AI Sales não estiver
+configurado no worker. Telas de campanhas (criação, público, aprovação,
+lotes, destinatários, custo estimado) e regras de follow-up.
+
+**Defeito encontrado e corrigido:** a reserva do lote reservava mais que o
+limite (`UPDATE ... WHERE id IN (SELECT ... LIMIT ... FOR UPDATE SKIP
+LOCKED)` reavaliado pelo Postgres) → CTE materializada.
+
+**Testes:** 8 de integração (cenários 4, 5 e 8, gate na hora do envio,
+aprovação, limites, janela, follow-up sem repetição), 2 unitários;
+total 92 de integração e 226 unitários. Uma chamada real ao Claude Haiku
+validou o schema do SDR (US$ 0,00028).
+
+**Pendente:** deploy do worker com as variáveis do AI Sales (feito pelo
+usuário); envio de campanhas pela conexão Evolution continua proibido
+(D-17).
+
+**Plano original da fase (referência):**
 
 **Objetivo:** campanhas e follow-ups autorizados, com controle total.
 Entregas: ciclo de estados da campanha, audiência com elegibilidade

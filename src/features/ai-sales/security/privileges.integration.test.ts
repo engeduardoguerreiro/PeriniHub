@@ -24,6 +24,7 @@ const SERVER_ONLY: Record<string, Record<string, unknown>> = {
   release_usage: { p_tenant: ZERO, p_reservation: ZERO },
   consume_rate_limit: { p_key: "x:y", p_window_seconds: 60, p_max: 1 },
   whatsapp_set_connection_state: { p_phone_number_id: "evolution-xxxx", p_status: "active" },
+  campaign_claim_recipients: { p_campaign: ZERO, p_limit: 1 },
 };
 
 const SIGNED_IN_ONLY: Record<string, Record<string, unknown>> = {
@@ -31,6 +32,9 @@ const SIGNED_IN_ONLY: Record<string, Record<string, unknown>> = {
   whatsapp_send_gate: { p_tenant: ZERO, p_contact: ZERO, p_phone_number: ZERO, p_kind: "free_text", p_origin: "user", p_idempotency_key: "xxxxxxxxxx" },
   whatsapp_set_access_token: { p_tenant: ZERO, p_account: ZERO, p_token: "x".repeat(30) },
   record_export: { p_tenant: ZERO, p_entity: "x", p_rows: 1, p_filters: {} },
+  campaign_build_audience: { p_tenant: ZERO, p_campaign: ZERO },
+  campaign_transition: { p_tenant: ZERO, p_campaign: ZERO, p_to: "canceled", p_reason: "xxx" },
+  create_agent_version: { p_tenant: ZERO, p_agent: ZERO, p_system_prompt: "x".repeat(30), p_provider: "mock", p_model: "mock", p_max_output_tokens: 500, p_input_price: 0, p_output_price: 0, p_knowledge_base_ids: [] },
 };
 
 let signedIn: Db;
