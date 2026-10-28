@@ -253,8 +253,9 @@ as duas não divergem.
   a empresa existe).
 - Mesmo que o código esqueça a checagem, as queries usam o cliente com sessão
   e o RLS só devolve linhas de empresas onde o usuário é membro ativo.
-- Um cookie `ai_sales_last_org` guarda só a preferência de redirecionamento
-  pós-login; nunca é usado para autorizar.
+- (Não implementado na Fase 1) Um cookie de "última empresa" serviria só
+  como preferência de redirecionamento; hoje, com uma empresa o login vai
+  direto a ela e, com várias, ao seletor.
 
 ### 4.4 Isolamento em profundidade
 
@@ -317,6 +318,9 @@ ficam fora do `sitemap.ts`.
 - **Sem cadastro público** (ADR-004): contas nascem por convite de OWNER/ADMIN
   ou por criação de empresa pelo SUPERADMIN. Convite = token aleatório de 32
   bytes, guardado como hash, expira em 7 dias, uso único, preso ao e-mail.
+  Na Fase 1 o link é mostrado uma vez para quem convidou, que o envia (sem
+  SMTP próprio ainda). Convidado sem conta cria a senha na própria página do
+  convite; com conta, entra e aceita.
 - **Recuperação de senha** pelo fluxo PKCE do Supabase com redirect só para
   URLs permitidas.
 - **Abuso**: limites do Supabase Auth + limite próprio por IP/e-mail no Server

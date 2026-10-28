@@ -1,9 +1,8 @@
 # PeriniHub AI Sales — Plano de implementação
 
 > Estado: **Fase 0 concluída (documentação)** em 2026-10-28, branch
-> `feature/ai-sales-fase-0`. Decisões D-01, D-02, D-03, D-13 e D-14 tomadas
-> ([DECISIONS.md](./DECISIONS.md)); Fase 1 aguarda as chaves do projeto
-> Supabase "AI Sales" no `.env.local` e autorização.
+> `feature/ai-sales-fase-0`. **Fase 1 concluída** em 2026-10-28 (branch
+> `feature/ai-sales-fase-1`). Próxima: Fase 2 (CRM), aguardando autorização.
 
 Regras para todas as fases:
 
@@ -20,7 +19,33 @@ Regras para todas as fases:
 
 Entregue: os 7 documentos de `docs/ai-sales/`. Sem código nem banco alterados.
 
-## Fase 1 — Multi-tenant, autenticação e segurança
+## Fase 1 — Multi-tenant, autenticação e segurança ✅ (2026-10-28, branch `feature/ai-sales-fase-1`)
+
+**Entregue:** migration `supabase-sales/supabase/migrations/20261028200000_sales_platform.sql`
+aplicada no projeto "AI Sales" (desenvolvimento); login, recuperação e
+redefinição de senha, convites por link, criação de conta pelo convite,
+seletor de empresa, layout com barra lateral e tema claro/escuro, dashboard
+sem números inventados, membros (convidar, papel, desativar, remover),
+dados da empresa, auditoria e painel do superadmin (criar, suspender,
+reativar, novo convite de proprietário). Superadmin `contato@perinihub.com.br`
+criado por `scripts/ai-sales-admin.mjs`.
+
+**Testes:** 22 de integração contra o banco real (`npm run test:integration:sales`),
+24 unitários novos (papéis, caminhos, tokens, senha, ações barradas,
+proxy), smoke com a flag ligada e desligada, teste manual no navegador do
+fluxo superadmin → empresa → convite → aceite → conta nova de vendedor.
+
+**Diferenças em relação ao plano:**
+- Convites são entregues por **link copiado** por quem convida (sem e-mail
+  automático até existir SMTP próprio — D-07).
+- O cookie de "última empresa" não foi feito: com uma empresa o login vai
+  direto a ela; com várias, ao seletor.
+- MFA do superadmin adiado (D-16).
+- Cada página tem o próprio `<Suspense>` (exigência da validação de
+  navegação instantânea do Next 16) e o DAL chama `connection()` antes de
+  validar o JWT.
+
+**Plano original da fase (referência):**
 
 **Objetivo:** esqueleto seguro: empresas, membros, papéis, login, convites,
 seleção de empresa, painel mínimo do superadmin, auditoria e testes de

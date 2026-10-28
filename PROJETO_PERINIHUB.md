@@ -97,7 +97,7 @@ Todo o conteúdo editável (textos, produtos, clientes, FAQ, contatos) fica em `
 
 ## PeriniHub AI Sales (em planejamento)
 
-Plataforma SaaS multiempresa de CRM, WhatsApp oficial e agentes de IA para vendas, prevista em `/ai-sales`. Fase 0 (auditoria e arquitetura) documentada em `docs/ai-sales/`; nada implementado ainda. Decisões pendentes em `docs/ai-sales/DECISIONS.md`.
+Plataforma SaaS multiempresa de CRM, WhatsApp oficial e agentes de IA para vendas, em `/ai-sales` (atrás da flag `AI_SALES_ENABLED`, desligada em produção). Banco próprio: projeto Supabase "AI Sales" (migrations em `supabase-sales/`). Fase 1 pronta: empresas, membros, papéis, convites, login e painel do superadmin. Código em `src/app/ai-sales`, `src/features/ai-sales`, `src/components/ai-sales`. Documentação, plano e decisões em `docs/ai-sales/`.
 
 ## Formulário de contato
 

@@ -2,7 +2,9 @@
 
 Registro de decisões de arquitetura (ADR) e de decisões pendentes do
 responsável pelo produto. ADRs com status **Proposta** passam a **Aceita**
-quando a Fase 1 for autorizada sem objeção a elas.
+quando a Fase 1 for autorizada sem objeção a elas. Em 2026-10-28 a Fase 1
+foi autorizada: ADR-001 a ADR-011 estão **aceitas** (ADR-012 a 014 valem a
+partir das fases 3–4).
 
 ---
 
@@ -17,6 +19,7 @@ quando a Fase 1 for autorizada sem objeção a elas.
 | D-03 | **Mesmo projeto Trigger.dev** do portal, filas separadas. |
 | D-13 | Visibilidade do SALES **configurável por empresa**, padrão "todos". |
 | D-14 | Primeiras empresas (tenants): **PeriniHub, PeriniFood e Perini Engenharia**, para atender os respectivos clientes. |
+| D-16 | **MFA do superadmin adiado** (pedido do usuário). Exigência implementada atrás de `AI_SALES_PLATFORM_REQUIRE_MFA` (padrão `false`); o painel mostra aviso. Ativar TOTP no Supabase e ligar a flag antes de atender clientes externos. Superadmin: `contato@perinihub.com.br`. |
 
 ### Histórico das opções (antes da Fase 1)
 

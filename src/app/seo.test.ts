@@ -32,9 +32,9 @@ describe("SEO", () => {
     expect(entries.at(-1)?.lastModified).toEqual(new Date("2026-10-20T12:00:00Z"));
   });
 
-  it("robots libera o site, bloqueia painel e APIs e aponta o sitemap", () => {
+  it("robots libera o site, bloqueia painel, APIs e AI Sales e aponta o sitemap", () => {
     const result = robots();
-    expect(result.rules).toEqual({ userAgent: "*", allow: "/", disallow: ["/admin", "/api/"] });
+    expect(result.rules).toEqual({ userAgent: "*", allow: "/", disallow: ["/admin", "/api/", "/ai-sales"] });
     expect(result.sitemap).toEqual([`${SITE_URL}/sitemap.xml`, `${SITE_URL}/tech/news-sitemap.xml`]);
   });
 

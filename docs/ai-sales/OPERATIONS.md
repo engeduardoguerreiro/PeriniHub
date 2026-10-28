@@ -33,6 +33,21 @@ responde 404 e nenhuma tarefa do AI Sales é agendada. Permite fazer merge na
 `.env.example` e `trigger.config.ts` (`WORKER_ENV`) serão atualizados na fase
 em que cada variável passar a ser usada. Nenhuma credencial é commitada.
 
+## 2.1 Comandos do AI Sales (Fase 1)
+
+| Comando | Para quê |
+|---|---|
+| `npm run db:sales:push` | aplica as migrations de `supabase-sales/` no projeto "AI Sales" (`SALES_SUPABASE_DB_URL`) |
+| `npm run db:sales:types` | regera `src/lib/supabase/sales.types.ts` |
+| `npm run test:integration:sales` | testes de isolamento/RLS contra o banco real (criam e apagam dados `zz-teste-*`) |
+| `set -a && . ./.env.local && set +a && node scripts/ai-sales-admin.mjs bootstrap <email>` | cria (se preciso) a conta e a torna superadmin; a senha é definida em `/ai-sales/recuperar-senha` |
+
+Configuração no painel do Supabase "AI Sales" (Authentication → URL
+Configuration): **Site URL** do ambiente e **Redirect URLs** com
+`http://localhost:3000/ai-sales/auth/callback` (dev) e, quando houver,
+`https://perinihub.com.br/ai-sales/auth/callback`. Sem isso o link de
+recuperação de senha é recusado. Cadastro público: **desligado**.
+
 ## 3. Deploy
 
 - **Site**: igual ao atual — PR → preview automático → merge na `main` →

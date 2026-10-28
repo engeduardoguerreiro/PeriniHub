@@ -33,8 +33,13 @@
 - Convites: token de 32 bytes (`crypto.randomBytes`), só o SHA-256 no banco,
   expira em 7 dias, uso único, vinculado ao e-mail convidado.
 - Recuperação de senha via PKCE; `redirectTo` restrito às URLs cadastradas.
-- MFA TOTP: obrigatório para SUPERADMIN (policy exige `auth.jwt()->>'aal' = 'aal2'`),
-  opcional para empresas e exigível por `organization_settings.require_mfa`.
+- MFA TOTP: previsto como obrigatório para SUPERADMIN; **adiado por decisão
+  do usuário (D-16)** — o DAL exige `aal2` quando
+  `AI_SALES_PLATFORM_REQUIRE_MFA=true`. Opcional para empresas e exigível por
+  `organization_settings.require_mfa` (fases seguintes).
+- Conta criada pelo convite nasce com e-mail confirmado: quem tem o token
+  recebeu o link no e-mail convidado (mesmo princípio de um link mágico). O
+  token só existe em hash no banco e a página aceita só tokens no formato.
 - Logout invalida a sessão no servidor (`signOut({ scope: 'local' })`) e
   "sair de todos os dispositivos" com `scope: 'global'`.
 
