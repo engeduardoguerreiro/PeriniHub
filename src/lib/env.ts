@@ -85,6 +85,7 @@ const secretSchemas = {
   TRIGGER_SECRET_KEY: z.string().regex(/^tr_(dev|stg|prod|preview)_/),
   NEWS_REVALIDATE_SECRET: z.string().regex(/^[0-9a-f]{64}$/, "use openssl rand -hex 32"),
   ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-"),
+  AI_SALES_ANTHROPIC_API_KEY: z.string().startsWith("sk-ant-"),
   NEWS_SITE_URL: z.url(),
 } as const;
 

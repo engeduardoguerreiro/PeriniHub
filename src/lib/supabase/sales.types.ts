@@ -38,6 +38,136 @@ isOneToOne: false
       referencedColumns: ["tenant_id","id"]
     }
                   ]
+                },"agent_executions": {
+                  Row: {
+                    "agent_id": string,"cost_usd": number | null,"error": string | null,"estimated_cost_usd": number | null,"finished_at": string | null,"id": string,"idempotency_key": string,"input_summary": NonNullable<Json>,"is_test": boolean,"latency_ms": number | null,"output": Json | null,"reservation_id": string | null,"started_at": string,"status": Database["public"]['Enums']["execution_status"],"tenant_id": string,"token_usage": Json | null,"trigger_ref": string | null,"trigger_type": string,"version_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "agent_id": string,"cost_usd"?: number | null,"error"?: string | null,"estimated_cost_usd"?: number | null,"finished_at"?: string | null,"id"?: string,"idempotency_key": string,"input_summary"?: NonNullable<Json>,"is_test"?: boolean,"latency_ms"?: number | null,"output"?: Json | null,"reservation_id"?: string | null,"started_at"?: string,"status"?: Database["public"]['Enums']["execution_status"],"tenant_id": string,"token_usage"?: Json | null,"trigger_ref"?: string | null,"trigger_type": string,"version_id": string
+                  }
+                  Update: {
+                    "agent_id"?: string,"cost_usd"?: number | null,"error"?: string | null,"estimated_cost_usd"?: number | null,"finished_at"?: string | null,"id"?: string,"idempotency_key"?: string,"input_summary"?: NonNullable<Json>,"is_test"?: boolean,"latency_ms"?: number | null,"output"?: Json | null,"reservation_id"?: string | null,"started_at"?: string,"status"?: Database["public"]['Enums']["execution_status"],"tenant_id"?: string,"token_usage"?: Json | null,"trigger_ref"?: string | null,"trigger_type"?: string,"version_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "agent_executions_tenant_id_agent_id_fkey"
+      columns: ["tenant_id","agent_id"]
+isOneToOne: false
+      referencedRelation: "ai_agents"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "agent_executions_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "agent_executions_tenant_id_version_id_fkey"
+      columns: ["tenant_id","version_id"]
+isOneToOne: false
+      referencedRelation: "agent_versions"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"agent_handoffs": {
+                  Row: {
+                    "conversation_id": string,"created_at": string,"execution_id": string | null,"id": string,"reason": string,"resolved_at": string | null,"resolved_by": string | null,"status": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "conversation_id": string,"created_at"?: string,"execution_id"?: string | null,"id"?: string,"reason": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"tenant_id": string
+                  }
+                  Update: {
+                    "conversation_id"?: string,"created_at"?: string,"execution_id"?: string | null,"id"?: string,"reason"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "agent_handoffs_tenant_id_conversation_id_fkey"
+      columns: ["tenant_id","conversation_id"]
+isOneToOne: false
+      referencedRelation: "conversations"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "agent_handoffs_tenant_id_execution_id_fkey"
+      columns: ["tenant_id","execution_id"]
+isOneToOne: false
+      referencedRelation: "agent_executions"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"agent_tool_calls": {
+                  Row: {
+                    "arguments": NonNullable<Json>,"created_at": string,"decision": Database["public"]['Enums']["tool_decision"],"execution_id": string,"id": string,"result": string | null,"tenant_id": string,"tool": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "arguments"?: NonNullable<Json>,"created_at"?: string,"decision": Database["public"]['Enums']["tool_decision"],"execution_id": string,"id"?: string,"result"?: string | null,"tenant_id": string,"tool": string
+                  }
+                  Update: {
+                    "arguments"?: NonNullable<Json>,"created_at"?: string,"decision"?: Database["public"]['Enums']["tool_decision"],"execution_id"?: string,"id"?: string,"result"?: string | null,"tenant_id"?: string,"tool"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "agent_tool_calls_tenant_id_execution_id_fkey"
+      columns: ["tenant_id","execution_id"]
+isOneToOne: false
+      referencedRelation: "agent_executions"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"agent_versions": {
+                  Row: {
+                    "agent_id": string,"created_at": string,"created_by": string | null,"id": string,"input_price_per_mtok": number,"knowledge_base_ids": (string)[],"max_output_tokens": number,"model": string,"notes": string | null,"output_price_per_mtok": number,"provider": string,"system_prompt": string,"tenant_id": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "agent_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"input_price_per_mtok"?: number,"knowledge_base_ids"?: (string)[],"max_output_tokens"?: number,"model": string,"notes"?: string | null,"output_price_per_mtok"?: number,"provider": string,"system_prompt": string,"tenant_id": string,"version": number
+                  }
+                  Update: {
+                    "agent_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"input_price_per_mtok"?: number,"knowledge_base_ids"?: (string)[],"max_output_tokens"?: number,"model"?: string,"notes"?: string | null,"output_price_per_mtok"?: number,"provider"?: string,"system_prompt"?: string,"tenant_id"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "agent_versions_tenant_id_agent_id_fkey"
+      columns: ["tenant_id","agent_id"]
+isOneToOne: false
+      referencedRelation: "ai_agents"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"ai_agents": {
+                  Row: {
+                    "auto_take_new_conversations": boolean,"created_at": string,"created_by": string | null,"current_version_id": string | null,"daily_executions_limit": number,"handoff_confidence": number,"id": string,"max_replies_per_conversation": number,"name": string,"objective": string | null,"phone_number_id": string | null,"status": Database["public"]['Enums']["agent_status"],"tenant_id": string,"type": Database["public"]['Enums']["agent_type"],"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "auto_take_new_conversations"?: boolean,"created_at"?: string,"created_by"?: string | null,"current_version_id"?: string | null,"daily_executions_limit"?: number,"handoff_confidence"?: number,"id"?: string,"max_replies_per_conversation"?: number,"name": string,"objective"?: string | null,"phone_number_id"?: string | null,"status"?: Database["public"]['Enums']["agent_status"],"tenant_id": string,"type": Database["public"]['Enums']["agent_type"],"updated_at"?: string
+                  }
+                  Update: {
+                    "auto_take_new_conversations"?: boolean,"created_at"?: string,"created_by"?: string | null,"current_version_id"?: string | null,"daily_executions_limit"?: number,"handoff_confidence"?: number,"id"?: string,"max_replies_per_conversation"?: number,"name"?: string,"objective"?: string | null,"phone_number_id"?: string | null,"status"?: Database["public"]['Enums']["agent_status"],"tenant_id"?: string,"type"?: Database["public"]['Enums']["agent_type"],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ai_agents_current_version_fkey"
+      columns: ["tenant_id","current_version_id"]
+isOneToOne: false
+      referencedRelation: "agent_versions"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "ai_agents_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ai_agents_tenant_id_phone_number_id_fkey"
+      columns: ["tenant_id","phone_number_id"]
+isOneToOne: false
+      referencedRelation: "whatsapp_phone_numbers"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
                 },"audit_logs": {
                   Row: {
                     "action": string,"actor_id": string | null,"actor_type": Database["public"]['Enums']["actor_type"],"created_at": string,"diff": Json | null,"entity_id": string | null,"entity_type": string,"id": string,"reason": string | null,"tenant_id": string | null
@@ -211,6 +341,66 @@ isOneToOne: false
       columns: ["tenant_id","lead_source_id"]
 isOneToOne: false
       referencedRelation: "lead_sources"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"knowledge_bases": {
+                  Row: {
+                    "created_at": string,"description": string | null,"id": string,"name": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"description"?: string | null,"id"?: string,"name": string,"tenant_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"description"?: string | null,"id"?: string,"name"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "knowledge_bases_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"knowledge_chunks": {
+                  Row: {
+                    "chunk_index": number,"content": string,"document_id": string,"fts": unknown,"id": string,"knowledge_base_id": string,"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "chunk_index": number,"content": string,"document_id": string,"fts"?: never,"id"?: string,"knowledge_base_id": string,"tenant_id": string
+                  }
+                  Update: {
+                    "chunk_index"?: number,"content"?: string,"document_id"?: string,"fts"?: never,"id"?: string,"knowledge_base_id"?: string,"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "knowledge_chunks_tenant_id_document_id_fkey"
+      columns: ["tenant_id","document_id"]
+isOneToOne: false
+      referencedRelation: "knowledge_documents"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"knowledge_documents": {
+                  Row: {
+                    "chunk_count": number,"content": string,"created_at": string,"created_by": string | null,"id": string,"knowledge_base_id": string,"tenant_id": string,"title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "chunk_count"?: number,"content": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"knowledge_base_id": string,"tenant_id": string,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "chunk_count"?: number,"content"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"knowledge_base_id"?: string,"tenant_id"?: string,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "knowledge_documents_tenant_id_knowledge_base_id_fkey"
+      columns: ["tenant_id","knowledge_base_id"]
+isOneToOne: false
+      referencedRelation: "knowledge_bases"
       referencedColumns: ["tenant_id","id"]
     }
                   ]
@@ -844,6 +1034,29 @@ isOneToOne: false
 "consume_rate_limit":
 { Args: { "p_key": string,"p_max": number,"p_window_seconds": number }; Returns: boolean
                            },
+"create_agent_version":
+{ Args: { "p_agent": string,"p_input_price": number,"p_knowledge_base_ids": (string)[],"p_max_output_tokens": number,"p_model": string,"p_notes"?: string,"p_output_price": number,"p_provider": string,"p_system_prompt": string,"p_tenant": string }; Returns: {
+              "agent_id": string,
+"created_at": string,
+"created_by": string | null,
+"id": string,
+"input_price_per_mtok": number,
+"knowledge_base_ids": (string)[],
+"max_output_tokens": number,
+"model": string,
+"notes": string | null,
+"output_price_per_mtok": number,
+"provider": string,
+"system_prompt": string,
+"tenant_id": string,
+"version": number
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "agent_versions"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "create_invite":
 { Args: { "p_email": string,"p_role": Database["public"]['Enums']["org_role"],"p_tenant": string,"p_token_hash": string }; Returns: string
                            },
@@ -899,6 +1112,11 @@ isOneToOne: false
 "reserve_usage":
 { Args: { "p_amount": number,"p_key": string,"p_metric": string,"p_tenant": string,"p_ttl_seconds"?: number }; Returns: string
                            },
+"search_knowledge":
+{ Args: { "p_knowledge_base_ids": (string)[],"p_limit"?: number,"p_query": string,"p_tenant": string }; Returns: {
+              "content": string,"document_id": string,"id": string,"rank": number,"title": string
+            }[]
+                           },
 "settle_usage":
 { Args: { "p_actual": number,"p_reservation": string,"p_source_id"?: string,"p_source_type"?: string,"p_tenant": string }; Returns: undefined
                            },
@@ -952,7 +1170,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "activity_kind": "note"|"call"|"email"|"meeting"|"message"|"stage_change"|"consent_change"|"task"|"import"|"system","actor_type": "user"|"agent"|"system"|"platform_admin","billing_mode": "manual"|"gateway","consent_channel": "whatsapp"|"email"|"phone","consent_purpose": "marketing"|"sales_followup"|"service"|"transactional","consent_status": "granted"|"revoked","conversation_status": "open"|"pending_human"|"closed","discovery_stage": "company_identified"|"contact_found"|"contact_authorized"|"qualified_opportunity","lead_qualification": "unknown"|"cold"|"warm"|"hot","lead_source_kind": "manual"|"form"|"csv"|"ads"|"api"|"research"|"whatsapp_inbound"|"referral","legal_basis": "consent"|"legitimate_interest"|"contract"|"legal_obligation","member_status": "active"|"disabled","message_direction": "inbound"|"outbound","message_sender": "contact"|"user"|"agent"|"system"|"business_app","message_status": "received"|"queued"|"sent"|"delivered"|"read"|"failed","opportunity_status": "open"|"won"|"lost","org_role": "viewer"|"sales"|"manager"|"admin"|"owner","org_status": "active"|"suspended"|"closed","reservation_status": "reserved"|"settled"|"released","sales_visibility": "all"|"assigned","send_decision": "allowed"|"blocked","send_kind": "free_text"|"template","send_origin": "user"|"agent"|"campaign"|"followup"|"system","subscription_status": "trial"|"active"|"past_due"|"canceled"|"internal","suppression_reason": "opt_out"|"complaint"|"blocked"|"invalid"|"legal_request","task_status": "open"|"done"|"canceled","template_category": "marketing"|"utility"|"authentication","whatsapp_provider": "meta_cloud"|"sandbox"|"evolution","whatsapp_status": "pending"|"syncing"|"active"|"disconnected"|"error"
+            "activity_kind": "note"|"call"|"email"|"meeting"|"message"|"stage_change"|"consent_change"|"task"|"import"|"system","actor_type": "user"|"agent"|"system"|"platform_admin","agent_status": "active"|"inactive"|"testing","agent_type": "sdr"|"capture"|"followup"|"analyst","billing_mode": "manual"|"gateway","consent_channel": "whatsapp"|"email"|"phone","consent_purpose": "marketing"|"sales_followup"|"service"|"transactional","consent_status": "granted"|"revoked","conversation_status": "open"|"pending_human"|"closed","discovery_stage": "company_identified"|"contact_found"|"contact_authorized"|"qualified_opportunity","execution_status": "running"|"succeeded"|"failed"|"skipped","lead_qualification": "unknown"|"cold"|"warm"|"hot","lead_source_kind": "manual"|"form"|"csv"|"ads"|"api"|"research"|"whatsapp_inbound"|"referral","legal_basis": "consent"|"legitimate_interest"|"contract"|"legal_obligation","member_status": "active"|"disabled","message_direction": "inbound"|"outbound","message_sender": "contact"|"user"|"agent"|"system"|"business_app","message_status": "received"|"queued"|"sent"|"delivered"|"read"|"failed","opportunity_status": "open"|"won"|"lost","org_role": "viewer"|"sales"|"manager"|"admin"|"owner","org_status": "active"|"suspended"|"closed","reservation_status": "reserved"|"settled"|"released","sales_visibility": "all"|"assigned","send_decision": "allowed"|"blocked","send_kind": "free_text"|"template","send_origin": "user"|"agent"|"campaign"|"followup"|"system","subscription_status": "trial"|"active"|"past_due"|"canceled"|"internal","suppression_reason": "opt_out"|"complaint"|"blocked"|"invalid"|"legal_request","task_status": "open"|"done"|"canceled","template_category": "marketing"|"utility"|"authentication","tool_decision": "executed"|"rejected"|"needs_approval","whatsapp_provider": "meta_cloud"|"sandbox"|"evolution","whatsapp_status": "pending"|"syncing"|"active"|"disconnected"|"error"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1068,7 +1286,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "activity_kind": ["note", "call", "email", "meeting", "message", "stage_change", "consent_change", "task", "import", "system"],"actor_type": ["user", "agent", "system", "platform_admin"],"billing_mode": ["manual", "gateway"],"consent_channel": ["whatsapp", "email", "phone"],"consent_purpose": ["marketing", "sales_followup", "service", "transactional"],"consent_status": ["granted", "revoked"],"conversation_status": ["open", "pending_human", "closed"],"discovery_stage": ["company_identified", "contact_found", "contact_authorized", "qualified_opportunity"],"lead_qualification": ["unknown", "cold", "warm", "hot"],"lead_source_kind": ["manual", "form", "csv", "ads", "api", "research", "whatsapp_inbound", "referral"],"legal_basis": ["consent", "legitimate_interest", "contract", "legal_obligation"],"member_status": ["active", "disabled"],"message_direction": ["inbound", "outbound"],"message_sender": ["contact", "user", "agent", "system", "business_app"],"message_status": ["received", "queued", "sent", "delivered", "read", "failed"],"opportunity_status": ["open", "won", "lost"],"org_role": ["viewer", "sales", "manager", "admin", "owner"],"org_status": ["active", "suspended", "closed"],"reservation_status": ["reserved", "settled", "released"],"sales_visibility": ["all", "assigned"],"send_decision": ["allowed", "blocked"],"send_kind": ["free_text", "template"],"send_origin": ["user", "agent", "campaign", "followup", "system"],"subscription_status": ["trial", "active", "past_due", "canceled", "internal"],"suppression_reason": ["opt_out", "complaint", "blocked", "invalid", "legal_request"],"task_status": ["open", "done", "canceled"],"template_category": ["marketing", "utility", "authentication"],"whatsapp_provider": ["meta_cloud", "sandbox", "evolution"],"whatsapp_status": ["pending", "syncing", "active", "disconnected", "error"]
+            "activity_kind": ["note", "call", "email", "meeting", "message", "stage_change", "consent_change", "task", "import", "system"],"actor_type": ["user", "agent", "system", "platform_admin"],"agent_status": ["active", "inactive", "testing"],"agent_type": ["sdr", "capture", "followup", "analyst"],"billing_mode": ["manual", "gateway"],"consent_channel": ["whatsapp", "email", "phone"],"consent_purpose": ["marketing", "sales_followup", "service", "transactional"],"consent_status": ["granted", "revoked"],"conversation_status": ["open", "pending_human", "closed"],"discovery_stage": ["company_identified", "contact_found", "contact_authorized", "qualified_opportunity"],"execution_status": ["running", "succeeded", "failed", "skipped"],"lead_qualification": ["unknown", "cold", "warm", "hot"],"lead_source_kind": ["manual", "form", "csv", "ads", "api", "research", "whatsapp_inbound", "referral"],"legal_basis": ["consent", "legitimate_interest", "contract", "legal_obligation"],"member_status": ["active", "disabled"],"message_direction": ["inbound", "outbound"],"message_sender": ["contact", "user", "agent", "system", "business_app"],"message_status": ["received", "queued", "sent", "delivered", "read", "failed"],"opportunity_status": ["open", "won", "lost"],"org_role": ["viewer", "sales", "manager", "admin", "owner"],"org_status": ["active", "suspended", "closed"],"reservation_status": ["reserved", "settled", "released"],"sales_visibility": ["all", "assigned"],"send_decision": ["allowed", "blocked"],"send_kind": ["free_text", "template"],"send_origin": ["user", "agent", "campaign", "followup", "system"],"subscription_status": ["trial", "active", "past_due", "canceled", "internal"],"suppression_reason": ["opt_out", "complaint", "blocked", "invalid", "legal_request"],"task_status": ["open", "done", "canceled"],"template_category": ["marketing", "utility", "authentication"],"tool_decision": ["executed", "rejected", "needs_approval"],"whatsapp_provider": ["meta_cloud", "sandbox", "evolution"],"whatsapp_status": ["pending", "syncing", "active", "disconnected", "error"]
           }
         }
 } as const

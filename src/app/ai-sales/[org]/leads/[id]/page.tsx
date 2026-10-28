@@ -24,6 +24,7 @@ import { formatPhone } from "@/features/ai-sales/crm/phone";
 import { actorNames, getLead, loadCrmOptions } from "@/features/ai-sales/crm/queries";
 import { orgPath } from "@/features/ai-sales/paths";
 
+import { classifyLeadWithAi } from "../../agents-actions";
 import { deleteLead, setOpportunityStatus, setTaskStatus } from "../../crm-actions";
 
 export const metadata: Metadata = { title: "Lead" };
@@ -82,6 +83,7 @@ async function LeadContent({ params }: Pick<PageProps<"/ai-sales/[org]/leads/[id
               Ver contato
             </Link>
           )}
+          {canWrite && <ActionButton action={classifyLeadWithAi.bind(null, org, lead.id)}>Classificar com IA</ActionButton>}
           {canManage && (
             <ActionButton
               variant="danger"

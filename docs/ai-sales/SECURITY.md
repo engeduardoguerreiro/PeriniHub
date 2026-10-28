@@ -131,7 +131,14 @@ geram, na mesma transação, registro em `suppression_list`, revogação do
 consentimento e cancelamento de envios pendentes. Confirmação ao titular é
 uma única mensagem de serviço (dentro da janela).
 
-## 7. Agentes de IA (Fase 4)
+## 7. Agentes de IA (Fase 4) — implementado
+
+> Como foi feito: o modelo devolve saída estruturada (Zod) e o código aplica
+> só `conversation.reply` (sempre pelo gate de envio), `conversation.handoff`
+> e `crm.update_lead` (interesse/pontuação), todas registradas em
+> `agent_tool_calls`. Sem SQL, HTTP livre ou segredos. Afirmação de preço,
+> prazo ou especificação sem trecho citado da base → transferência.
+> Idempotência por mensagem (`sdr:<id>`) e por envio (`agent:<execução>`).
 
 - Conteúdo de clientes, documentos e páginas entra no prompt como **dado**
   delimitado (`wrapUntrusted`, já existente), com regras no system prompt.

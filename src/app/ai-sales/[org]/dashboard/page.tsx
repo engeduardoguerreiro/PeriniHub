@@ -33,7 +33,6 @@ type Metrics = {
 };
 
 const MODULES = [
-  { name: "Agentes de IA e base de conhecimento", phase: 4 },
   { name: "Campanhas e follow-up", phase: 5 },
   { name: "Captação e enriquecimento", phase: 6 },
 ];

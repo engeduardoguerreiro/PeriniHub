@@ -29,13 +29,18 @@ export interface LlmProvider {
   generate<T>(request: LlmRequest<T>): Promise<LlmResult<T>>;
 }
 
+/** Qual chave usar: a do portal Tech ou a do AI Sales (orçamentos separados, D-04). */
+export type ApiKeyEnv = "ANTHROPIC_API_KEY" | "AI_SALES_ANTHROPIC_API_KEY";
+
 class AnthropicProvider implements LlmProvider {
   readonly name = "anthropic";
   private client: Anthropic | null = null;
 
+  constructor(private readonly apiKeyEnv: ApiKeyEnv = "ANTHROPIC_API_KEY") {}
+
   private getClient() {
     // Retries de rede/429/5xx ficam com o SDK (2) e, acima dele, com o Trigger.dev.
-    this.client ??= new Anthropic({ apiKey: requireSecret("ANTHROPIC_API_KEY"), timeout: 180_000 });
+    this.client ??= new Anthropic({ apiKey: requireSecret(this.apiKeyEnv), timeout: 180_000 });
     return this.client;
   }
 
@@ -91,17 +96,18 @@ function classifyAnthropicError(error: unknown): AgentError {
 
 const providers = new Map<string, LlmProvider>();
 
-export function createProvider(name: string): LlmProvider {
-  const existing = providers.get(name);
+export function createProvider(name: string, apiKeyEnv: ApiKeyEnv = "ANTHROPIC_API_KEY"): LlmProvider {
+  const cacheKey = `${name}:${apiKeyEnv}`;
+  const existing = providers.get(cacheKey);
   if (existing) return existing;
   let provider: LlmProvider;
   switch (name) {
     case "anthropic":
-      provider = new AnthropicProvider();
+      provider = new AnthropicProvider(apiKeyEnv);
       break;
     default:
       throw new AgentError(`Provedor de IA não suportado: ${name}`, "unsupported_provider", false);
   }
-  providers.set(name, provider);
+  providers.set(cacheKey, provider);
   return provider;
 }

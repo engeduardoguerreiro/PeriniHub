@@ -75,6 +75,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await fx.service.from("webhook_events").delete().in("phone_number_id", [numberA.phone_number_id, numberB.phone_number_id, "999999999"]);
+  await fx.service.from("webhook_events").delete().like("phone_number_id", "evolution-%").eq("tenant_id", orgA.id);
   await fx.cleanup();
 });
 

@@ -5,6 +5,8 @@
 > em 2026-10-29 (branch `feature/ai-sales-fase-2`). Próxima: Fase 3
 > (WhatsApp oficial). **Fase 3 em modo simulado** em 2026-10-30 (branch
 > `feature/ai-sales-fase-3`); modo real aguarda credenciais da Meta.
+> **Fase 4** em 2026-11-01 (branch `feature/ai-sales-fase-4`), agentes em modo
+> simulado até a chave própria da Anthropic (D-04).
 
 Regras para todas as fases:
 
@@ -181,7 +183,34 @@ com motivo registrado; "SAIR" suprime e cancela pendentes; sem credenciais o
 módulo mostra "não configurado" e o resto funciona; assinatura inválida = 401.
 **Depende de:** D-05 para testes reais (número de teste da Meta).
 
-## Fase 4 — Engine e agentes de IA
+## Fase 4 — Engine e agentes de IA ✅ (2026-11-01, branch `feature/ai-sales-fase-4`)
+
+**Entregue:** migration `20261101120000_sales_agents.sql` (agentes, versões
+imutáveis com rollback, execuções com custo e idempotência, ações dos
+agentes, transferências, bases/documentos/trechos com busca textual em
+português). Executor independente da interface (`features/ai-sales/agents/engine.ts`)
+sobre o `LlmProvider` existente (agora com chave própria do AI Sales),
+provedor simulado sem custo, 4 agentes: **SDR** (responde no WhatsApp pelo
+gate, cita a base, transfere com confiança baixa / preço sem fonte /
+limite de respostas / pedido do modelo), **classificador** (interesse e
+pontuação na ficha do lead), **follow-up** e **análise** (só
+recomendações). Telas: Agentes (criar por tipo, configuração, versões,
+console de teste, execuções com custo e ações), Conhecimento (bases,
+documentos, teste de busca), alternar IA/humano na conversa.
+
+**Testes:** 10 de integração (SDR de ponta a ponta, cenário crítico 9,
+transferência por preço sem fonte e por tentativa de injeção, isolamento do
+conhecimento, teto de IA bloqueando antes da chamada, permissões), 4
+unitários; total 80 de integração e 224 unitários.
+
+**Decisões provisórias:** teto interno de IA US$ 5/mês e 4 agentes (até a
+D-04); busca textual em vez de embeddings (D-06 adiada); ações dos agentes
+por saída estruturada validada (sem tool use nativo), aplicadas por código.
+**Pendente:** chave `AI_SALES_ANTHROPIC_API_KEY` e teto definitivo (D-04);
+PDF na base de conhecimento; execução agendada do follow-up e da análise
+(Fase 5).
+
+**Plano original da fase (referência):**
 
 **Objetivo:** agentes configuráveis por empresa, com versões, testes e custos.
 Entregas: `LlmProvider.chat/embed`, executor com reserva de orçamento,

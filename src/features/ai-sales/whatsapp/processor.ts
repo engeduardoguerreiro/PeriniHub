@@ -1,6 +1,7 @@
 import { createSalesServiceClient } from "@/lib/supabase/sales-service";
 import type { Json } from "@/lib/supabase/sales.types";
 
+import { maybeRunSdr } from "../agents/sdr";
 import { isOptOutText, parseWebhook, type WebhookEvent } from "./webhook";
 
 // Ingestão e processamento dos eventos do WhatsApp. O webhook só grava e
@@ -67,7 +68,7 @@ async function handle(event: WebhookEvent) {
     p_sender: event.kind === "echo" ? "business_app" : "contact",
   });
   if (error) throw new Error(error.message);
-  const result = data as { status: string; tenant_id?: string; contact_id?: string; conversation_id?: string };
+  const result = data as { status: string; tenant_id?: string; contact_id?: string; conversation_id?: string; message_id?: string };
 
   // "SAIR" e equivalentes: descadastro imediato (supressão + revogação +
   // cancelamento de envios pendentes) e registro na conversa.
@@ -85,6 +86,15 @@ async function handle(event: WebhookEvent) {
       body: "Contato pediu para não receber mensagens. Descadastrado do WhatsApp; envios pendentes cancelados.",
       status: "sent",
     });
+    return;
+  }
+
+  // Agente SDR: só para mensagem nova do contato. Falha do agente não
+  // invalida o evento (a mensagem já está gravada); fica no registro dele.
+  if (event.kind === "message" && result.status === "created" && result.tenant_id && result.conversation_id && result.contact_id && result.message_id) {
+    await maybeRunSdr({ tenantId: result.tenant_id, conversationId: result.conversation_id, contactId: result.contact_id, messageId: result.message_id, body: event.body }).catch((error) =>
+      console.error("[ai-sales] agente SDR falhou:", error instanceof Error ? error.message : error),
+    );
   }
 }
 

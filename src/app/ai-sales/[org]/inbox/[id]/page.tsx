@@ -18,6 +18,7 @@ import { inServiceWindow, templateBody } from "@/features/ai-sales/whatsapp/temp
 import { createSalesSessionClient } from "@/lib/supabase/sales-server";
 import { cn } from "@/lib/utils";
 
+import { setConversationHandler } from "../../agents-actions";
 import { assignConversation, setConversationStatus } from "../../whatsapp-actions";
 
 export const metadata: Metadata = { title: "Conversa" };
@@ -32,7 +33,7 @@ async function ConversationContent({ params }: Pick<PageProps<"/ai-sales/[org]/i
   const db = await createSalesSessionClient();
   const { data: conversation } = await db
     .from("conversations")
-    .select("id, status, assigned_user_id, last_inbound_at, phone_number_id, contact:contacts(id, full_name, phone_e164, email_normalized), number:whatsapp_phone_numbers(account_id, status, display_phone, account:whatsapp_accounts(provider))")
+    .select("id, status, handled_by, assigned_user_id, last_inbound_at, phone_number_id, contact:contacts(id, full_name, phone_e164, email_normalized), number:whatsapp_phone_numbers(account_id, status, display_phone, account:whatsapp_accounts(provider))")
     .eq("tenant_id", membership.tenantId)
     .eq("id", id)
     .maybeSingle();
@@ -120,6 +121,17 @@ async function ConversationContent({ params }: Pick<PageProps<"/ai-sales/[org]/i
           <Panel title="Atendimento">
             <div className="grid gap-3 text-sm">
               <p className="text-muted-foreground">Responsável: {conversation.assigned_user_id ? names.get(conversation.assigned_user_id) ?? "membro" : "ninguém"}</p>
+              <p className="text-muted-foreground">
+                Quem responde: <strong className="text-foreground">{conversation.handled_by === "agent" ? "agente de IA" : "equipe"}</strong>
+                {conversation.status === "pending_human" && " · aguardando humano"}
+              </p>
+              <div>
+                {conversation.handled_by === "agent" ? (
+                  <ActionButton action={setConversationHandler.bind(null, org, id, "human")}>Assumir no lugar da IA</ActionButton>
+                ) : (
+                  <ActionButton action={setConversationHandler.bind(null, org, id, "agent")}>Devolver para a IA</ActionButton>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
                 {!mine && <ActionButton action={assignConversation.bind(null, org, id, membership.user.id)}>Assumir</ActionButton>}
                 {conversation.assigned_user_id && roleAtLeast(membership.role, "manager") && <ActionButton action={assignConversation.bind(null, org, id, null)}>Liberar</ActionButton>}

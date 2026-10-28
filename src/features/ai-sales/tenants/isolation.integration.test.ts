@@ -322,8 +322,11 @@ describe("plataforma, consumo e limites (só a secret key)", () => {
   it("métrica sem limite no plano é bloqueada; empresa B não usa limite da A", async () => {
     const unknown = await service.rpc("reserve_usage", { p_tenant: orgA.id, p_metric: "metrica_inexistente", p_amount: 1, p_key: `zz-${runTag}-4` });
     expect(unknown.error?.message).toContain("limit_not_configured");
-    const otherTenant = await service.rpc("reserve_usage", { p_tenant: orgB.id, p_metric: "ai_cost_usd", p_amount: 0.01, p_key: `zz-${runTag}-5` });
-    expect(otherTenant.error?.message).toContain("usage_limit_exceeded");
+    // A já consumiu/reservou quase todo o limite dela; isso não conta para a B.
+    const otherTenant = await service.rpc("reserve_usage", { p_tenant: orgB.id, p_metric: "ai_cost_usd", p_amount: 0.9, p_key: `zz-${runTag}-5` });
+    expect(otherTenant.error).toBeNull();
+    const overA = await service.rpc("reserve_usage", { p_tenant: orgA.id, p_metric: "ai_cost_usd", p_amount: 0.9, p_key: `zz-${runTag}-6` });
+    expect(overA.error?.message).toContain("usage_limit_exceeded");
   });
 
   it("usuário comum não reserva consumo nem usa o limitador", async () => {

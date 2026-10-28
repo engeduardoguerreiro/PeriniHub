@@ -65,7 +65,7 @@ partir das fases 3–4).
 
 | Id | Decisão | Fase | Recomendação |
 |---|---|---|---|
-| D-04 | Orçamento de IA do AI Sales: workspace e chave Anthropic separados do portal (o teto atual de US$ 5/mês é compartilhado), valores de limite global e por empresa | 4 | Workspace próprio "ai-sales" com limite de gasto; limite interno inicial a definir pelo usuário |
+| D-04 | (provisório desde 2026-11-01: teto interno US$ 5/mês, chave própria `AI_SALES_ANTHROPIC_API_KEY` pendente) Orçamento de IA do AI Sales: workspace e chave Anthropic separados do portal (o teto atual de US$ 5/mês é compartilhado), valores de limite global e por empresa | 4 | Workspace próprio "ai-sales" com limite de gasto; limite interno inicial a definir pelo usuário |
 | D-06 | Embeddings para RAG: Voyage AI, OpenAI ou adiar | 4 | Começar com full-text do Postgres; adicionar embeddings só se a qualidade das buscas exigir |
 | D-08 | Aprovação de campanha por pessoa diferente de quem criou | 5 | Exigir quando a empresa tem 2+ MANAGER/ADMIN; senão, confirmação explícita com motivo |
 | D-10 | Revisão jurídica: termos, política de privacidade, contrato de operador, prazos de retenção | 8 (antes do 1º cliente externo) | Contratar revisão |
