@@ -344,12 +344,13 @@ do fuso da empresa (`organization_settings.timezone`, padrão
 |---|---|
 | Leads cadastrados | `count(leads)` com `created_at` no período e `deleted_at is null` |
 | Leads por origem | mesmo conjunto agrupado por `lead_source_id` |
-| Leads autorizados para contato | leads cujo contato tem `consent_records` vigente (`status='granted'`, não revogado, não expirado) para canal `whatsapp` e qualquer finalidade, e não está em `suppression_list` — **na data de fim do período** |
+| Leads autorizados para contato | leads criados até o fim do período cujo contato tem consentimento vigente (`current_consents.is_valid`) no canal `whatsapp`, em qualquer finalidade, e cujo telefone não está em `suppression_list` — **situação atual** (o histórico por data entra quando houver necessidade) |
 | Conversas iniciadas | `count(conversations)` com `started_at` no período |
 | Respostas recebidas | `count(distinct conversation_id)` com ao menos uma `messages.direction='inbound'` no período, em conversas que tiveram mensagem `outbound` iniciada pela empresa antes |
-| Leads qualificados | leads que entraram em estágio com `pipeline_stages.is_qualified = true` no período (via `activities` de mudança de estágio) |
-| Oportunidades abertas | `count(opportunities)` com `status='open'` na data de fim |
-| Taxa de conversão | `ganhas no período / (ganhas + perdidas no período)`; denominador 0 → "—" |
+| Leads qualificados | `count(distinct lead_id)` das atividades `stage_change` do período cujo destino é etapa com `is_qualified = true` (lead não excluído) |
+| Oportunidades abertas | `count(opportunities)` com `status='open'` criadas até o fim do período |
+| Taxa de conversão | oportunidades `won` com `closed_at` no período ÷ (`won` + `lost` no período); denominador 0 → "—". Mostra também o valor ganho |
+| Tarefas atrasadas | tarefas `open` com `due_at < agora` |
 | Tempo de primeira resposta | mediana de `first_outbound_at - first_inbound_at` por conversa iniciada pelo contato no período (separado por humano e IA) |
 | Atendimento humano × IA | `count(messages outbound)` por `sender_type in ('user','agent')` |
 | Custo de IA | `sum(agent_executions.cost_usd)` no período (custo real informado pelo provedor; reservas não contam) |

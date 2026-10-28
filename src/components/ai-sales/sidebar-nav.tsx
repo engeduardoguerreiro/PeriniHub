@@ -25,10 +25,10 @@ type NavItem = { path: string; label: string; icon: LucideIcon; phase?: number }
 // a estrutura fica visível sem fingir que existe.
 const NAV_ITEMS: NavItem[] = [
   { path: "dashboard", label: "Dashboard", icon: Gauge },
-  { path: "leads", label: "Leads", icon: Users, phase: 2 },
-  { path: "contacts", label: "Contatos", icon: Contact, phase: 2 },
-  { path: "companies", label: "Empresas", icon: Building2, phase: 2 },
-  { path: "pipeline", label: "Pipeline", icon: KanbanSquare, phase: 2 },
+  { path: "leads", label: "Leads", icon: Users },
+  { path: "contacts", label: "Contatos", icon: Contact },
+  { path: "companies", label: "Empresas", icon: Building2 },
+  { path: "pipeline", label: "Pipeline", icon: KanbanSquare },
   { path: "inbox", label: "Inbox", icon: Inbox, phase: 3 },
   { path: "agents", label: "Agentes", icon: Bot, phase: 4 },
   { path: "knowledge", label: "Conhecimento", icon: Library, phase: 4 },

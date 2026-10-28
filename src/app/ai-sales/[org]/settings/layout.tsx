@@ -15,7 +15,7 @@ async function Tabs({ params }: { params: LayoutProps<"/ai-sales/[org]/settings"
 export default function SettingsLayout({ children, params }: LayoutProps<"/ai-sales/[org]/settings">) {
   return (
     <>
-      <PageHeading title="Configurações" description="Membros, dados da empresa e histórico de alterações." />
+      <PageHeading title="Configurações" description="Membros, dados da empresa, pipeline e histórico de alterações." />
       <Suspense fallback={<div className="mb-6 h-10" />}>
         <Tabs params={params} />
       </Suspense>

@@ -23,7 +23,7 @@ function query(table: string) {
     return { data: [], error: null };
   };
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "is", "in", "order", "limit"]) builder[method] = () => builder;
+  for (const method of ["select", "eq", "is", "in", "order", "limit", "or", "ilike", "range", "gt"]) builder[method] = () => builder;
   for (const method of ["update", "delete", "insert"]) {
     builder[method] = (values?: unknown) => {
       state.writes.push({ table, method, values });
@@ -62,6 +62,8 @@ vi.mock("@/features/ai-sales/origin", () => ({ requestOrigin: async () => "https
 const settings = await import("./[org]/settings/actions");
 const platform = await import("./platform/actions");
 const login = await import("./login/actions");
+const crm = await import("./[org]/crm-actions");
+const exportRoute = await import("./[org]/leads/exportar/route");
 const { proxy } = await import("@/proxy");
 
 const ORG = { id: "11111111-1111-4111-8111-111111111111", slug: "acme", name: "Acme", status: "active" };
@@ -212,5 +214,65 @@ describe("proxy do AI Sales", () => {
   it("o site público e o portal não passam pelo AI Sales", async () => {
     vi.stubEnv("AI_SALES_ENABLED", "false");
     expect((await proxy(new NextRequest("https://perinihub.com.br/tech/busca"))).status).toBe(200);
+  });
+});
+
+describe("ações do CRM protegidas no servidor", () => {
+  const LEAD = "33333333-3333-4333-8333-333333333333";
+
+  it("sem sessão: nenhuma ação do CRM toca no banco", async () => {
+    expect(await crm.updateLead("acme", LEAD, { qualification: "hot" })).toMatchObject({ ok: false });
+    expect(await crm.createLead("acme", null, form({ fullName: "X", phone: "11987654321", stageId: LEAD }))).toMatchObject({ ok: false });
+    expect(await crm.suppressContact("acme", { contactId: LEAD, channel: "whatsapp", reason: "opt_out" })).toMatchObject({ ok: false });
+    expect(state.writes).toHaveLength(0);
+    expect(state.rpc).not.toHaveBeenCalled();
+  });
+
+  it("leitura (viewer) não cria lead, não registra consentimento nem nota", async () => {
+    state.userId = "u1";
+    state.memberships = [{ role: "viewer", organization: ORG }];
+    expect(await crm.createLead("acme", null, form({ fullName: "X", phone: "11987654321", stageId: LEAD }))).toMatchObject({ ok: false });
+    expect(await crm.recordConsent("acme", null, form({ contactId: LEAD, channel: "whatsapp", purpose: "marketing", legalBasis: "consent", status: "granted", source: "teste" }))).toMatchObject({ ok: false });
+    expect(await crm.addActivity("acme", null, form({ leadId: LEAD, kind: "note", body: "x" }))).toMatchObject({ ok: false });
+    expect(state.writes).toHaveLength(0);
+  });
+
+  it("vendedor não importa, não exclui, não remove supressão nem configura o pipeline", async () => {
+    state.userId = "u1";
+    state.memberships = [{ role: "sales", organization: ORG }];
+    const file = new File(["nome,telefone\nAna,11987654321"], "a.csv", { type: "text/csv" });
+    const data = form({ origin: "teste" });
+    data.set("file", file);
+    expect(await crm.importCsv("acme", null, data)).toMatchObject({ ok: false });
+    expect(await crm.removeSuppression("acme", LEAD, "motivo")).toMatchObject({ ok: false });
+    expect(await crm.createStage("acme", null, form({ name: "Nova", color: "blue", flag: "none" }))).toMatchObject({ ok: false });
+    expect(await crm.deleteTag("acme", LEAD)).toMatchObject({ ok: false });
+    const deleted = await crm.deleteLead("acme", LEAD).catch((error) => error);
+    expect(deleted).toMatchObject({ ok: false });
+    expect(state.writes).toHaveLength(0);
+    expect(state.rpc).not.toHaveBeenCalled();
+  });
+
+  it("consentimento pelo cadastro exige telefone e origem; entrada inválida para antes do banco", async () => {
+    state.userId = "u1";
+    state.memberships = [{ role: "sales", organization: ORG }];
+    expect(await crm.createLead("acme", null, form({ fullName: "X", email: "x@y.com", stageId: LEAD, consent: "on", consentSource: "site" }))).toMatchObject({
+      ok: false,
+      message: "Consentimento de WhatsApp exige telefone.",
+    });
+    expect(await crm.createLead("acme", null, form({ fullName: "X", phone: "123", stageId: LEAD }))).toMatchObject({ ok: false });
+    expect(await crm.updateLead("acme", "x' or 1=1", { qualification: "hot" })).toMatchObject({ ok: false });
+    expect(await crm.updateLead("acme", LEAD, { qualification: "deus" })).toMatchObject({ ok: false });
+    expect(state.writes).toHaveLength(0);
+  });
+
+  it("exportação CSV: vendedor e anônimo recebem 404, sem registro de exportação", async () => {
+    const request = new NextRequest("https://perinihub.com.br/ai-sales/acme/leads/exportar");
+    const context = { params: Promise.resolve({ org: "acme" }) };
+    expect((await exportRoute.GET(request, context)).status).toBe(404);
+    state.userId = "u1";
+    state.memberships = [{ role: "sales", organization: ORG }];
+    expect((await exportRoute.GET(request, context)).status).toBe(404);
+    expect(state.rpc).not.toHaveBeenCalled();
   });
 });

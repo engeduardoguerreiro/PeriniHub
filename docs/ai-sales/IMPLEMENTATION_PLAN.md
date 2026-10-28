@@ -1,8 +1,9 @@
 # PeriniHub AI Sales — Plano de implementação
 
 > Estado: **Fase 0 concluída (documentação)** em 2026-10-28, branch
-> `feature/ai-sales-fase-0`. **Fase 1 concluída** em 2026-10-28 (branch
-> `feature/ai-sales-fase-1`). Próxima: Fase 2 (CRM), aguardando autorização.
+> `feature/ai-sales-fase-0`. **Fase 1 concluída** em 2026-10-28 e **Fase 2**
+> em 2026-10-29 (branch `feature/ai-sales-fase-2`). Próxima: Fase 3
+> (WhatsApp oficial), aguardando autorização e as decisões D-05 e D-07.
 
 Regras para todas as fases:
 
@@ -85,7 +86,39 @@ Arquivos previstos:
 8. Com `AI_SALES_ENABLED` ausente, `/ai-sales` = 404 e o site/smoke passam.
 9. lint, typecheck, testes unitários, integração, build e smoke verdes.
 
-## Fase 2 — CRM e dashboard
+## Fase 2 — CRM e dashboard ✅ (2026-10-29, branch `feature/ai-sales-fase-2`)
+
+**Entregue:** migrations `20261029120000_sales_crm.sql` e
+`20261029120100_sales_crm_actor_type.sql` (correção do tipo do autor nas
+atividades) aplicadas no projeto "AI Sales". Telas: leads (lista com busca,
+filtros e paginação; novo lead com deduplicação; ficha com etapa,
+responsável, interesse, pontuação, oportunidades, tarefas, consentimento,
+supressão e histórico), contatos, empresas, pipeline Kanban (arrastar ou
+seletor por teclado, otimista), importação CSV, exportação CSV auditada,
+configuração de etapas, origens e tags, e dashboard com indicadores reais
+por período (7/30/90 dias) e "minhas tarefas".
+
+**Testes:** 17 de integração novos (39 no total contra o banco), 21
+unitários novos (198 no total: CSV, telefone, busca, ações barradas por
+papel, exportação), smoke e E2E HTTP com sessão real renderizando as 15
+telas do CRM (o Chrome não respondeu nesta sessão; formulários foram
+cobertos pelos testes de ação e de banco, não por clique).
+
+**Decisões e diferenças em relação ao plano:**
+- Importação **síncrona** no servidor (até 2 MB / 5.000 linhas) por uma
+  função do banco com o RLS do usuário; a fila do Trigger.dev entra na Fase 5
+  (ADR-015).
+- Exportação gerada na hora, registrada em `audit_logs` (sem tabela
+  `exports` nem arquivo guardado).
+- `privacy_requests` e `data_retention_policies` ficam para a Fase 8 (sem
+  tela que as use agora).
+- Kanban sem biblioteca e sem gráficos externos (D-15); nova dependência só
+  `libphonenumber-js` (D-09).
+- Vendedor com visibilidade "atribuídos" vê só os próprios leads (e
+  atividades/tarefas/oportunidades deles); contatos e empresas continuam
+  visíveis a todos os membros.
+
+**Plano original da fase (referência):**
 
 **Objetivo:** CRM utilizável internamente.
 Entregas: contatos, empresas, leads, origens, tags, pipeline configurável com

@@ -19,6 +19,8 @@ partir das fases 3–4).
 | D-03 | **Mesmo projeto Trigger.dev** do portal, filas separadas. |
 | D-13 | Visibilidade do SALES **configurável por empresa**, padrão "todos". |
 | D-14 | Primeiras empresas (tenants): **PeriniHub, PeriniFood e Perini Engenharia**, para atender os respectivos clientes. |
+| D-09 | **Aceita**: `libphonenumber-js` (metadados "min") para telefones em E.164. |
+| D-15 | **Decidida**: Kanban com arrastar nativo + seletor por teclado; barras do dashboard em CSS. Sem biblioteca de gráficos por enquanto. |
 | D-16 | **MFA do superadmin adiado** (pedido do usuário). Exigência implementada atrás de `AI_SALES_PLATFORM_REQUIRE_MFA` (padrão `false`); o painel mostra aviso. Ativar TOTP no Supabase e ligar a flag antes de atender clientes externos. Superadmin: `contato@perinihub.com.br`. |
 
 ### Histórico das opções (antes da Fase 1)
@@ -65,11 +67,9 @@ partir das fases 3–4).
 | D-06 | Embeddings para RAG: Voyage AI, OpenAI ou adiar | 4 | Começar com full-text do Postgres; adicionar embeddings só se a qualidade das buscas exigir |
 | D-07 | SMTP próprio para e-mails do Auth (Resend, SES...) | 1→8 | SMTP padrão no uso interno; próprio antes de convidar clientes |
 | D-08 | Aprovação de campanha por pessoa diferente de quem criou | 5 | Exigir quando a empresa tem 2+ MANAGER/ADMIN; senão, confirmação explícita com motivo |
-| D-09 | Nova dependência `libphonenumber-js` para normalizar telefones | 2 | Sim (metadados "min") |
 | D-10 | Revisão jurídica: termos, política de privacidade, contrato de operador, prazos de retenção | 8 (antes do 1º cliente externo) | Contratar revisão |
 | D-11 | Captcha (Cloudflare Turnstile) nos formulários públicos | 6 | Só se houver abuso; CSP precisa liberar o domínio |
 | D-12 | Fontes de dados para captação B2B (dados abertos CNPJ, BrasilAPI, Google Places...) | 6 | Começar por dados abertos do CNPJ + formulários próprios |
-| D-15 | Biblioteca de gráficos do dashboard (Recharts × SVG próprio) e Kanban (`@dnd-kit`) | 2 | Decidir na Fase 2 com protótipo |
 
 ---
 
@@ -138,3 +138,9 @@ permissões, com registro em `agent_tool_calls`.
 ### ADR-014 — Engine de agentes nova, reaproveitando só o provedor
 **Status:** Proposta. `run-agent.ts` do portal continua como está; o AI Sales
 ganha executor multi-tenant próprio sobre `LlmProvider` estendido.
+
+### ADR-015 — Importação CSV síncrona até a Fase 5
+**Status:** Aceita. Arquivos de até 2 MB / 5.000 linhas são validados no
+servidor (Zod + libphonenumber) e gravados por `import_contacts`, função do
+banco que roda com o RLS do usuário e deduplica por telefone/e-mail.
+Arquivos maiores e reprocessamento ficam para a fila do Trigger.dev (Fase 5).

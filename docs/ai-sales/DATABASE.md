@@ -92,7 +92,13 @@ Legenda: **G** = global (sem tenant), **T** = de empresa (tenant_id + RLS).
 | `audit_logs` | T/G | `tenant_id` nulo para ações de plataforma; `actor_type` (`user`,`agent`,`system`,`platform_admin`), `actor_id`, `action`, `entity_type`, `entity_id`, `diff jsonb` (sem conteúdo de mensagens), `reason` (obrigatório em break-glass), `ip_hash`, `created_at`. Append-only. |
 | `rate_limits` | G | `bucket_key`, `window_start`, `count`. Função `consume_rate_limit(key, window_s, max)` (atômica). Limpeza periódica. |
 
-### 4.2 CRM — Fase 2
+### 4.2 CRM — Fase 2 (implementado)
+
+> Implementado em `20261029120000_sales_crm.sql`. Diferenças: `imports`
+> registra o resultado (arquivo não é guardado); `exports` virou registro em
+> `audit_logs` (`record_export`); `leads` exige etapa do mesmo pipeline por FK
+> `(tenant_id, pipeline_id, stage_id)` e responsável membro da empresa por FK
+> para `organization_members`; `contacts.email_normalized` é coluna gerada.
 
 | Tabela | Colunas principais / regras |
 |---|---|
@@ -109,7 +115,11 @@ Legenda: **G** = global (sem tenant), **T** = de empresa (tenant_id + RLS).
 | `imports` | Importações CSV: `file_path` (Storage), `status`, `mapping jsonb`, `stats jsonb`, `errors_path`, `created_by`. Linhas processadas pelo worker em lotes. |
 | `exports` | `requested_by`, `scope jsonb`, `status`, `file_path`, `expires_at`, `downloaded_at`. Só MANAGER+. Auditado. |
 
-### 4.3 Consentimento e privacidade — Fase 2
+### 4.3 Consentimento e privacidade — Fase 2 (consentimento e supressão implementados)
+
+> `consent_records` (com `evidence` em jsonb no próprio registro, em vez de
+> tabela separada), view `current_consents` e `suppression_list` existem.
+> `privacy_requests` e `data_retention_policies` ficam para a Fase 8.
 
 | Tabela | Colunas principais / regras |
 |---|---|
