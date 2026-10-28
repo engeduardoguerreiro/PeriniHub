@@ -1,0 +1,168 @@
+# PeriniHub AI Sales — Plano de implementação
+
+> Estado: **Fase 0 concluída (documentação)** em 2026-10-28, branch
+> `feature/ai-sales-fase-0`. Decisões D-01, D-02, D-03, D-13 e D-14 tomadas
+> ([DECISIONS.md](./DECISIONS.md)); Fase 1 aguarda as chaves do projeto
+> Supabase "AI Sales" no `.env.local` e autorização.
+
+Regras para todas as fases:
+
+- Cada fase em branch própria, PR com CI verde; produção só com autorização.
+- Migrations aditivas, aplicadas primeiro em desenvolvimento.
+- Ao final: arquivos alterados, decisões, migrations, resultado dos testes,
+  endpoints/componentes, riscos, o que funciona × o que depende de credenciais.
+- Nenhum dado comercial real em dev; nenhum indicador fictício em produção.
+- Flag `AI_SALES_ENABLED` desligada em produção até a Fase 8.
+
+---
+
+## Fase 0 — Auditoria e arquitetura ✅
+
+Entregue: os 7 documentos de `docs/ai-sales/`. Sem código nem banco alterados.
+
+## Fase 1 — Multi-tenant, autenticação e segurança
+
+**Objetivo:** esqueleto seguro: empresas, membros, papéis, login, convites,
+seleção de empresa, painel mínimo do superadmin, auditoria e testes de
+isolamento.
+
+Arquivos previstos:
+
+| Arquivo | Ação |
+|---|---|
+| `supabase-sales/config.toml` + `supabase-sales/migrations/…_sales_platform.sql` | novo: migration de plataforma (DATABASE §4.1) |
+| `supabase-sales/seed-dev.sql` + `scripts/ai-sales-seed-dev.mjs` | novo: empresas Demo A/B e usuários de teste, só dev |
+| `src/lib/env.ts` | alterar: variáveis do AI Sales e flag |
+| `src/lib/supabase/sales-{server,service}.ts`, `sales.types.ts`; `package.json` (scripts `db:sales:push`, `db:sales:types`) | novo |
+| `src/proxy.ts` | alterar: matcher `/ai-sales/:path*`, login próprio, flag |
+| `next.config.ts` | alterar: `X-Robots-Tag` em `ai-sales` |
+| `src/app/robots.ts` | alterar: `Disallow: /ai-sales` |
+| `src/features/ai-sales/auth/{dal,roles,rate-limit}.ts` (+ testes) | novo |
+| `src/features/ai-sales/tenants/{organizations,members,invites}.ts` (+ testes) | novo |
+| `src/app/ai-sales/{layout,page}.tsx`, `login/`, `recuperar-senha/`, `redefinir-senha/`, `auth/callback/route.ts`, `convite/[token]/`, `selecionar-empresa/` | novo |
+| `src/app/ai-sales/[org]/layout.tsx` + `dashboard/page.tsx` (vazio, estados) + `settings/membros/` | novo |
+| `src/app/ai-sales/platform/` (empresas: criar/suspender; MFA obrigatório) | novo |
+| `src/components/ai-sales/` (sidebar, shell, theme toggle, empty/error states) | novo |
+| `src/app/globals.css` | alterar: tokens semânticos de tema escuro sob `.dark` (sem afetar o site) |
+| `src/features/ai-sales/**/*.integration.test.ts` | novo: isolamento A×B, papéis, último OWNER, convite |
+| `.env.example`, `docs/ai-sales/*`, `PROJETO_PERINIHUB.md` | alterar |
+
+**Critérios de aceite:**
+1. Usuário da Demo A não lê, altera nem descobre dados da Demo B (por URL,
+   Server Action ou API direta do Supabase com o próprio token) — teste
+   automatizado.
+2. Trocar o slug na URL para empresa sem vínculo → 404.
+3. Cada papel só executa o permitido (matriz testada em SQL e no DAL).
+4. Não é possível remover/rebaixar o último OWNER.
+5. Convite expira, é de uso único e só aceito pelo e-mail convidado.
+6. Login com rate limit e erro único; cadastro público inexistente.
+7. `/ai-sales/platform` exige SUPERADMIN com AAL2; ações auditadas.
+8. Com `AI_SALES_ENABLED` ausente, `/ai-sales` = 404 e o site/smoke passam.
+9. lint, typecheck, testes unitários, integração, build e smoke verdes.
+
+## Fase 2 — CRM e dashboard
+
+**Objetivo:** CRM utilizável internamente.
+Entregas: contatos, empresas, leads, origens, tags, pipeline configurável com
+Kanban, atividades, notas, tarefas, consentimento e supressão (registro e
+consulta), importação CSV (worker) com deduplicação, exportação autorizada,
+busca/filtros/paginação, dashboard com os indicadores de ARCHITECTURE §7 que
+já têm dados (os de WhatsApp/IA aparecem "não configurado").
+**Aceite:** dedupe por telefone/e-mail normalizados; importação reporta
+linhas rejeitadas; consentimento separado da qualificação; SALES respeita a
+visibilidade; exportação só MANAGER+ e auditada; Kanban operável por teclado;
+isolamento A×B em todas as tabelas novas; estados de vazio/erro/carregamento.
+
+## Fase 3 — WhatsApp oficial e inbox
+
+**Objetivo:** receber e responder mensagens com segurança.
+Entregas: conexão da WABA (Vault), webhook com assinatura e dedupe, processamento
+assíncrono, inbox compartilhada, atribuição, envio de texto na janela e de
+template aprovado, status de entrega, sincronização de templates, opt-out,
+gate de envio, modo mock completo.
+**Aceite (cenários críticos 3, 5, 6, 10):** webhook duplicado = 1 mensagem;
+status fora de ordem não regride; mensagem livre fora da janela é bloqueada
+com motivo registrado; "SAIR" suprime e cancela pendentes; sem credenciais o
+módulo mostra "não configurado" e o resto funciona; assinatura inválida = 401.
+**Depende de:** D-05 para testes reais (número de teste da Meta).
+
+## Fase 4 — Engine e agentes de IA
+
+**Objetivo:** agentes configuráveis por empresa, com versões, testes e custos.
+Entregas: `LlmProvider.chat/embed`, executor com reserva de orçamento,
+catálogo de ferramentas, agentes SDR, Captação (classificação), Follow-up
+(recomendação) e Análise; versões com rollback; ambiente de teste com mock;
+base de conhecimento (upload, chunking, full-text; embeddings se D-06);
+handoff humano.
+**Aceite (cenários 7, 9):** agente não acessa segredos nem dados de outra
+empresa (teste com prompt injection); falha do provedor não duplica resposta;
+resposta sobre preço/prazo sem fonte → handoff; limite de gasto bloqueia antes
+da chamada; toda ação registrada em `agent_tool_calls`.
+**Depende de:** D-04 (chave/orçamento), D-06 (opcional).
+
+## Fase 5 — Automações e campanhas
+
+**Objetivo:** campanhas e follow-ups autorizados, com controle total.
+Entregas: ciclo de estados da campanha, audiência com elegibilidade
+explicada por contato, estimativa de custo, aprovação explícita, despacho em
+lotes com limites, pausa de emergência, cancelamento, follow-up por regras,
+métricas de campanha.
+**Aceite (cenários 4, 5, 8):** contato sem consentimento compatível ou em
+supressão nunca recebe; campanha pausada não envia novos lotes (gate
+reconfere no envio); agendamento não pula verificações; nenhum cron dispara
+tudo de uma vez.
+
+## Fase 6 — Captação e enriquecimento
+
+Entregas: formulários públicos e landing pages com consentimento e evidência,
+Meta Lead Ads (se configurado), pesquisa B2B em fontes permitidas (D-12),
+enriquecimento com proveniência, estágios "empresa identificada → contato
+encontrado → autorizado → oportunidade".
+**Aceite:** telefone descoberto nunca marca autorização; toda informação tem
+fonte e data; formulário com rate limit e honeypot.
+
+## Fase 7 — Administração comercial SaaS
+
+Entregas: painel superadmin completo (empresas, planos, entitlements, limites,
+consumo, auditoria, saúde das integrações), cobrança manual, avisos de
+limite.
+**Aceite:** limites de plano aplicados no banco; ações de plataforma
+auditadas com motivo; sem preços fictícios apresentados como definitivos.
+
+## Fase 8 — Endurecimento e produção
+
+Entregas: revisão de segurança completa (RLS, rotas, agentes), testes E2E dos
+fluxos principais (Playwright — nova dependência a aprovar), CSP com nonce em
+`/ai-sales`, retenção ativa, backups, carga básica, documentação final,
+checklist de OPERATIONS §7.
+**Aceite:** os 10 cenários críticos do briefing automatizados e verdes;
+checklist de produção completo; autorização explícita para ativar.
+
+---
+
+## Matriz de riscos
+
+| Risco | Prob. | Impacto | Mitigação |
+|---|---|---|---|
+| Vazamento entre tenants por policy errada | Média | Crítico | RLS + FK composta + DAL; testes A×B em cada tabela; revisão de segurança por fase |
+| Migration de teste atingir o banco de produção do portal | Alta se D-01=B | Alto | D-01 = projeto dedicado |
+| Número WhatsApp bloqueado/qualidade baixa | Média | Alto | Só opt-in, limites de frequência, pausa automática por qualidade, templates bem avaliados |
+| Gasto de IA descontrolado | Média | Médio | Reserva transacional, limites por agente/empresa/global, workspace separado |
+| Prompt injection levando a ação indevida | Média | Alto | Entrada isolada, catálogo fechado, gate determinístico, aprovação humana |
+| Mudança de regras/preços da Meta | Alta | Médio | Regras configuráveis, versão da API fixada, revisão no início das fases 3 e 5 |
+| Não conformidade LGPD (base legal, retenção) | Média | Alto | Consentimento com evidência, supressão, retenção, revisão jurídica (D-10) |
+| Escopo grande para um desenvolvedor | Alta | Médio | Fases pequenas, flag, uso interno primeiro |
+| Plano gratuito do Supabase pausar/limitar | Média | Médio | Plano pago antes de produção (D-02) |
+| Regressão no site público ou no portal | Baixa | Alto | Nada público movido; CI + smoke; worker testado inteiro antes de deploy |
+
+## Dependências externas
+
+| Dependência | Responsável | Necessária em |
+|---|---|---|
+| Projeto(s) Supabase do AI Sales | usuário (criação) | Fase 1 |
+| Desativar cadastro público / ativar MFA no Auth | usuário (painel Supabase) | Fase 1 |
+| Workspace + chave Anthropic do AI Sales | usuário | Fase 4 |
+| Conta Meta Business verificada, app, WABA, número, token de sistema, método de pagamento | usuário | Fase 3 |
+| SMTP com domínio próprio | usuário | antes de clientes externos |
+| Revisão jurídica | usuário/advogado | antes de clientes externos |
+| Fontes de dados B2B (chaves/termos) | usuário | Fase 6 |

@@ -95,6 +95,10 @@ Todo o conteúdo editável (textos, produtos, clientes, FAQ, contatos) fica em `
 - Código: `src/app/tech`, `src/app/admin`, `src/components/{tech,admin}`, `src/lib/{news,ai,security,supabase,auth,pipeline}`, `src/agents`, `src/trigger`, `supabase/migrations`.
 - Arquitetura, variáveis, deploy, rollback e checklist de ativação: `docs/tech-portal.md`.
 
+## PeriniHub AI Sales (em planejamento)
+
+Plataforma SaaS multiempresa de CRM, WhatsApp oficial e agentes de IA para vendas, prevista em `/ai-sales`. Fase 0 (auditoria e arquitetura) documentada em `docs/ai-sales/`; nada implementado ainda. Decisões pendentes em `docs/ai-sales/DECISIONS.md`.
+
 ## Formulário de contato
 
 Sem backend: valida os campos (nome, WhatsApp com DDD, tipo de projeto, mensagem até 1500 caracteres), monta a mensagem e abre `wa.me` em nova aba. Os dados não são apagados, e aparece um link "O WhatsApp não abriu?" caso o navegador bloqueie o popup. Os erros são mostrados por campo, com `aria-describedby`.
