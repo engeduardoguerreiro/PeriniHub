@@ -21,7 +21,7 @@ beforeEach(() => {
 
 describe("webhook da Evolution", () => {
   it("sem o segredo certo: 401 e nada gravado", async () => {
-    for (const headers of [{}, { "x-webhook-secret": "errado" }]) {
+    for (const headers of [{}, { "x-webhook-secret": "errado" }] as Record<string, string>[]) {
       expect((await POST(new NextRequest(URL_BASE, { method: "POST", body, headers }))).status).toBe(401);
     }
     expect(processor.ingestEvents).not.toHaveBeenCalled();
