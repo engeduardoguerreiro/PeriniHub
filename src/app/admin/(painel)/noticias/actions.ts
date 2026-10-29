@@ -311,6 +311,7 @@ const settingsSchema = z.object({
     .array(z.string().regex(/^([01]\d|2[0-3]):[0-5][05]$/, "horários em HH:MM, múltiplos de 5 minutos"))
     .min(1)
     .max(12),
+  scheduleWeekdays: z.array(z.coerce.number().int().min(0).max(6)).min(1, "escolha ao menos um dia de coleta"),
   allowedCategories: z.array(uuid),
 });
 
@@ -327,6 +328,7 @@ export async function updateSettings(_prev: ActionResult | null, formData: FormD
     scheduleTimes: String(formData.get("scheduleTimes") ?? "")
       .split(/[\s,;]+/)
       .filter(Boolean),
+    scheduleWeekdays: formData.getAll("scheduleWeekdays").map(String),
     allowedCategories: formData.getAll("allowedCategories").map(String),
   });
   if (!parsed.success) return fail(`Configuração inválida: ${parsed.error.issues[0]?.message ?? "confira os campos"}.`);
@@ -344,6 +346,7 @@ export async function updateSettings(_prev: ActionResult | null, formData: FormD
       max_candidates_per_run: value.maxCandidatesPerRun,
       monthly_cost_limit: value.monthlyCostLimit,
       schedule_times: [...new Set(value.scheduleTimes)].sort(),
+      schedule_weekdays: [...new Set(value.scheduleWeekdays)].sort(),
       allowed_categories: value.allowedCategories.length > 0 ? value.allowedCategories : null,
       updated_by: user.id,
     })

@@ -1,4 +1,4 @@
-import { localDate, localTime } from "@/agents/types";
+import { localDate, localTime, localWeekday } from "@/agents/types";
 
 // Regras do agendador, sem dependência do Trigger.dev (testáveis).
 
@@ -11,10 +11,12 @@ function minutesOf(hhmm: string) {
 
 /**
  * Horários de coleta (HH:MM no fuso editorial) que caem na janela do tick
- * atual do agendador. Cada horário dispara uma única vez por dia: a chave de
- * idempotência inclui a data local e o horário.
+ * atual do agendador, só nos dias da semana configurados (0 = domingo).
+ * Cada horário dispara uma única vez por dia: a chave de idempotência inclui
+ * a data local e o horário.
  */
-export function dueCollectionSlots(scheduleTimes: string[], timeZone: string, now = Date.now()) {
+export function dueCollectionSlots(scheduleTimes: string[], timeZone: string, now = Date.now(), weekdays: number[] = [0, 1, 2, 3, 4, 5, 6]) {
+  if (!weekdays.includes(localWeekday(timeZone, now))) return [];
   const current = minutesOf(localTime(timeZone, now));
   const date = localDate(timeZone, now);
   return scheduleTimes
@@ -28,7 +30,8 @@ export function dueCollectionSlots(scheduleTimes: string[], timeZone: string, no
 /**
  * Quantos artigos novos ainda podem ser redigidos hoje: no máximo o limite
  * diário de publicação. É o principal controle de consumo de IA (medido:
- * ~US$ 0,05 por artigo entre redação, verificação e SEO; 3/dia ≈ US$ 4,60/mês).
+ * ~US$ 0,05 por artigo entre redação, verificação e SEO). Com coleta semanal,
+ * o teto é o limite diário por semana de coleta (3 ≈ US$ 0,15/semana).
  */
 export function writingCapacity(dailyPublicationLimit: number, draftsCreatedToday: number) {
   return Math.max(0, dailyPublicationLimit - draftsCreatedToday);
