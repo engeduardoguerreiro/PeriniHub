@@ -1,7 +1,6 @@
-import { ShieldCheck } from "lucide-react";
-import Link from "next/link";
 import { Suspense } from "react";
 
+import { PlatformNav } from "@/components/ai-sales/platform-billing";
 import { UserBox } from "@/components/ai-sales/user-box";
 import { Brand } from "@/components/perinihub/brand";
 import { getMemberships, requirePlatformAdmin } from "@/features/ai-sales/auth/dal";
@@ -20,12 +19,11 @@ export default function PlatformLayout({ children }: LayoutProps<"/ai-sales/plat
           <Brand tone="dark" />
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-aqua-300 lg:mt-3">AI Sales · Plataforma</p>
         </div>
-        <nav aria-label="Plataforma" className="mt-4 lg:mt-8 lg:flex-1">
-          <Link href="/ai-sales/platform" className="flex items-center gap-2.5 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white">
-            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-            Empresas
-          </Link>
-        </nav>
+        <div className="mt-4 lg:mt-8 lg:flex-1">
+          <Suspense fallback={<div className="h-40 animate-pulse rounded bg-white/5" />}>
+            <PlatformNav />
+          </Suspense>
+        </div>
         <div className="mt-4 border-t border-white/10 pt-4">
           <Suspense fallback={<div className="h-14 animate-pulse rounded bg-white/5" />}>
             <Footer />

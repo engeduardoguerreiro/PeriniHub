@@ -106,6 +106,7 @@ export const SUBMIT_MESSAGES: Record<string, string> = {
   consent_version_changed: "O texto de autorização foi atualizado. Recarregue a página e envie de novo.",
   name_required: "Informe seu nome.",
   contact_required: "Informe telefone ou e-mail.",
+  plan_limit: "Este formulário não está aceitando envios no momento.",
   rate_limited: "Muitos envios em pouco tempo. Tente de novo em alguns minutos.",
   invalid: "Dados inválidos.",
   error: "Não foi possível enviar agora. Tente novamente.",

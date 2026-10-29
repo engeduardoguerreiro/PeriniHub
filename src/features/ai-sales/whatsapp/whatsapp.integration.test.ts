@@ -228,6 +228,12 @@ describe("Evolution (não oficial): regras do gate", () => {
   let evolution: { id: string; phone_number_id: string };
 
   beforeAll(async () => {
+    // Segundo número na mesma empresa: o plano interno permite 1 (limite aplicado pelo banco desde a Fase 7).
+    const platform = await fx.platform();
+    const raised = await fx.service.rpc("platform_update_subscription", {
+      p_actor: platform.id, p_tenant: orgA.id, p_plan_code: "internal", p_status: "internal", p_period_start: null, p_period_end: null, p_limit_overrides: { whatsapp_numbers: 2 }, p_notes: null, p_reason: "teste com dois números",
+    } as never);
+    if (raised.error) throw raised.error;
     const { data: account } = await fx.service.from("whatsapp_accounts").insert({ tenant_id: orgA.id, provider: "evolution", status: "active" }).select("id").single();
     const id = randomUUID();
     const { data } = await fx.service

@@ -83,5 +83,5 @@ export function createFixtures(prefix: string) {
     }
   }
 
-  return { service, anon, tag, createUser, createOrg, addMember, cleanup };
+  return { service, anon, tag, createUser, createOrg, addMember, platform, cleanup };
 }

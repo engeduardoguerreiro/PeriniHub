@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { OrganizationForm } from "@/components/ai-sales/settings-forms";
-import { Notice, Panel, StatusBadge } from "@/components/ai-sales/ui";
+import { Empty, Notice, Panel, StatusBadge } from "@/components/ai-sales/ui";
+import { UsageTable, UsageWarnings } from "@/components/ai-sales/usage";
 import { PageFallback } from "@/components/ai-sales/page-fallback";
 import { requireMember } from "@/features/ai-sales/auth/dal";
 import { can } from "@/features/ai-sales/auth/roles";
+import { INVOICE_STATUS, SUBSCRIPTION_STATUS_LABELS } from "@/features/ai-sales/billing/labels";
+import { formatCentsBRL, formatPlanPrice } from "@/features/ai-sales/billing/limits";
+import { loadUsage } from "@/features/ai-sales/billing/queries";
 import { createSalesSessionClient } from "@/lib/supabase/sales-server";
 
 export const metadata: Metadata = { title: "Empresa" };
@@ -15,15 +19,19 @@ async function OrganizationPageContent({ params }: Pick<PageProps<"/ai-sales/[or
   const membership = await requireMember(org);
   const manage = can(membership.role, "settings.manage");
   const db = await createSalesSessionClient();
-  const [{ data: organization }, { data: settings }, { data: subscription }] = await Promise.all([
+  const billing = can(membership.role, "billing.read");
+  const [{ data: organization }, { data: settings }, { data: subscription }, { data: invoices }, usage] = await Promise.all([
     db.from("organizations").select("name, legal_name, document, slug").eq("id", membership.tenantId).single(),
     db.from("organization_settings").select("timezone, sales_visibility").eq("tenant_id", membership.tenantId).single(),
-    can(membership.role, "billing.read")
-      ? db.from("subscriptions").select("status, plan:subscription_plans(name, entitlements)").eq("tenant_id", membership.tenantId).maybeSingle()
+    billing
+      ? db.from("subscriptions").select("status, current_period_end, plan:subscription_plans(name, price_monthly_cents, price_is_final)").eq("tenant_id", membership.tenantId).maybeSingle()
       : Promise.resolve({ data: null }),
+    billing
+      ? db.from("billing_invoices").select("id, number, description, amount_cents, status, due_date, paid_at").eq("tenant_id", membership.tenantId).order("created_at", { ascending: false }).limit(24)
+      : Promise.resolve({ data: null }),
+    billing ? loadUsage(db, membership.tenantId) : Promise.resolve([]),
   ]);
   if (!organization || !settings) return <Notice tone="warning">Não foi possível carregar os dados da empresa.</Notice>;
-  const limits = (subscription?.plan?.entitlements as { limits?: Record<string, number> } | null)?.limits ?? {};
 
   return (
     <div className="grid gap-6">
@@ -40,25 +48,37 @@ async function OrganizationPageContent({ params }: Pick<PageProps<"/ai-sales/[or
         />
       </Panel>
       {subscription && (
-        <Panel title="Plano" description="Cobrança manual. Limites aplicados pelo banco.">
-          <div className="flex flex-wrap items-center gap-2 text-sm">
+        <Panel
+          title="Plano e consumo"
+          description={`${formatPlanPrice(subscription.plan?.price_monthly_cents ?? null, subscription.plan?.price_is_final ?? false)} · cobrança manual. Ao atingir um limite, o sistema recusa novas criações.`}
+        >
+          <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
             <span className="font-medium">{subscription.plan?.name}</span>
-            <StatusBadge status={subscription.status} />
+            <StatusBadge status={subscription.status === "past_due" || subscription.status === "canceled" ? "suspended" : "active"} label={`Assinatura ${SUBSCRIPTION_STATUS_LABELS[subscription.status]}`} />
           </div>
-          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-            <div>
-              <dt className="text-muted-foreground">Membros</dt>
-              <dd className="font-medium">{limits.members ?? "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Leads</dt>
-              <dd className="font-medium">{limits.leads?.toLocaleString("pt-BR") ?? "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">IA e WhatsApp</dt>
-              <dd className="font-medium">Liberados nas fases 3 e 4</dd>
-            </div>
-          </dl>
+          <div className="mb-4">
+            <UsageWarnings rows={usage} />
+          </div>
+          <UsageTable rows={usage} />
+        </Panel>
+      )}
+      {billing && (
+        <Panel title="Cobranças">
+          {invoices?.length ? (
+            <ul className="divide-y divide-border text-sm">
+              {invoices.map((invoice) => (
+                <li key={invoice.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                  <span>
+                    <span className="font-medium">{invoice.number}</span> · {invoice.description} · {formatCentsBRL(invoice.amount_cents)} · vence{" "}
+                    {new Date(`${invoice.due_date}T12:00:00`).toLocaleDateString("pt-BR")}
+                  </span>
+                  <StatusBadge status={INVOICE_STATUS[invoice.status].tone} label={INVOICE_STATUS[invoice.status].label} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Empty>Nenhuma cobrança emitida.</Empty>
+          )}
         </Panel>
       )}
     </div>

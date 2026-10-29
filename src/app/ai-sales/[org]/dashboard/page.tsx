@@ -5,7 +5,11 @@ import { Suspense } from "react";
 
 import { PageFallback } from "@/components/ai-sales/page-fallback";
 import { Empty, formatDateTime, PageHeading, Panel, StatCard } from "@/components/ai-sales/ui";
+import { UsageWarnings } from "@/components/ai-sales/usage";
 import { requireMember } from "@/features/ai-sales/auth/dal";
+import { roleAtLeast } from "@/features/ai-sales/auth/roles";
+import { usageWarnings, type UsageRow } from "@/features/ai-sales/billing/limits";
+import { loadUsage } from "@/features/ai-sales/billing/queries";
 import { formatCents } from "@/features/ai-sales/crm/labels";
 import { orgPath } from "@/features/ai-sales/paths";
 import { createSalesSessionClient } from "@/lib/supabase/sales-server";
@@ -43,6 +47,8 @@ function periodRange(period: Period) {
   return { from: from.toISOString(), to: to.toISOString() };
 }
 
+const usageWarningsVisible = (rows: UsageRow[]) => usageWarnings(rows).length > 0;
+
 async function DashboardContent({ params, searchParams }: PageProps<"/ai-sales/[org]/dashboard">) {
   const { org } = await params;
   const membership = await requireMember(org);
@@ -50,7 +56,7 @@ async function DashboardContent({ params, searchParams }: PageProps<"/ai-sales/[
   const period: Period = typeof query.periodo === "string" && query.periodo in PERIODS ? (query.periodo as Period) : "30";
   const { from, to } = periodRange(period);
   const db = await createSalesSessionClient();
-  const [{ data }, { data: myTasks }] = await Promise.all([
+  const [{ data }, { data: myTasks }, usage] = await Promise.all([
     db.rpc("crm_dashboard", { p_tenant: membership.tenantId, p_from: from, p_to: to }),
     db
       .from("tasks")
@@ -60,6 +66,8 @@ async function DashboardContent({ params, searchParams }: PageProps<"/ai-sales/[
       .eq("status", "open")
       .order("due_at", { nullsFirst: false })
       .limit(8),
+    // Aviso de limite do plano para quem gere a empresa.
+    roleAtLeast(membership.role, "manager") ? loadUsage(db, membership.tenantId) : Promise.resolve([]),
   ]);
   const metrics = data as Metrics | null;
   const closed = (metrics?.opportunities_won ?? 0) + (metrics?.opportunities_lost ?? 0);
@@ -87,6 +95,11 @@ async function DashboardContent({ params, searchParams }: PageProps<"/ai-sales/[
           </nav>
         }
       />
+      {usageWarningsVisible(usage) && (
+        <div className="mb-6">
+          <UsageWarnings rows={usage} />
+        </div>
+      )}
       {!metrics ? (
         <Empty>Não foi possível calcular os indicadores agora.</Empty>
       ) : (

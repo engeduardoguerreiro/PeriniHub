@@ -213,7 +213,7 @@ Prazos são propostas para validação jurídica (D-10). O job
 | 4 | `..._sales_agents.sql` / `..._sales_knowledge.sql` | agentes, execuções, conhecimento, `create extension vector` |
 | 5 | `..._sales_campaigns.sql` | campanhas, follow-up |
 | 6 | `20261103120000_sales_capture.sql` | formulários de captação, versões do consentimento, envios, enriquecimento de empresas, estágio de descoberta calculado |
-| 7 | `..._sales_billing.sql` | entitlements adicionais, saúde de integrações |
+| 7 | `20261104120000_sales_billing.sql` | limites por trigger, preço provisório/definitivo, assinatura e cobrança manual auditadas, consumo, saúde das integrações |
 
 Toda migration é aditiva. Alterações destrutivas (drop/rename de coluna com
 dados) seguem expand/contract e **exigem aprovação explícita**.

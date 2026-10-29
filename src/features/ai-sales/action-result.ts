@@ -30,6 +30,14 @@ const DB_MESSAGES: Record<string, string> = {
   organizations_document_key: "Já existe uma empresa com esse CNPJ.",
   organization_not_found: "Empresa não encontrada.",
   reason_required: "Informe o motivo (mínimo 3 caracteres).",
+  plan_limit_reached: "Limite do plano atingido. Fale com a PeriniHub para ampliar.",
+  plan_limit_not_configured: "Recurso não incluído no plano (ou assinatura inativa).",
+  invalid_limits: "Limites inválidos.",
+  plan_not_found: "Plano não encontrado ou inativo.",
+  invoice_not_found: "Cobrança não encontrada.",
+  invalid_transition: "Essa mudança de status não é permitida.",
+  payment_method_required: "Informe a forma de pagamento.",
+  subscription_plans_final_price: "Preço definitivo exige valor.",
 };
 
 export function dbMessage(message: string | undefined) {

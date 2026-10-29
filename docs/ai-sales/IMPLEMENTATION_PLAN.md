@@ -8,7 +8,8 @@
 > **Fase 4** em 2026-11-01 (branch `feature/ai-sales-fase-4`), agentes em modo
 > simulado até a chave própria da Anthropic (D-04). **Fase 5** em 2026-11-02
 > (branch `feature/ai-sales-fase-5`). **Fase 6** em 2026-10-29 (branch
-> `feature/ai-sales-fase-6`); Meta Lead Ads adiado.
+> `feature/ai-sales-fase-6`); Meta Lead Ads adiado. **Fase 7** em 2026-10-29
+> (branch `feature/ai-sales-fase-7`).
 
 Regras para todas as fases:
 
@@ -327,7 +328,46 @@ encontrado → autorizado → oportunidade".
 **Aceite:** telefone descoberto nunca marca autorização; toda informação tem
 fonte e data; formulário com rate limit e honeypot.
 
-## Fase 7 — Administração comercial SaaS
+## Fase 7 — Administração comercial SaaS ✅ (2026-10-29, branch `feature/ai-sales-fase-7`)
+
+**Entregue:** migration `20261104120000_sales_billing.sql`.
+- Limites por contagem aplicados por trigger (vale também para a secret
+  key): membros (convite pendente ocupa vaga), leads ativos (inclusive
+  restauração), agentes, números de WhatsApp e formulários. Serializados
+  por empresa e métrica (advisory lock). Assinatura `past_due`/`canceled` ou
+  métrica ausente do plano = criação bloqueada. Custo de IA e mensagens
+  continuam pelo consumo mensal (`reserve_usage`).
+- `organization_usage` (membros e servidor): uso, reservado e limite por
+  métrica. Aviso a partir de 80% no dashboard (gestor+), em Configurações →
+  Empresa (plano, consumo e cobranças, admin+) e no painel da plataforma.
+- Planos com `price_monthly_cents` opcional e `price_is_final`: sem a marca,
+  a UI mostra "(provisório)"; sem valor, "Preço a definir"; preço definitivo
+  exige valor (check). Limites validados contra as métricas conhecidas.
+- Funções de plataforma com motivo obrigatório (auditoria com autor e
+  motivo): `platform_upsert_plan`, `platform_update_subscription` (plano,
+  status, período, limites específicos), `platform_create_invoice`,
+  `platform_set_invoice_status` (rascunho → emitida → paga, com forma de
+  pagamento; rascunho/emitida → cancelada; paga e cancelada são finais).
+- `billing_invoices` com número `PH-AAAA-00001`; admin da empresa vê só as
+  emitidas, sem alterar.
+- `platform_integration_health`: contas de WhatsApp com erro, webhooks com
+  falha/descartados (7 dias), eventos parados > 15 min, falhas de agentes
+  (24 h), campanhas em execução.
+- Painel do superadmin: Empresas (plano, avisos, detalhe com assinatura,
+  cobranças, consumo e ações da plataforma), Planos, Saúde das integrações
+  (inclui presença das variáveis deste servidor, nunca o valor) e Auditoria.
+
+**Testes:** 9 de integração (limites de leads, membros, formulários,
+assinatura em atraso, consumo, motivo e auditoria, planos, cobrança, saúde)
+e 6 funções novas no teste de privilégios; 4 unitários. Total 119 de
+integração e 244 unitários. O teste de Evolution passou a elevar o limite de
+números (o plano interno permite 1).
+
+**Pendente:** preços reais (decisão comercial); gateway de pagamento
+(fora do escopo); aviso de limite por e-mail (depende do SMTP próprio, D-07).
+
+**Plano original da fase (referência):**
+
 
 Entregas: painel superadmin completo (empresas, planos, entitlements, limites,
 consumo, auditoria, saúde das integrações), cobrança manual, avisos de
