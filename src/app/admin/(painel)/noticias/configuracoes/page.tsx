@@ -28,7 +28,7 @@ export default async function SettingsPage() {
             <div><dt className="text-ink-900/55">Aprovação humana</dt><dd>{settings.approval_required ? "Obrigatória" : "Dispensada"}</dd></div>
             <div><dt className="text-ink-900/55">Publicação automática</dt><dd>{settings.auto_publish_enabled ? "Ligada" : "Desligada"}</dd></div>
             <div><dt className="text-ink-900/55">Limite diário</dt><dd>{settings.daily_publication_limit}</dd></div>
-            <div><dt className="text-ink-900/55">Horários</dt><dd>{settings.schedule_times.join(", ")}</dd></div>
+            <div><dt className="text-ink-900/55">Coleta</dt><dd>{settings.schedule_weekdays.map((day) => ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][day]).join(", ")} · {settings.schedule_times.join(", ")}</dd></div>
           </dl>
         </Panel>
       </>

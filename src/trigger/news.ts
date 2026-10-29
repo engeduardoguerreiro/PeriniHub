@@ -301,7 +301,7 @@ export const fetchArticleCover = schemaTask({
 
 /**
  * Relógio do pipeline. Roda a cada 15 minutos e decide o que fazer a partir
- * das configurações do painel (horários de coleta editáveis, pausa, publicação
+ * das configurações do painel (dias e horários de coleta editáveis, pausa, publicação
  * automática), além de recuperar etapas interrompidas.
  */
 export const newsScheduler = schedules.task({
@@ -320,7 +320,7 @@ export const newsScheduler = schedules.task({
     const nowIso = new Date(now).toISOString();
     const summary = { collections: 0, scheduled: 0, autoPublish: 0, recovered: 0, deadLetter: 0 };
 
-    for (const slot of dueCollectionSlots(settings.schedule_times, settings.timezone, now)) {
+    for (const slot of dueCollectionSlots(settings.schedule_times, settings.timezone, now, settings.schedule_weekdays)) {
       await fetchNewsSources.trigger(
         { reason: `agendado ${slot.time}` },
         { idempotencyKey: await globalKey(slot.key), idempotencyKeyTTL: "2d" },
