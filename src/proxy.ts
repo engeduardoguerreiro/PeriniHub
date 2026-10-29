@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { AI_SALES_LOGIN, isPublicAiSalesPath } from "@/features/ai-sales/paths";
+import { getSalesPublicEnv, isAiSalesEnabled } from "@/lib/env";
 import { isValidSlug, slugify } from "@/lib/news/slug";
 
 const LOGIN_PATH = "/admin/login";
@@ -9,6 +11,7 @@ const TECH_RESERVED = new Set(["busca", "categoria", "rss.xml", "news-sitemap.xm
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith("/tech/")) return techSlugGuard(request);
+  if (pathname === "/ai-sales" || pathname.startsWith("/ai-sales/")) return aiSalesSession(request);
   return refreshAdminSession(request);
 }
 
@@ -77,6 +80,41 @@ async function refreshAdminSession(request: NextRequest) {
   return response;
 }
 
+// AI Sales: mesmo papel do refreshAdminSession, com o Supabase próprio do
+// produto. Com a flag desligada, tudo em /ai-sales é 404 (o módulo não existe
+// para o público). Também aqui não é a barreira de autorização: o DAL
+// (features/ai-sales/auth/dal.ts) confere sessão, vínculo e papel.
+async function aiSalesSession(request: NextRequest) {
+  if (!isAiSalesEnabled()) {
+    return NextResponse.rewrite(new URL("/__ai-sales-indisponivel", request.url), { status: 404 });
+  }
+  const env = getSalesPublicEnv();
+  if (!env) return NextResponse.next({ request });
+
+  let response = NextResponse.next({ request });
+  const supabase = createServerClient(env.supabaseUrl, env.supabaseKey, {
+    cookies: {
+      getAll: () => request.cookies.getAll(),
+      setAll: (cookiesToSet) => {
+        for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
+        response = NextResponse.next({ request });
+        for (const { name, value, options } of cookiesToSet) response.cookies.set(name, value, options);
+      },
+    },
+  });
+
+  const { data } = await supabase.auth.getClaims();
+  const { pathname, search } = request.nextUrl;
+  if (!data?.claims.sub && !isPublicAiSalesPath(pathname)) {
+    const login = new URL(AI_SALES_LOGIN, request.url);
+    if (pathname !== "/ai-sales") login.searchParams.set("next", `${pathname}${search}`);
+    const redirect = NextResponse.redirect(login, 307);
+    for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
+    return redirect;
+  }
+  return response;
+}
+
 export const config = {
-  matcher: ["/admin/:path*", "/tech/:path+"],
+  matcher: ["/admin/:path*", "/tech/:path+", "/ai-sales", "/ai-sales/:path*"],
 };
