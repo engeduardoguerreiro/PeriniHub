@@ -109,18 +109,33 @@ describe("formulário público", () => {
     expect(lead!.discovery_stage).toBe("contact_found");
   });
 
-  it("reenvio do mesmo telefone reaproveita contato e lead e só completa campos vazios", async () => {
+  it("reenvio do mesmo telefone reaproveita contato e lead; identificador novo não é gravado, vira nota", async () => {
     const number = phone();
     const first = (await submit({ p_phone_e164: number, p_full_name: "Primeiro Nome" })).data as unknown as Submitted;
     const second = (await submit({ p_phone_e164: number, p_full_name: "Outro Nome", p_email: "reenvio.cap@teste.local", p_consent: true })).data as unknown as Submitted;
     expect(second.contact_id).toBe(first.contact_id);
     expect(second.lead_id).toBe(first.lead_id);
-    const { data: contact } = await fx.service.from("contacts").select("full_name, email, provenance").eq("id", first.contact_id).single();
-    expect(contact!.full_name).toBe("Primeiro Nome");
-    expect(contact!.email).toBe("reenvio.cap@teste.local");
-    expect((contact!.provenance as Record<string, { submission_id: string }>).email.submission_id).toBe(second.submission_id);
+    const { data: contact } = await fx.service.from("contacts").select("full_name, email").eq("id", first.contact_id).single();
+    expect(contact).toEqual({ full_name: "Primeiro Nome", email: null });
+    // Consentimento só no telefone que casou com o cadastro.
+    const { data: consents } = await fx.service.from("consent_records").select("channel").eq("contact_id", first.contact_id);
+    expect(new Set(consents!.map((row) => row.channel))).toEqual(new Set(["whatsapp"]));
+    const { data: note } = await fx.service.from("activities").select("body").eq("lead_id", first.lead_id).ilike("body", "%dados de contato diferentes%");
+    expect(note).toHaveLength(1);
     const { data: lead } = await fx.service.from("leads").select("discovery_stage").eq("id", first.lead_id).single();
     expect(lead!.discovery_stage).toBe("contact_authorized");
+  });
+
+  it("anônimo com o e-mail de um cliente não põe o próprio telefone no contato nem gera consentimento", async () => {
+    const { data: victim } = await fx.service.from("contacts").insert({ tenant_id: orgA.id, full_name: "Cliente Real", email: "cliente.real.cap@teste.local" }).select("id").single();
+    const attacker = phone();
+    const { error } = await submit({ p_email: "cliente.real.cap@teste.local", p_phone_e164: attacker, p_consent: true });
+    expect(error).toBeNull();
+    const { data: after } = await fx.service.from("contacts").select("phone_e164").eq("id", victim!.id).single();
+    expect(after!.phone_e164).toBeNull();
+    const { data: consents } = await fx.service.from("consent_records").select("channel").eq("contact_id", victim!.id);
+    // O e-mail casou: só o canal e-mail pode ter registro; WhatsApp nunca.
+    expect(consents!.some((row) => row.channel === "whatsapp")).toBe(false);
   });
 
   it("recusa versão antiga do texto, formulário pausado e envio sem contato", async () => {
@@ -204,7 +219,7 @@ describe("enriquecimento por CNPJ", () => {
     const { count: contactsBefore } = await fx.service.from("contacts").select("id", { count: "exact", head: true }).eq("tenant_id", orgA.id);
     const { count: consentsBefore } = await fx.service.from("consent_records").select("id", { count: "exact", head: true }).eq("tenant_id", orgA.id);
 
-    const { data, error } = await salesA.client.rpc("company_apply_enrichment", { p_tenant: orgA.id, p_company: company!.id, p_document: "11222333000181", p_status: "success", p_data: DATA });
+    const { data, error } = await fx.service.rpc("company_apply_enrichment", { p_actor: salesA.id, p_tenant: orgA.id, p_company: company!.id, p_document: "11222333000181", p_status: "success", p_data: DATA });
     expect(error).toBeNull();
     expect(data!.applied_fields.sort()).toEqual(["cnae", "document", "opened_on", "registration_status", "size", "state", "trade_name"]);
 
@@ -223,22 +238,22 @@ describe("enriquecimento por CNPJ", () => {
     const { data: history } = await salesA.client.from("company_enrichments").select("fetched_by, status").eq("company_id", company!.id);
     expect(history).toEqual([{ fetched_by: salesA.id, status: "success" }]);
 
-    const mismatch = await salesA.client.rpc("company_apply_enrichment", { p_tenant: orgA.id, p_company: company!.id, p_document: "11444777000161", p_status: "success", p_data: DATA });
+    const mismatch = await fx.service.rpc("company_apply_enrichment", { p_actor: salesA.id, p_tenant: orgA.id, p_company: company!.id, p_document: "11444777000161", p_status: "success", p_data: DATA });
     expect(mismatch.error?.message).toMatch(/document_mismatch/);
   });
 
   it("falha registrada sem alterar a empresa; leitor e outra empresa não enriquecem", async () => {
     const { data: company } = await salesA.client.from("companies").insert({ tenant_id: orgA.id, name: "Sem dados" }).select("id").single();
-    const failed = await salesA.client.rpc("company_apply_enrichment", { p_tenant: orgA.id, p_company: company!.id, p_document: "11444777000161", p_status: "not_found", p_data: {} });
+    const failed = await fx.service.rpc("company_apply_enrichment", { p_actor: salesA.id, p_tenant: orgA.id, p_company: company!.id, p_document: "11444777000161", p_status: "not_found", p_data: {} });
     expect(failed.data!.applied_fields).toEqual([]);
     const { data: unchanged } = await fx.service.from("companies").select("document, enriched_at").eq("id", company!.id).single();
     expect(unchanged).toEqual({ document: null, enriched_at: null });
 
-    const viewer = await viewerA.client.rpc("company_apply_enrichment", { p_tenant: orgA.id, p_company: company!.id, p_document: "11444777000161", p_status: "success", p_data: DATA });
+    const viewer = await fx.service.rpc("company_apply_enrichment", { p_actor: viewerA.id, p_tenant: orgA.id, p_company: company!.id, p_document: "11444777000161", p_status: "success", p_data: DATA });
     expect(viewer.error?.message).toMatch(/not_authorized/);
-    const other = await ownerB.client.rpc("company_apply_enrichment", { p_tenant: orgA.id, p_company: company!.id, p_document: "11444777000161", p_status: "success", p_data: DATA });
+    const other = await fx.service.rpc("company_apply_enrichment", { p_actor: ownerB.id, p_tenant: orgA.id, p_company: company!.id, p_document: "11444777000161", p_status: "success", p_data: DATA });
     expect(other.error?.message).toMatch(/not_authorized/);
-    const crossTenant = await ownerB.client.rpc("company_apply_enrichment", { p_tenant: orgB.id, p_company: company!.id, p_document: "11444777000161", p_status: "success", p_data: DATA });
+    const crossTenant = await fx.service.rpc("company_apply_enrichment", { p_actor: ownerB.id, p_tenant: orgB.id, p_company: company!.id, p_document: "11444777000161", p_status: "success", p_data: DATA });
     expect(crossTenant.error?.message).toMatch(/company_not_found/);
   });
 

@@ -104,7 +104,6 @@ export async function createCampaign(slug: string, _prev: ActionResult | null, f
       hourly_limit: data.hourlyLimit,
       daily_limit: data.dailyLimit,
       total_limit: data.totalLimit,
-      created_by: m.user.id,
     })
     .select("id")
     .single();
@@ -202,7 +201,6 @@ export async function createFollowupRule(slug: string, _prev: ActionResult | nul
     max_attempts: parsed.data.maxAttempts,
     min_interval_days: parsed.data.minIntervalDays,
     max_per_run: parsed.data.maxPerRun,
-    created_by: m.user.id,
   });
   if (error) return fail(dbMessage(error.message));
   refresh();

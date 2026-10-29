@@ -128,6 +128,31 @@ describe("gate de envio", () => {
     expect(data?.checks).toMatchObject({ service_window: { ok: false } });
   });
 
+  it("chave de idempotência reaproveitada não vira passe para outro destino nem envia duas vezes", async () => {
+    await receive(numberA.phone_number_id, "5511911110009", "Olá");
+    const allowed = await contactByPhone(orgA.id, "+5511911110009");
+    const { data: blockedContact } = await fx.service.from("contacts").insert({ tenant_id: orgA.id, full_name: "Descadastrado", phone_e164: "+5511911110010" }).select("id").single();
+    await fx.service.from("suppression_list").insert({ tenant_id: orgA.id, channel: "whatsapp", identifier: "+5511911110010", reason: "opt_out", source: "teste" });
+    const key = `user:${salesA.id}:${randomUUID()}`;
+
+    // Gate chamado direto (PostgREST): a linha fica aprovada e pendente.
+    const gate = await salesA.client.rpc("whatsapp_send_gate", { p_tenant: orgA.id, p_contact: allowed, p_phone_number: numberA.id, p_kind: "free_text", p_origin: "user", p_idempotency_key: key, p_body: "Olá!" });
+    expect(gate.data?.decision).toBe("allowed");
+    // A mesma chave para o contato descadastrado é recusada.
+    const reuse = await sendWhatsApp({ db: salesA.client, tenantId: orgA.id, contactId: blockedContact!.id, phoneNumberId: numberA.id, origin: "user", kind: "free_text", body: "Olá!", idempotencyKey: key });
+    expect(reuse.ok).toBe(false);
+    const { count: before } = await fx.service.from("messages").select("id", { count: "exact", head: true }).eq("tenant_id", orgA.id).eq("body", "Olá!");
+    // A original envia uma vez; repetir a chamada não envia de novo.
+    const first = await sendWhatsApp({ db: salesA.client, tenantId: orgA.id, contactId: allowed, phoneNumberId: numberA.id, origin: "user", kind: "free_text", body: "Olá!", idempotencyKey: key });
+    const again = await sendWhatsApp({ db: salesA.client, tenantId: orgA.id, contactId: allowed, phoneNumberId: numberA.id, origin: "user", kind: "free_text", body: "Olá!", idempotencyKey: key });
+    expect(first.ok).toBe(true);
+    expect(again.ok).toBe(false);
+    const { count } = await fx.service.from("messages").select("id", { count: "exact", head: true }).eq("tenant_id", orgA.id).eq("body", "Olá!");
+    expect(count).toBe((before ?? 0) + 1);
+    const { data: suppressedConversation } = await fx.service.from("conversations").select("id").eq("contact_id", blockedContact!.id);
+    expect(suppressedConversation).toEqual([]);
+  });
+
   it("cenário 4: template de marketing sem consentimento é bloqueado; com consentimento passa", async () => {
     const { data: contact } = await fx.service.from("contacts").insert({ tenant_id: orgA.id, full_name: "Sem conversa", phone_e164: "+5511911110005" }).select("id").single();
     const offer = await templateId(orgA.id, "oferta_teste");

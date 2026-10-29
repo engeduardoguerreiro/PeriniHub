@@ -18,6 +18,12 @@ export function createFixtures(prefix: string) {
   const publishable = process.env.NEXT_PUBLIC_SALES_SUPABASE_PUBLISHABLE_KEY!;
   const secret = process.env.SALES_SUPABASE_SECRET_KEY!;
   if (!url || !publishable || !secret) throw new Error("Defina as variáveis do Supabase AI Sales em .env.local");
+  // Desde a Fase 8 o projeto "AI Sales" é o de produção. Os testes criam e
+  // apagam usuários e empresas zz-teste: só rodam com autorização explícita
+  // (de preferência apontando as variáveis para um projeto de desenvolvimento).
+  if (process.env.AI_SALES_INTEGRATION_ALLOWED !== "true") {
+    throw new Error("Testes de integração do AI Sales bloqueados: defina AI_SALES_INTEGRATION_ALLOWED=true (nunca contra produção com dados reais).");
+  }
   const options = { auth: { persistSession: false, autoRefreshToken: false } };
 
   const service: Db = createClient<Database>(url, secret, options);

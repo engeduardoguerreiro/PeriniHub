@@ -1,7 +1,9 @@
 # PeriniHub AI Sales — Operação
 
-> Status: **Fase 0 (proposta)**. Procedimentos a validar à medida que cada
-> fase entra. Operação do portal Tech: `docs/tech-portal.md` (inalterada).
+> Status: **Fase 8 (2026-10-29)**. O projeto Supabase "AI Sales" passou a
+> ser o de **produção** (D-01/D-02 revistos); o código vai para a `main` com
+> `AI_SALES_ENABLED` desligado na Vercel até o checklist do §7. Operação do
+> portal Tech: `docs/tech-portal.md`.
 
 ## 1. Ambientes
 
@@ -83,6 +85,7 @@ sem migrá-lo.
 | `ai-sales-reprocess-events` | a cada 10 min | reprocessa eventos do WhatsApp com falha/pendentes (5 tentativas → dead letter) |
 | `ai-sales-campaign-tick` | a cada 10 min | próximo lote de cada campanha agendada/em execução |
 | `ai-sales-followup-tick` | 9h15–18h15, dias úteis (São Paulo) | regras ativas de follow-up |
+| `ai-sales-retention` | 03:30 todo dia (São Paulo) | `apply_retention`: payload de webhooks (30 d), webhooks (180 d), conteúdo de execuções de agentes (90 d), limites de tentativa (1 d), convites vencidos (30 d) — prazos em `retention_policies` |
 
 Rodam no mesmo worker do portal. Sem `AI_SALES_ENABLED=true` e as chaves do
 Supabase "AI Sales" no ambiente de quem implanta, ficam inertes (o
@@ -95,9 +98,12 @@ worker.
 - **Site**: igual ao atual — PR → preview automático → merge na `main` →
   produção. Merges na `main` e variáveis de produção são executados pelo
   usuário (o modo automático bloqueia o agente nessas ações).
-- **Migrations**: aplicadas primeiro no banco de desenvolvimento, testadas
-  (`npm run test:integration` + testes de RLS), e só em produção com
-  aprovação explícita, antes do deploy do código que depende delas.
+- **Migrations**: desde a Fase 8 só existe o projeto "AI Sales" (produção).
+  Migrations aditivas, aplicadas pelo usuário (`npm run db:sales:push`) antes
+  do deploy do código que depende delas. Os testes de integração criam e
+  apagam usuários/empresas `zz-teste` e exigem
+  `AI_SALES_INTEGRATION_ALLOWED=true`; quando houver dados reais, criar um
+  projeto de desenvolvimento e apontar as variáveis dos testes para ele.
 - **Worker**: `set -a; . ./.env.local; set +a; npx trigger.dev@4.8.1 deploy`
   (o mesmo worker do portal). Um deploy do AI Sales também redeploya as
   tarefas do portal — rodar a suíte inteira antes.
@@ -169,12 +175,54 @@ depende deste fluxo.
 
 ## 7. Checklist antes de ativar produção (Fase 8)
 
-- [ ] Testes de isolamento entre tenants e de RLS passando contra o banco de produção vazio
-- [ ] Cadastro público desligado no Supabase Auth; MFA do SUPERADMIN ativo
-- [ ] Backups/PITR conforme plano do Supabase escolhido; restauração testada
-- [ ] SMTP próprio configurado (convites, recuperação)
-- [ ] WhatsApp: WABA verificada, número de produção, webhook validado, templates aprovados
-- [ ] Limites globais e por empresa definidos; limite de gasto na Anthropic
-- [ ] Termos de uso, política de privacidade e contrato de operador revisados por advogado
-- [ ] Runbooks testados (pausa de emergência, rotação de token)
-- [ ] `AI_SALES_ENABLED=true` em produção por decisão explícita
+Situação em 2026-10-29 (✅ feito · ⏳ depende do usuário · ⛔ bloqueia clientes externos):
+
+- ✅ Testes de isolamento entre tenants, RLS e privilégios de funções passando contra o banco de produção vazio (os 10 cenários críticos: §7.1)
+- ✅ Banco de produção sem dados de teste (só o superadmin e o plano "Interno")
+- ✅ Retenção ativa (`ai-sales-retention`); limites de plano aplicados no banco (Fase 7)
+- ⏳ Cadastro público desligado no Supabase Auth (Authentication → Sign In / Providers → "Allow new users to sign up" desligado)
+- ⏳ URLs de redirecionamento do Auth: `https://perinihub.com.br/ai-sales/auth/callback` (e o domínio de preview, se usar)
+- ⛔ MFA do superadmin (D-16): ativar TOTP no Supabase e `AI_SALES_PLATFORM_REQUIRE_MFA=true`
+- ⏳ Backups: plano gratuito tem backup diário sem PITR e sem restauração testada; para clientes externos, plano Pro + PITR e um teste de restauração
+- ⏳ SMTP próprio (D-07) configurado no Supabase Auth (convites e recuperação)
+- ⛔ WhatsApp: WABA verificada, número de produção, webhook validado, templates aprovados (D-05)
+- ⏳ Limite de gasto na Anthropic: a chave é a mesma do portal (o uso do AI Sales pode esgotar o teto do /tech)
+- ⛔ Termos de uso, política de privacidade e contrato de operador revisados por advogado (D-10)
+- ⏳ Runbooks testados (pausa de emergência, rotação de token) — §5
+- ⏳ `AI_SALES_ENABLED=true` em produção por decisão explícita (§8)
+
+### 7.1 Cenários críticos automatizados
+
+| # | Cenário | Teste |
+|---|---|---|
+| 1 | Empresa A nunca vê nem altera dados da B | `tenants/isolation.integration.test.ts`, `crm.integration.test.ts` (isolamento), `capture.integration.test.ts` (permissões) |
+| 2 | Funções do servidor não são chamáveis por anônimo/usuário | `security/privileges.integration.test.ts` |
+| 3 | Webhook duplicado = 1 mensagem | `whatsapp.integration.test.ts` |
+| 4 | Sem consentimento compatível não recebe | `whatsapp.integration.test.ts`, `campaigns.integration.test.ts` |
+| 5 | "SAIR" descadastra e bloqueia envios | `whatsapp.integration.test.ts`, `campaigns.integration.test.ts` |
+| 6 | Fora da janela de 24 h só template | `whatsapp.integration.test.ts` |
+| 7 | Segredos nunca chegam ao cliente | `whatsapp.integration.test.ts` (cenário 7) |
+| 8 | Campanha pausada não envia; emergência não retoma | `campaigns.integration.test.ts` |
+| 9 | Mesma mensagem não gera duas respostas do agente | `agents.integration.test.ts` |
+| 10 | Flag desligada: `/ai-sales` 404 e o site intacto | `npm run smoke` (o CI roda sem a flag; localmente, com a flag, confere login e redirecionamento) |
+
+## 8. Ativação e acesso
+
+**Local (hoje):** `npm run dev` e abrir `http://localhost:3000/ai-sales/login`
+com o superadmin `contato@perinihub.com.br`. Primeira senha: "Esqueci a
+senha" em `/ai-sales/recuperar-senha` (exige o e-mail do Supabase e a URL
+`http://localhost:3000/ai-sales/auth/callback` nas URLs permitidas do Auth).
+O superadmin cria as empresas em `/ai-sales/platform` e envia o convite de
+proprietário; depois escolhe a empresa em `/ai-sales/selecionar-empresa`.
+
+**Produção (quando decidir ligar):**
+1. Vercel → Production: `AI_SALES_ENABLED=true`,
+   `NEXT_PUBLIC_SALES_SUPABASE_URL`, `NEXT_PUBLIC_SALES_SUPABASE_PUBLISHABLE_KEY`,
+   `SALES_SUPABASE_SECRET_KEY`, `AI_SALES_IP_HASH_SALT` (`openssl rand -hex 32`);
+   WhatsApp/Evolution/Anthropic conforme o que for usar.
+2. Supabase Auth: redirect `https://perinihub.com.br/ai-sales/auth/callback`,
+   cadastro público desligado, SMTP próprio.
+3. Redeploy de produção na Vercel; conferir `/ai-sales/login` e
+   `npm run smoke` contra a produção.
+4. Desligar: `AI_SALES_ENABLED=false` + redeploy (o worker continua inerte
+   sem a flag no próximo deploy dele).

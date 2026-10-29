@@ -168,6 +168,20 @@ isOneToOne: false
       referencedColumns: ["tenant_id","id"]
     }
                   ]
+                },"ai_model_catalog": {
+                  Row: {
+                    "active": boolean,"input_price_per_mtok": number,"model": string,"output_price_per_mtok": number,"provider": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"input_price_per_mtok": number,"model": string,"output_price_per_mtok": number,"provider": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "active"?: boolean,"input_price_per_mtok"?: number,"model"?: string,"output_price_per_mtok"?: number,"provider"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"audit_logs": {
                   Row: {
                     "action": string,"actor_id": string | null,"actor_type": Database["public"]['Enums']["actor_type"],"created_at": string,"diff": Json | null,"entity_id": string | null,"entity_type": string,"id": string,"reason": string | null,"tenant_id": string | null
@@ -1022,6 +1036,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"retention_policies": {
+                  Row: {
+                    "description": string,"entity": string,"retain_days": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "description": string,"entity": string,"retain_days": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "description"?: string,"entity"?: string,"retain_days"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"subscription_plans": {
                   Row: {
                     "active": boolean,"code": string,"created_at": string,"currency": string,"description": string | null,"entitlements": NonNullable<Json>,"is_public": boolean,"name": string,"price_is_final": boolean,"price_monthly_cents": number | null,"updated_at": string
@@ -1303,6 +1331,9 @@ isOneToOne: false
             "accept_invite":
 { Args: { "p_token_hash": string }; Returns: string
                            },
+"apply_retention":
+{ Args: { "p_batch"?: number }; Returns: Json
+                           },
 "campaign_build_audience":
 { Args: { "p_campaign": string,"p_tenant": string }; Returns: Json
                            },
@@ -1364,7 +1395,7 @@ isOneToOne: false
 { Args: { "p_company": string,"p_consent": boolean,"p_consent_version": number,"p_email": string,"p_full_name": string,"p_ip_hash": string,"p_job_title": string,"p_message": string,"p_payload_hash": string,"p_phone_e164": string,"p_public_key": string,"p_user_agent": string }; Returns: Json
                            },
 "company_apply_enrichment":
-{ Args: { "p_company": string,"p_data": Json,"p_document": string,"p_status": Database["public"]['Enums']["enrichment_status"],"p_tenant": string }; Returns: {
+{ Args: { "p_actor": string,"p_company": string,"p_data": Json,"p_document": string,"p_status": Database["public"]['Enums']["enrichment_status"],"p_tenant": string }; Returns: {
               "applied_fields": (string)[],
 "company_id": string | null,
 "data": NonNullable<Json>,

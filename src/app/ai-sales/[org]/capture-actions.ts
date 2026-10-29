@@ -12,6 +12,7 @@ import { lookupCnpj } from "@/features/ai-sales/capture/brasilapi";
 import { isValidCnpj, normalizeCnpj } from "@/features/ai-sales/capture/cnpj";
 import { FORM_FIELDS } from "@/features/ai-sales/capture/submission";
 import { orgPath } from "@/features/ai-sales/paths";
+import { createSalesServiceClient } from "@/lib/supabase/sales-service";
 import { createSalesSessionClient } from "@/lib/supabase/sales-server";
 
 // Captação (formulários) e enriquecimento de empresas. Mesmo padrão das
@@ -140,7 +141,9 @@ export async function enrichCompany(slug: string, companyId: string): Promise<Ac
   if (!(await cnpjAllowed(m.tenantId))) return fail("Limite de consultas de CNPJ atingido. Tente de novo em uma hora.");
 
   const lookup = await lookupCnpj(company.document);
-  const { data, error } = await m.db.rpc("company_apply_enrichment", {
+  // Só o servidor grava o enriquecimento (o cliente não forja dados "da Receita").
+  const { data, error } = await createSalesServiceClient().rpc("company_apply_enrichment", {
+    p_actor: m.user.id,
     p_tenant: m.tenantId,
     p_company: companyId,
     p_document: company.document,
@@ -183,7 +186,7 @@ export async function createCompanyFromCnpj(slug: string, _prev: ActionResult | 
     .select("id")
     .single();
   if (error) return fail(captureMessage(error.message));
-  const applied = await m.db.rpc("company_apply_enrichment", { p_tenant: m.tenantId, p_company: company.id, p_document: document, p_status: "success", p_data: lookup.data });
+  const applied = await createSalesServiceClient().rpc("company_apply_enrichment", { p_actor: m.user.id, p_tenant: m.tenantId, p_company: company.id, p_document: document, p_status: "success", p_data: lookup.data });
   if (applied.error) return fail(captureMessage(applied.error.message));
 
   if (createLead) {

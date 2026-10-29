@@ -129,11 +129,11 @@ export function AgentVersionForm({ slug, agentId, values, bases, realAvailable }
         <input name="maxOutputTokens" type="number" min={256} max={4000} defaultValue={values.max_output_tokens} className={inputClass} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="US$/1M entrada">
-          <input name="inputPrice" type="number" min={0} step="0.01" defaultValue={values.input_price_per_mtok} className={inputClass} />
+        <Field label="US$/1M entrada" hint="Preço do catálogo da plataforma.">
+          <input readOnly value={values.input_price_per_mtok} className={inputClass} />
         </Field>
         <Field label="US$/1M saída">
-          <input name="outputPrice" type="number" min={0} step="0.01" defaultValue={values.output_price_per_mtok} className={inputClass} />
+          <input readOnly value={values.output_price_per_mtok} className={inputClass} />
         </Field>
       </div>
       <fieldset className="sm:col-span-2">

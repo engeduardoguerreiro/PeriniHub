@@ -54,7 +54,7 @@ export async function createAgent(slug: string, type: AgentType): Promise<Action
   const preset = AGENT_PRESETS[type];
   const { data: agent, error } = await m.db
     .from("ai_agents")
-    .insert({ tenant_id: m.tenantId, type, name: preset.name, objective: preset.objective, status: "testing", created_by: m.user.id })
+    .insert({ tenant_id: m.tenantId, type, name: preset.name, objective: preset.objective, status: "testing" })
     .select("id")
     .single();
   if (error) return fail(dbMessage(error.message));
@@ -130,8 +130,6 @@ const versionSchema = z.object({
   provider: z.enum(["anthropic", "mock"]),
   model: z.string().trim().regex(/^[a-z0-9.-]{2,80}$/, "Modelo inválido."),
   maxOutputTokens: z.coerce.number().int().min(256).max(4000),
-  inputPrice: z.coerce.number().min(0).max(1000),
-  outputPrice: z.coerce.number().min(0).max(1000),
   knowledgeBaseIds: z.array(uuid).max(10),
   notes: z.string().trim().max(500),
 });
@@ -145,8 +143,6 @@ export async function saveAgentVersion(slug: string, agentId: string, _prev: Act
     provider: formData.get("provider"),
     model: formData.get("model"),
     maxOutputTokens: formData.get("maxOutputTokens"),
-    inputPrice: formData.get("inputPrice"),
-    outputPrice: formData.get("outputPrice"),
     knowledgeBaseIds: formData.getAll("knowledgeBaseIds").map(String),
     notes: formData.get("notes") ?? "",
   });
@@ -159,12 +155,16 @@ export async function saveAgentVersion(slug: string, agentId: string, _prev: Act
     p_provider: parsed.data.provider,
     p_model: parsed.data.model,
     p_max_output_tokens: parsed.data.maxOutputTokens,
-    p_input_price: parsed.data.inputPrice,
-    p_output_price: parsed.data.outputPrice,
+    // Preço vem do catálogo da plataforma (ai_model_catalog); estes são ignorados.
+    p_input_price: 0,
+    p_output_price: 0,
     p_knowledge_base_ids: parsed.data.knowledgeBaseIds,
     p_notes: parsed.data.notes || undefined,
   });
-  if (error) return fail(error.message.includes("invalid_knowledge_base") ? "Base de conhecimento inválida." : dbMessage(error.message));
+  if (error) {
+    if (error.message.includes("model_not_allowed")) return fail("Modelo fora do catálogo da plataforma.");
+    return fail(error.message.includes("invalid_knowledge_base") ? "Base de conhecimento inválida." : dbMessage(error.message));
+  }
   refresh();
   return { ok: true, message: `Versão ${data.version} salva e em uso.` };
 }

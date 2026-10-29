@@ -84,9 +84,20 @@ describe("versões e permissões", () => {
     expect((await ownerA.client.rpc("create_agent_version", { ...args, p_knowledge_base_ids: [baseB!.id] })).error?.message).toContain("invalid_knowledge_base");
   });
 
+  it("modelo pago só do catálogo, com o preço do catálogo (o tenant não zera o custo)", async () => {
+    const args = { p_tenant: orgA.id, p_agent: sdrId, p_system_prompt: "x".repeat(30), p_max_output_tokens: 500, p_input_price: 0, p_output_price: 0, p_knowledge_base_ids: [] as string[] };
+    expect((await ownerA.client.rpc("create_agent_version", { ...args, p_provider: "anthropic", p_model: "modelo-caro-inventado" })).error?.message).toContain("model_not_allowed");
+    const { data, error } = await ownerA.client.rpc("create_agent_version", { ...args, p_provider: "anthropic", p_model: "claude-haiku-5-5" });
+    expect(error).toBeNull();
+    expect(Number(data!.input_price_per_mtok)).toBe(0.1);
+    expect(Number(data!.output_price_per_mtok)).toBe(0.5);
+    // Volta para o simulado (os testes seguintes não chamam a API).
+    await ownerA.client.rpc("create_agent_version", { ...args, p_provider: "mock", p_model: "mock" });
+  });
+
   it("versões são imutáveis e numeradas", async () => {
-    const { data: versions } = await fx.service.from("agent_versions").select("id, version").eq("agent_id", sdrId);
-    expect(versions?.map((version) => version.version)).toEqual([1]);
+    const { data: versions } = await fx.service.from("agent_versions").select("id, version").eq("agent_id", sdrId).order("version");
+    expect(versions?.map((version) => version.version)).toEqual(versions?.map((_, index) => index + 1));
     await ownerA.client.from("agent_versions").update({ system_prompt: "alterado ".repeat(5) }).eq("id", versions![0].id);
     expect((await fx.service.from("agent_versions").select("system_prompt").eq("id", versions![0].id).single()).data?.system_prompt).not.toContain("alterado");
   });

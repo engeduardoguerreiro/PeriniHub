@@ -32,7 +32,7 @@ async function contact(name: string, phone: string, consent: "marketing" | "sale
 async function campaign(by: TestUser, extra: Record<string, unknown> = {}) {
   const { data, error } = await by.client
     .from("campaigns")
-    .insert({ tenant_id: orgA.id, name: `Campanha ${randomUUID().slice(0, 6)}`, phone_number_id: number.id, template_id: marketing, template_parameters: ["{{nome}}"], window_start: "00:00", window_end: "23:59", created_by: by.id, ...extra })
+    .insert({ tenant_id: orgA.id, name: `Campanha ${randomUUID().slice(0, 6)}`, phone_number_id: number.id, template_id: marketing, template_parameters: ["{{nome}}"], window_start: "00:00", window_end: "23:59", ...extra })
     .select("id")
     .single();
   if (error) throw error;

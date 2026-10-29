@@ -3,6 +3,7 @@ import { after, NextResponse, type NextRequest } from "next/server";
 import { processEvents, ingestPayload } from "@/features/ai-sales/whatsapp/processor";
 import { safeEqual, verifySignature } from "@/features/ai-sales/whatsapp/signature";
 import { isAiSalesEnabled, requireSecret } from "@/lib/env";
+import { readBodyLimited } from "@/lib/security/read-body";
 
 // Webhook da WhatsApp Cloud API.
 // GET: verificação do endpoint pela Meta (hub.verify_token).
@@ -36,10 +37,8 @@ export async function POST(request: NextRequest) {
   if (!isAiSalesEnabled()) return new NextResponse(null, { status: 404 });
   const appSecret = secret("WHATSAPP_APP_SECRET");
   if (!appSecret) return new NextResponse("WhatsApp não configurado", { status: 503 });
-  if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY) return new NextResponse(null, { status: 413 });
-
-  const raw = await request.text();
-  if (raw.length > MAX_BODY) return new NextResponse(null, { status: 413 });
+  const raw = await readBodyLimited(request, MAX_BODY);
+  if (raw === null) return new NextResponse(null, { status: 413 });
   if (!verifySignature(raw, request.headers.get("x-hub-signature-256"), appSecret)) {
     console.warn("[ai-sales] webhook do WhatsApp com assinatura inválida");
     return new NextResponse(null, { status: 401 });

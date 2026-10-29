@@ -75,19 +75,33 @@ export async function sendWhatsApp(input: SendInput): Promise<SendOutcome> {
   }
   if (request.status !== "pending") return { ok: false, reason: "Este envio já foi processado." };
 
+  // Reivindica a linha de forma atômica: duas chamadas com a mesma chave não
+  // enviam duas vezes. Destino e conteúdo vêm da linha que o gate validou.
   const service = createSalesServiceClient();
+  const { data: claimed } = await service
+    .from("message_send_requests")
+    .update({ status: "sending" })
+    .eq("id", request.id)
+    .eq("status", "pending")
+    .select("id, contact_id, phone_number_id, kind, body, template_id, attempts, conversation_id")
+    .maybeSingle();
+  if (!claimed) return { ok: false, reason: "Este envio já foi processado." };
+
   const { data: number } = await service
     .from("whatsapp_phone_numbers")
     .select("id, phone_number_id, account:whatsapp_accounts(id, provider)")
-    .eq("id", input.phoneNumberId)
+    .eq("id", claimed.phone_number_id)
     .eq("tenant_id", input.tenantId)
     .single();
-  const { data: contact } = await service.from("contacts").select("phone_e164").eq("id", input.contactId).eq("tenant_id", input.tenantId).single();
+  const { data: contact } = await service.from("contacts").select("phone_e164").eq("id", claimed.contact_id).eq("tenant_id", input.tenantId).single();
   const template =
-    input.kind === "template"
-      ? (await service.from("whatsapp_templates").select("name, language").eq("id", input.templateId).eq("tenant_id", input.tenantId).single()).data
+    claimed.kind === "template" && claimed.template_id
+      ? (await service.from("whatsapp_templates").select("name, language").eq("id", claimed.template_id).eq("tenant_id", input.tenantId).single()).data
       : null;
-  if (!number?.account || !contact?.phone_e164) return { ok: false, reason: "Número ou contato não encontrado." };
+  if (!number?.account || !contact?.phone_e164) {
+    await service.from("message_send_requests").update({ status: "failed", error: "número ou contato não encontrado", finished_at: new Date().toISOString() }).eq("id", request.id);
+    return { ok: false, reason: "Número ou contato não encontrado." };
+  }
 
   const reservation = await service.rpc("reserve_usage", { p_tenant: input.tenantId, p_metric: "whatsapp_messages", p_amount: 1, p_key: `send:${request.id}` });
   if (reservation.error) {
@@ -98,17 +112,17 @@ export async function sendWhatsApp(input: SendInput): Promise<SendOutcome> {
   try {
     const transport = await transportFor(number.account.id, number.account.provider, number.phone_number_id, number.id);
     const sent =
-      input.kind === "free_text"
-        ? await transport.sendText(contact.phone_e164, input.body)
-        : await transport.sendTemplate(contact.phone_e164, { name: template!.name, language: template!.language, parameters: input.parameters });
+      claimed.kind === "free_text"
+        ? await transport.sendText(contact.phone_e164, claimed.body ?? "")
+        : await transport.sendTemplate(contact.phone_e164, { name: template!.name, language: template!.language, parameters: input.kind === "template" ? input.parameters : [] });
 
     const now = new Date().toISOString();
-    const preview = input.kind === "free_text" ? input.body : `[template ${template!.name}]`;
-    let conversationId = request.conversation_id;
+    const preview = claimed.kind === "free_text" ? (claimed.body ?? "") : `[template ${template!.name}]`;
+    let conversationId = claimed.conversation_id;
     if (!conversationId) {
       const created = await service
         .from("conversations")
-        .insert({ tenant_id: input.tenantId, contact_id: input.contactId, phone_number_id: input.phoneNumberId })
+        .insert({ tenant_id: input.tenantId, contact_id: claimed.contact_id, phone_number_id: claimed.phone_number_id })
         .select("id")
         .single();
       conversationId = created.data?.id ?? null;
@@ -118,12 +132,12 @@ export async function sendWhatsApp(input: SendInput): Promise<SendOutcome> {
       .insert({
         tenant_id: input.tenantId,
         conversation_id: conversationId!,
-        phone_number_id: input.phoneNumberId,
+        phone_number_id: claimed.phone_number_id,
         direction: "outbound",
         sender_type: input.origin === "agent" ? "agent" : input.origin === "user" ? "user" : "system",
         sender_user_id: input.senderUserId ?? null,
-        type: input.kind === "free_text" ? "text" : "template",
-        body: input.kind === "free_text" ? input.body : null,
+        type: claimed.kind === "free_text" ? "text" : "template",
+        body: claimed.kind === "free_text" ? claimed.body : null,
         template_name: template?.name ?? null,
         wa_message_id: sent.waMessageId,
         status: "sent",
@@ -132,7 +146,7 @@ export async function sendWhatsApp(input: SendInput): Promise<SendOutcome> {
       .select("id")
       .single();
     await Promise.all([
-      service.from("message_send_requests").update({ status: "sent", wa_message_id: sent.waMessageId, attempts: request.attempts + 1, finished_at: now }).eq("id", request.id),
+      service.from("message_send_requests").update({ status: "sent", wa_message_id: sent.waMessageId, attempts: claimed.attempts + 1, finished_at: now }).eq("id", request.id),
       service.from("conversations").update({ last_message_at: now, last_message_preview: preview.slice(0, 140), unread_count: 0 }).eq("id", conversationId!),
       service.rpc("settle_usage", { p_tenant: input.tenantId, p_reservation: reservation.data, p_actual: 1, p_source_type: "message_send_request", p_source_id: request.id }),
     ]);
@@ -140,7 +154,7 @@ export async function sendWhatsApp(input: SendInput): Promise<SendOutcome> {
   } catch (cause) {
     const reason = cause instanceof TransportError ? cause.message : "Falha ao enviar.";
     await Promise.all([
-      service.from("message_send_requests").update({ status: "failed", error: reason.slice(0, 1000), attempts: request.attempts + 1, finished_at: new Date().toISOString() }).eq("id", request.id),
+      service.from("message_send_requests").update({ status: "failed", error: reason.slice(0, 1000), attempts: claimed.attempts + 1, finished_at: new Date().toISOString() }).eq("id", request.id),
       service.rpc("release_usage", { p_tenant: input.tenantId, p_reservation: reservation.data }),
     ]);
     return { ok: false, reason };

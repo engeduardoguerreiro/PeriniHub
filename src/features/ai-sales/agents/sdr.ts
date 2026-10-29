@@ -62,16 +62,17 @@ export async function applySdrOutput(params: { tenantId: string; executionId: st
   else if ((replies ?? 0) >= context.agent.max_replies_per_conversation) handoffReason = "Limite de respostas automáticas da conversa atingido.";
   else if (!output.reply.trim()) handoffReason = "Agente não produziu resposta.";
 
-  // Atualização do lead: só interesse e pontuação, dentro dos limites.
-  if (output.lead_update.qualification || output.lead_update.score !== null) {
+  // Atualização do lead: só o interesse. Pontuação e nota vêm de texto que o
+  // contato pode manipular (prompt injection): a pontuação não é aplicada
+  // sozinha e a nota fica marcada como gerada pela IA.
+  if (output.lead_update.qualification) {
     const { data: lead } = await db.from("leads").select("id").eq("tenant_id", tenantId).eq("contact_id", contactId).is("deleted_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
     if (lead) {
       const values = {
         ...(output.lead_update.qualification && { qualification: output.lead_update.qualification }),
-        ...(output.lead_update.score !== null && { score: output.lead_update.score }),
       };
       await db.from("leads").update(values).eq("tenant_id", tenantId).eq("id", lead.id);
-      await db.from("activities").insert({ tenant_id: tenantId, lead_id: lead.id, contact_id: contactId, kind: "note", actor_type: "agent", body: `Agente ${context.agent.name}: ${output.lead_update.note ?? "classificação atualizada pela conversa."}`.slice(0, 4000) });
+      await db.from("activities").insert({ tenant_id: tenantId, lead_id: lead.id, contact_id: contactId, kind: "note", actor_type: "agent", body: `Agente ${context.agent.name} (texto gerado pela IA, não verificado): ${output.lead_update.note ?? "classificação atualizada pela conversa."}`.slice(0, 4000) });
       await recordToolCall(tenantId, executionId, "crm.update_lead", values, "executed", "Lead atualizado.");
     }
   }

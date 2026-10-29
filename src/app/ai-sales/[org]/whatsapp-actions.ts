@@ -303,7 +303,8 @@ export async function sendText(slug: string, conversationId: string, _prev: Acti
     senderUserId: m.user.id,
     kind: "free_text",
     body,
-    idempotencyKey: `user:${String(formData.get("requestId") ?? randomUUID()).slice(0, 80)}`,
+    // Chave por usuário: o requestId do navegador só evita o duplo clique.
+    idempotencyKey: `user:${m.user.id}:${String(formData.get("requestId") ?? randomUUID()).slice(0, 80)}`,
   });
   if (!outcome.ok) return fail(outcome.reason);
   refresh();
@@ -329,7 +330,8 @@ export async function sendTemplateMessage(slug: string, conversationId: string, 
     kind: "template",
     templateId,
     parameters,
-    idempotencyKey: `user:${String(formData.get("requestId") ?? randomUUID()).slice(0, 80)}`,
+    // Chave por usuário: o requestId do navegador só evita o duplo clique.
+    idempotencyKey: `user:${m.user.id}:${String(formData.get("requestId") ?? randomUUID()).slice(0, 80)}`,
   });
   if (!outcome.ok) return fail(outcome.reason);
   refresh();

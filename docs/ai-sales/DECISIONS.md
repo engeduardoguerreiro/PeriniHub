@@ -15,7 +15,7 @@ partir das fases 3–4).
 | Id | Decisão |
 |---|---|
 | D-01 | **(A) Projeto Supabase dedicado** — criado pelo usuário com o nome "AI Sales". Migrations em `supabase-sales/`. |
-| D-02 | Plano gratuito para desenvolvimento; plano de produção decidido na Fase 8 (região a conferir pelo host do pooler). |
+| D-02 | Plano gratuito no início. **Fase 8 (2026-10-29): o projeto "AI Sales" atual passou a ser o de produção** (decisão do usuário); dados de teste removidos, testes de integração só com `AI_SALES_INTEGRATION_ALLOWED=true`. Plano Pro + PITR antes de clientes externos. |
 | D-03 | **Mesmo projeto Trigger.dev** do portal, filas separadas. |
 | D-13 | Visibilidade do SALES **configurável por empresa**, padrão "todos". |
 | D-14 | Primeiras empresas (tenants): **PeriniHub, PeriniFood e Perini Engenharia**, para atender os respectivos clientes. |
@@ -145,3 +145,21 @@ ganha executor multi-tenant próprio sobre `LlmProvider` estendido.
 servidor (Zod + libphonenumber) e gravados por `import_contacts`, função do
 banco que roda com o RLS do usuário e deduplica por telefone/e-mail.
 Arquivos maiores e reprocessamento ficam para a fila do Trigger.dev (Fase 5).
+
+### ADR-016 — Sem CSP com nonce em `/ai-sales` por enquanto
+**Status:** Aceita (Fase 8). O app usa `cacheComponents` (Partial
+Prerendering) e o shell de `/ai-sales` é pré-renderizado; a documentação do
+Next 16 diz que nonce é incompatível com PPR (os scripts do shell estático
+não recebem o nonce) e exige renderização totalmente dinâmica. Mantém-se o
+CSP global (`script-src 'self' 'unsafe-inline'`, sem terceiros,
+`frame-ancestors 'none'`, `form-action 'self'`). Compensações: React escapa
+todo conteúdo; o único `dangerouslySetInnerHTML` é o script de tema
+(constante, sem dado do usuário); conteúdo vindo de WhatsApp/IA é sempre
+texto. Reavaliar com o CSP por hash (SRI experimental do Next) quando sair do
+experimental.
+
+### ADR-017 — Cenários E2E com Vitest e HTTP, sem Playwright
+**Status:** Aceita (Fase 8, decisão do usuário). Os 10 cenários críticos
+rodam como testes de integração contra o banco (RLS, funções, triggers) e
+por HTTP contra o servidor (rotas públicas, webhooks assinados, smoke com a
+flag ligada e desligada). Sem dependência nova nem navegador no CI.

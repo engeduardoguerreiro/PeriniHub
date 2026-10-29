@@ -4,6 +4,7 @@ import { clientIpHash, consumeRateLimit } from "@/features/ai-sales/auth/rate-li
 import { loadPublicForm, PUBLIC_KEY_PATTERN, submitPublicForm } from "@/features/ai-sales/capture/public-form";
 import { isHoneypotFilled, MAX_SUBMISSION_BYTES, parseSubmission, SUBMIT_MESSAGES, submissionHash, toRecord } from "@/features/ai-sales/capture/submission";
 import { isAiSalesEnabled } from "@/lib/env";
+import { readBodyLimited } from "@/lib/security/read-body";
 
 // Captação pública. Aceita o <form> nativo (responde 303 de volta à página do
 // formulário) e fetch com JSON (responde JSON). Sem sessão e fora do proxy;
@@ -34,9 +35,8 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/api/
   const fail = (code: keyof typeof SUBMIT_MESSAGES, status: number) => respond(request, key, wantsJson, { ok: false, code, message: SUBMIT_MESSAGES[code], status });
 
   if (!contentType.includes("application/json") && !contentType.includes("application/x-www-form-urlencoded")) return fail("invalid", 415);
-  if (Number(request.headers.get("content-length") ?? 0) > MAX_SUBMISSION_BYTES) return fail("invalid", 413);
-  const raw = await request.text();
-  if (raw.length > MAX_SUBMISSION_BYTES) return fail("invalid", 413);
+  const raw = await readBodyLimited(request, MAX_SUBMISSION_BYTES);
+  if (raw === null) return fail("invalid", 413);
 
   let input: Record<string, unknown>;
   try {

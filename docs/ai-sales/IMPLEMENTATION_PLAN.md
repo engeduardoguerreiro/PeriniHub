@@ -375,7 +375,38 @@ limite.
 **Aceite:** limites de plano aplicados no banco; ações de plataforma
 auditadas com motivo; sem preços fictícios apresentados como definitivos.
 
-## Fase 8 — Endurecimento e produção
+## Fase 8 — Endurecimento e produção ✅ código (2026-10-29, branch `feature/ai-sales-fase-8`); ativação pendente
+
+**Entregue:** migrations `20261105120000_sales_retention.sql` e
+`20261105130000_sales_security_fixes.sql`, aplicadas no projeto "AI Sales",
+que passa a ser o de **produção** (vazio: só o superadmin).
+- Retenção: `retention_policies` + `apply_retention` (só servidor) e a
+  tarefa diária `ai-sales-retention` (03:30, SP). Conteúdo de webhooks 30
+  dias, registro 180, conteúdo de execuções de agentes 90, limites de taxa 1,
+  convites vencidos 30. Anonimização de mensagens/leads aguarda o jurídico
+  (D-10).
+- Revisão de segurança independente (SECURITY §11): 1 alta, 3 médias e 5
+  baixas, todas corrigidas — reaproveitamento de chave de idempotência no
+  gate de envio (alta; claim atômico `pending → sending` e conflito de
+  chave), preço de modelo pelo catálogo `ai_model_catalog`, autoria
+  (`created_by`, `fetched_by`, `resolved_by`) carimbada pelo banco,
+  formulário público não altera telefone/e-mail de contato existente,
+  enriquecimento só pelo servidor com ator conferido, viewer com a mesma
+  visibilidade de leads do vendedor, corpo das rotas públicas com limite
+  de leitura (`readBodyLimited`), SDR não aplica pontuação gerada pela IA.
+- Testes de integração exigem `AI_SALES_INTEGRATION_ALLOWED=true`.
+- Documentação: OPERATIONS §7 (checklist com status), §7.1 (cenários →
+  testes), §8 (ativação e acesso); ADR-016 (sem CSP com nonce, incompatível
+  com o pré-render parcial) e ADR-017 (E2E por Vitest/HTTP, sem Playwright).
+
+**Testes:** 124 de integração e 245 unitários, verdes contra o banco de
+produção ainda vazio; limpeza conferida (0 empresas, 1 usuário).
+
+**Pendente para ativar:** MFA do superadmin, SMTP próprio (D-07), revisão
+jurídica (D-10), variáveis na Vercel (`AI_SALES_ENABLED` e chaves) e URLs de
+redirecionamento do Auth — OPERATIONS §7 e §8.
+
+**Plano original da fase (referência):**
 
 Entregas: revisão de segurança completa (RLS, rotas, agentes), testes E2E dos
 fluxos principais (Playwright — nova dependência a aprovar), CSP com nonce em

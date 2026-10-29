@@ -4,6 +4,7 @@ import { evolutionPhoneNumberId, parseEvolutionWebhook } from "@/features/ai-sal
 import { ingestEvents, processEvents } from "@/features/ai-sales/whatsapp/processor";
 import { safeEqual } from "@/features/ai-sales/whatsapp/signature";
 import { isAiSalesEnabled, requireSecret } from "@/lib/env";
+import { readBodyLimited } from "@/lib/security/read-body";
 import { createSalesServiceClient } from "@/lib/supabase/sales-service";
 
 // Webhook do servidor Evolution (conexão não oficial, D-17). Autenticado pelo
@@ -22,8 +23,8 @@ export async function POST(request: NextRequest) {
   }
   if (!safeEqual(request.headers.get("x-webhook-secret")?.trim() ?? null, secret)) return new NextResponse(null, { status: 401 });
 
-  const raw = await request.text();
-  if (raw.length > MAX_BODY) return new NextResponse(null, { status: 413 });
+  const raw = await readBodyLimited(request, MAX_BODY);
+  if (raw === null) return new NextResponse(null, { status: 413 });
   let body: unknown;
   try {
     body = JSON.parse(raw);

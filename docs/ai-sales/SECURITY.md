@@ -213,3 +213,28 @@ Se o volume crescer, reavaliar Upstash Redis (Marketplace da Vercel).
 > Este documento não substitui avaliação jurídica. Textos de consentimento,
 > termos de uso, política de privacidade e contrato de operador precisam de
 > revisão por advogado antes do primeiro cliente externo.
+
+## 11. Revisão de segurança da Fase 8 (2026-10-29)
+
+Revisão independente (agente auditor, só leitura) de migrations, rotas sem
+sessão, server actions, agentes e cabeçalhos. 0 crítico, 1 alto, 3 médios,
+5 baixos — todos corrigidos na migration `20261105130000_sales_security_fixes.sql`
+e no código, com testes:
+
+| Nível | Achado | Correção |
+|---|---|---|
+| Alto | Chave de idempotência do envio vinha do cliente; o gate devolvia a linha aprovada só pela chave e o envio usava os dados da nova chamada → um vendedor furava supressão, consentimento e janela | gate recusa a mesma chave com outro destino/conteúdo (`idempotency_conflict`); chave do servidor com o id do usuário; envio reivindica a linha (`pending → sending`) e usa contato, número e corpo da linha validada |
+| Médio | Admin do tenant definia modelo e preço do agente (preço 0 furava o teto de IA) | catálogo `ai_model_catalog` da plataforma; `create_agent_version` só aceita modelo pago do catálogo e grava o preço dele |
+| Médio | `created_by` gravável na campanha → gestor aprovava a própria campanha | autoria por trigger (`stamp_actor`) em campanhas, agentes e regras; coluna fora do grant |
+| Médio | Formulário público completava telefone/e-mail de contato existente e gravava consentimento → anônimo com o e-mail de um cliente punha o próprio número no contato dele | envio público não altera identificadores de contato existente (vira nota para revisão); consentimento só no identificador que o titular informou e que está no contato |
+| Baixo | SDR aplicava pontuação e nota livres vindas do modelo (prompt injection) | só o interesse é aplicado; nota marcada como texto da IA |
+| Baixo | Enriquecimento chamável pelo cliente com dados forjados | `company_apply_enrichment` só pelo servidor, com o autor conferido |
+| Baixo | Corpo do webhook lido inteiro antes do limite (chunked) | `readBodyLimited` nos webhooks e no formulário público |
+| Baixo | `resolved_by` da transferência gravável | trigger com `auth.uid()` |
+| Baixo | Leitor via todos os leads com visibilidade "atribuídos" | `viewer` segue a regra do vendedor |
+
+Verificado e OK: privilégios das funções novas, RLS e FKs compostas das
+tabelas novas, assinaturas dos webhooks, honeypot/limites do formulário,
+convites, checagem de papel em todas as actions, exportação, cabeçalhos.
+Pendências conhecidas: CSP com nonce (ADR-016), MFA do superadmin (D-16) e
+HSTS explícito (a Vercel envia por padrão; conferir no domínio).
