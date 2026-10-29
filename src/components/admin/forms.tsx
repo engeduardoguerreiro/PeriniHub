@@ -73,9 +73,12 @@ type Settings = {
   max_candidates_per_run: number;
   monthly_cost_limit: number;
   schedule_times: string[];
+  schedule_weekdays: number[];
   allowed_categories: string[] | null;
   timezone: string;
 };
+
+const WEEKDAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
 export function SettingsForm({ settings, categories }: { settings: Settings; categories: Category[] }) {
   const [result, action, pending] = useActionState<ActionResult | null, FormData>(updateSettings, null);
@@ -131,6 +134,21 @@ export function SettingsForm({ settings, categories }: { settings: Settings; cat
           <input type="number" name="monthlyCostLimit" min={0} max={1000} step="0.5" defaultValue={settings.monthly_cost_limit} className={inputClass} />
         </label>
       </div>
+
+      <fieldset>
+        <legend className={`${labelClass} mb-2`}>Dias de coleta</legend>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {WEEKDAYS.map((label, day) => (
+            <label key={label} className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="scheduleWeekdays" value={day} defaultChecked={settings.schedule_weekdays.includes(day)} className="h-4 w-4 accent-brand-600" />
+              {label}
+            </label>
+          ))}
+        </div>
+        <span className="mt-1 block text-xs text-ink-900/55">
+          Cada coleta pode redigir até o limite diário de artigos (~US$ 0,05 por artigo). Menos dias = menos gasto de IA.
+        </span>
+      </fieldset>
 
       <label className="grid gap-1.5">
         <span className={labelClass}>Horários de coleta ({settings.timezone})</span>

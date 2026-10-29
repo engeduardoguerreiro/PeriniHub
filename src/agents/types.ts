@@ -42,3 +42,9 @@ export function localTime(timeZone: string, now = Date.now()) {
 export function localDate(timeZone: string, now = Date.now()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now));
 }
+
+/** Dia da semana no fuso editorial (0 = domingo … 6 = sábado). */
+export function localWeekday(timeZone: string, now = Date.now()) {
+  const day = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short" }).format(new Date(now));
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day);
+}

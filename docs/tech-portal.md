@@ -11,7 +11,7 @@ Feeds RSS/Atom oficiais (news_sources)
         │  safeFetch: só http(s) público, IP checado na conexão, 10 MB, 20 s, 3 redirects
         ▼
 Trigger.dev (worker na nuvem, independente do computador local e da Vercel)
-  news-scheduler (*/15 min, America/Sao_Paulo) — lê horários e pausa do painel
+  news-scheduler (*/15 min, America/Sao_Paulo) — lê dias, horários e pausa do painel
     ├─ fetch-news-sources ─ deduplicate-news ─ classify-news
     │     └─ generate-article ─ verify-article ─ prepare-article-seo
     ├─ publish-approved-article (agendados / automático)
@@ -139,9 +139,11 @@ npm run test:integration   # Supabase real: RLS, publicação, orçamento (cria 
 3. Conferir em Runs que o `news-scheduler` roda a cada 15 minutos.
 
 Agendamentos declarativos só disparam no ambiente onde a versão está
-implantada. Horários de coleta são editados no painel (padrão 06:00, 12:00 e
-17:00, horário de Brasília); o agendador roda de 15 em 15 minutos e usa
-chaves de idempotência por data e horário.
+implantada. Dias e horários de coleta são editados no painel (padrão desde
+2026-10-29: 1 vez por semana, segunda às 08:00, horário de Brasília — antes
+era todo dia às 06:00, 12:00 e 17:00); o agendador roda de 15 em 15 minutos,
+só coleta nos dias marcados e usa chaves de idempotência por data e horário.
+Cada coleta redige no máximo o limite diário de artigos (~US$ 0,05 cada).
 
 ### Site (Vercel)
 

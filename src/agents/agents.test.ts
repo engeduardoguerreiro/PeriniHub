@@ -7,7 +7,7 @@ import { dueCollectionSlots, writingCapacity } from "@/trigger/schedule";
 import { findDuplicate, preferredOrder, type DedupeCandidate } from "./dedupe";
 import { unmatchedNumbers, validateClaims, verdictFor, type CheckedClaim, type EvidenceDoc } from "./fact-checker";
 import { safeMetaTitle } from "./seo-editor";
-import { localTime, startOf } from "./types";
+import { localTime, localWeekday, startOf } from "./types";
 import { buildMarkdown, normalizeWritten, verbatimOverlap, type WrittenArticle } from "./writer";
 
 function candidate(id: string, title: string, overrides: Partial<DedupeCandidate> = {}): DedupeCandidate {
@@ -158,6 +158,14 @@ describe("agendador", () => {
     expect(dueCollectionSlots(["06:00", "12:00", "17:00"], "America/Sao_Paulo", at0605)).toEqual([
       { time: "06:00", key: "collect:2026-10-27:06:00" },
     ]);
+  });
+
+  it("só dispara nos dias da semana configurados", () => {
+    // 2026-10-27 é terça (2).
+    expect(dueCollectionSlots(["06:00"], "America/Sao_Paulo", at0605, [1])).toEqual([]);
+    expect(dueCollectionSlots(["06:00"], "America/Sao_Paulo", at0605, [2])).toHaveLength(1);
+    // 02:00 UTC de terça ainda é segunda em São Paulo.
+    expect(localWeekday("America/Sao_Paulo", Date.parse("2026-10-27T02:00:00Z"))).toBe(1);
   });
 
   it("não dispara fora da janela", () => {
