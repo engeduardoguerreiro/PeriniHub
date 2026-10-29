@@ -20,8 +20,8 @@ export const SITE_URL = "https://perinihub.com.br";
 
 export const CONTACT_EMAIL = "contato@perinihub.com.br";
 
-export const WHATSAPP_NUMBER = "5511930230911";
-export const WHATSAPP_DISPLAY = "+55 11 93023-0911";
+export const WHATSAPP_NUMBER = "5511975418690";
+export const WHATSAPP_DISPLAY = "+55 11 97541-8690";
 export const WHATSAPP_MESSAGE =
   "Olá, vim pelo site da PeriniHub e gostaria de um orçamento.";
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
