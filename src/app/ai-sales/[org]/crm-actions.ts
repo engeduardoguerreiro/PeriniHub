@@ -152,8 +152,8 @@ const leadUpdateSchema = z.object({
   qualification: z.enum(["unknown", "cold", "warm", "hot"]).optional(),
   score: z.union([z.coerce.number().int().min(0).max(100), z.literal("")]).transform((value) => (value === "" ? null : value)).optional(),
   title: optionalText(160).optional(),
-  discoveryStage: z.enum(["company_identified", "contact_found", "contact_authorized", "qualified_opportunity"]).optional(),
 });
+// O estágio de descoberta não é editável: o banco calcula (só consentimento válido leva a "autorizado").
 
 export async function updateLead(slug: string, leadId: string, input: Record<string, unknown>): Promise<ActionResult> {
   const m = await member(slug);
@@ -161,14 +161,13 @@ export async function updateLead(slug: string, leadId: string, input: Record<str
   if (!uuid.safeParse(leadId).success) return fail("Lead inválido.");
   const parsed = leadUpdateSchema.safeParse(input);
   if (!parsed.success) return fail("Dados inválidos.");
-  const { stageId, ownerId, qualification, score, title, discoveryStage } = parsed.data;
+  const { stageId, ownerId, qualification, score, title } = parsed.data;
   const values = {
     ...(stageId !== undefined && { stage_id: stageId }),
     ...(ownerId !== undefined && { owner_user_id: ownerId }),
     ...(qualification !== undefined && { qualification }),
     ...(score !== undefined && { score }),
     ...(title !== undefined && { title }),
-    ...(discoveryStage !== undefined && { discovery_stage: discoveryStage }),
   };
   if (!Object.keys(values).length) return fail("Nada para alterar.");
   const { data, error } = await m.db.from("leads").update(values).eq("tenant_id", m.tenantId).eq("id", leadId).select("id");

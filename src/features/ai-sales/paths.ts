@@ -5,7 +5,7 @@ export const AI_SALES_LOGIN = "/ai-sales/login";
 export const AI_SALES_PLATFORM = "/ai-sales/platform";
 
 /** Páginas acessíveis sem sessão (o proxy não redireciona ao login). */
-const PUBLIC_PREFIXES = ["/ai-sales/login", "/ai-sales/recuperar-senha", "/ai-sales/auth/callback", "/ai-sales/convite/"];
+const PUBLIC_PREFIXES = ["/ai-sales/login", "/ai-sales/recuperar-senha", "/ai-sales/auth/callback", "/ai-sales/convite/", "/ai-sales/f/"];
 
 export function isPublicAiSalesPath(pathname: string) {
   return PUBLIC_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix.endsWith("/") ? prefix : `${prefix}/`));
@@ -33,7 +33,7 @@ export function isValidOrgSlug(slug: string) {
 }
 
 /** Segmentos estáticos de /ai-sales: uma empresa não pode usar esses nomes. */
-const RESERVED_SLUGS = new Set(["login", "recuperar-senha", "redefinir-senha", "auth", "convite", "selecionar-empresa", "platform", "api", "admin", "ai-sales"]);
+const RESERVED_SLUGS = new Set(["login", "recuperar-senha", "redefinir-senha", "auth", "convite", "selecionar-empresa", "platform", "api", "admin", "ai-sales", "f"]);
 
 export function isReservedOrgSlug(slug: string) {
   return RESERVED_SLUGS.has(slug);

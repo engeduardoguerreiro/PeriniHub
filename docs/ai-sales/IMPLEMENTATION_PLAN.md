@@ -7,7 +7,8 @@
 > `feature/ai-sales-fase-3`); modo real aguarda credenciais da Meta.
 > **Fase 4** em 2026-11-01 (branch `feature/ai-sales-fase-4`), agentes em modo
 > simulado até a chave própria da Anthropic (D-04). **Fase 5** em 2026-11-02
-> (branch `feature/ai-sales-fase-5`).
+> (branch `feature/ai-sales-fase-5`). **Fase 6** em 2026-10-29 (branch
+> `feature/ai-sales-fase-6`); Meta Lead Ads adiado.
 
 Regras para todas as fases:
 
@@ -269,7 +270,55 @@ supressão nunca recebe; campanha pausada não envia novos lotes (gate
 reconfere no envio); agendamento não pula verificações; nenhum cron dispara
 tudo de uma vez.
 
-## Fase 6 — Captação e enriquecimento
+## Fase 6 — Captação e enriquecimento ✅ (2026-10-29, branch `feature/ai-sales-fase-6`)
+
+**Entregue:** migration `20261103120000_sales_capture.sql`.
+- Formulários de captação (`capture_forms`): campos pedidos, texto de
+  autorização com canais e finalidades, origem do lead, rascunho → publicado
+  ↔ pausado. Mudar texto, canais ou finalidades gera nova versão
+  (`capture_form_consent_versions`, com sha256 do texto exato).
+- Página pública `/ai-sales/f/[key]` (funciona sem JavaScript) e rota
+  `POST /api/ai-sales/forms/[formId]` (JSON ou form nativo com 303): limite de
+  tamanho, honeypot (`site_empresa`, finge sucesso), 8 envios/10 min por IP e
+  300/hora por formulário. Código para incorporar em outro site.
+- `capture_form_submit` (só servidor): confere formulário ativo, empresa ativa
+  e versão do texto vista pelo titular; deduplica por telefone/e-mail;
+  preenche só campos vazios, com proveniência por campo (fonte, formulário,
+  envio, data); consentimento por canal × finalidade com evidência
+  (`form_submission`, versão, hash do texto e do envio, IP em hash); reutiliza
+  lead aberto ou cria um. `form_submissions` guarda a prova, não os dados.
+- Estágio de descoberta calculado pelo banco (trigger): empresa identificada
+  (sem contato) → contato encontrado → autorizado (consentimento válido em
+  algum canal) → oportunidade qualificada (autorizado + etapa qualificada).
+  Revogação volta o lead para "contato encontrado"; valor enviado pelo
+  cliente é ignorado.
+- Enriquecimento pelo CNPJ (BrasilAPI, dados abertos da Receita):
+  `company_enrichments` (histórico) e `company_apply_enrichment` (sessão do
+  usuário, RLS): preenche só campos vazios (situação cadastral sempre
+  atualiza), proveniência por campo; sócios, telefone e e-mail cadastrais
+  não são gravados. Prospecção por CNPJ cria a empresa e, se pedido, um lead
+  "empresa identificada" com a origem "Prospecção (dados públicos)", criada
+  para todas as empresas. Limite de 60 consultas/hora por empresa.
+- Telas: Captação (lista, novo formulário, prospecção), detalhe do formulário
+  (publicação, link, código, envios, versões), painel "Dados públicos" e
+  "Origem das informações" na empresa, estágio de descoberta no lead.
+
+**Testes:** 10 de integração + 2 de privilégios (consentimento e evidência, sem consentimento,
+reenvio, versão antiga/pausado, contador, permissões e isolamento, estágio
+calculado, enriquecimento sem contato/consentimento, falha, papéis), 7
+unitários (CNPJ, mapeamento, validação do envio) e 6 da rota; total 104 de
+integração e 239 unitários. E2E HTTP com o servidor de desenvolvimento
+(página, envio nativo, JSON e honeypot).
+
+**Pendente:** Meta Lead Ads (webhook `leadgen` exige token de página e
+permissão `leads_retrieval` aprovada no App Review); pesquisa em massa por
+CNAE/município (exige a base completa da Receita, vários GB — avaliar
+ingestão própria); Google Places (custo e termos); Turnstile só se houver
+abuso (D-11); regra de firewall da Vercel para `/api/ai-sales/forms/*`;
+descadastro por e-mail (hoje só "SAIR" no WhatsApp).
+
+**Plano original da fase (referência):**
+
 
 Entregas: formulários públicos e landing pages com consentimento e evidência,
 Meta Lead Ads (se configurado), pesquisa B2B em fontes permitidas (D-12),

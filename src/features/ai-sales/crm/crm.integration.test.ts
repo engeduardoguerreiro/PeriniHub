@@ -63,7 +63,8 @@ describe("padrões da empresa", () => {
       "Novo", "Em análise", "Contato autorizado", "Em atendimento", "Qualificado", "Proposta", "Negociação", "Ganho", "Perdido",
     ]);
     const { count } = await fx.service.from("lead_sources").select("*", { count: "exact", head: true }).eq("tenant_id", orgB.id);
-    expect(count).toBe(5);
+    // 5 da Fase 2 + "Prospecção (dados públicos)" da Fase 6.
+    expect(count).toBe(6);
   });
 });
 

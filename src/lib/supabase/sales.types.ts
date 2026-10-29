@@ -266,20 +266,92 @@ isOneToOne: false
       referencedColumns: ["tenant_id","id"]
     }
                   ]
-                },"companies": {
+                },"capture_form_consent_versions": {
                   Row: {
-                    "city": string | null,"cnae": string | null,"created_at": string,"created_by": string | null,"deleted_at": string | null,"document": string | null,"id": string,"name": string,"notes": string | null,"provenance": NonNullable<Json>,"state": string | null,"tenant_id": string,"updated_at": string,"website": string | null
+                    "consent_channels": (Database["public"]['Enums']["consent_channel"])[],"consent_purposes": (Database["public"]['Enums']["consent_purpose"])[],"consent_text": string,"created_at": string,"form_id": string,"tenant_id": string,"text_hash": string,"version": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "city"?: string | null,"cnae"?: string | null,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"document"?: string | null,"id"?: string,"name": string,"notes"?: string | null,"provenance"?: NonNullable<Json>,"state"?: string | null,"tenant_id": string,"updated_at"?: string,"website"?: string | null
+                    "consent_channels": (Database["public"]['Enums']["consent_channel"])[],"consent_purposes": (Database["public"]['Enums']["consent_purpose"])[],"consent_text": string,"created_at"?: string,"form_id": string,"tenant_id": string,"text_hash": string,"version": number
                   }
                   Update: {
-                    "city"?: string | null,"cnae"?: string | null,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"document"?: string | null,"id"?: string,"name"?: string,"notes"?: string | null,"provenance"?: NonNullable<Json>,"state"?: string | null,"tenant_id"?: string,"updated_at"?: string,"website"?: string | null
+                    "consent_channels"?: (Database["public"]['Enums']["consent_channel"])[],"consent_purposes"?: (Database["public"]['Enums']["consent_purpose"])[],"consent_text"?: string,"created_at"?: string,"form_id"?: string,"tenant_id"?: string,"text_hash"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "capture_form_consent_versions_tenant_id_form_id_fkey"
+      columns: ["tenant_id","form_id"]
+isOneToOne: false
+      referencedRelation: "capture_forms"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"capture_forms": {
+                  Row: {
+                    "consent_channels": (Database["public"]['Enums']["consent_channel"])[],"consent_purposes": (Database["public"]['Enums']["consent_purpose"])[],"consent_text": string,"consent_version": number,"created_at": string,"created_by": string | null,"description": string | null,"fields": (string)[],"headline": string,"id": string,"lead_source_id": string | null,"name": string,"public_key": string,"status": Database["public"]['Enums']["capture_form_status"],"submissions_count": number,"success_message": string,"tenant_id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "consent_channels"?: (Database["public"]['Enums']["consent_channel"])[],"consent_purposes"?: (Database["public"]['Enums']["consent_purpose"])[],"consent_text": string,"consent_version"?: number,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"fields"?: (string)[],"headline": string,"id"?: string,"lead_source_id"?: string | null,"name": string,"public_key"?: string,"status"?: Database["public"]['Enums']["capture_form_status"],"submissions_count"?: number,"success_message"?: string,"tenant_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "consent_channels"?: (Database["public"]['Enums']["consent_channel"])[],"consent_purposes"?: (Database["public"]['Enums']["consent_purpose"])[],"consent_text"?: string,"consent_version"?: number,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"fields"?: (string)[],"headline"?: string,"id"?: string,"lead_source_id"?: string | null,"name"?: string,"public_key"?: string,"status"?: Database["public"]['Enums']["capture_form_status"],"submissions_count"?: number,"success_message"?: string,"tenant_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "capture_forms_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "capture_forms_tenant_id_lead_source_id_fkey"
+      columns: ["tenant_id","lead_source_id"]
+isOneToOne: false
+      referencedRelation: "lead_sources"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"companies": {
+                  Row: {
+                    "city": string | null,"cnae": string | null,"created_at": string,"created_by": string | null,"deleted_at": string | null,"document": string | null,"enriched_at": string | null,"id": string,"name": string,"notes": string | null,"opened_on": string | null,"provenance": NonNullable<Json>,"registration_status": string | null,"size": string | null,"state": string | null,"tenant_id": string,"trade_name": string | null,"updated_at": string,"website": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "city"?: string | null,"cnae"?: string | null,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"document"?: string | null,"enriched_at"?: string | null,"id"?: string,"name": string,"notes"?: string | null,"opened_on"?: string | null,"provenance"?: NonNullable<Json>,"registration_status"?: string | null,"size"?: string | null,"state"?: string | null,"tenant_id": string,"trade_name"?: string | null,"updated_at"?: string,"website"?: string | null
+                  }
+                  Update: {
+                    "city"?: string | null,"cnae"?: string | null,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"document"?: string | null,"enriched_at"?: string | null,"id"?: string,"name"?: string,"notes"?: string | null,"opened_on"?: string | null,"provenance"?: NonNullable<Json>,"registration_status"?: string | null,"size"?: string | null,"state"?: string | null,"tenant_id"?: string,"trade_name"?: string | null,"updated_at"?: string,"website"?: string | null
                   }
                   Relationships: [
                     {
       foreignKeyName: "companies_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"company_enrichments": {
+                  Row: {
+                    "applied_fields": (string)[],"company_id": string | null,"data": NonNullable<Json>,"document": string,"fetched_at": string,"fetched_by": string | null,"id": string,"source": string,"status": Database["public"]['Enums']["enrichment_status"],"tenant_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "applied_fields"?: (string)[],"company_id"?: string | null,"data"?: NonNullable<Json>,"document": string,"fetched_at"?: string,"fetched_by"?: string | null,"id"?: string,"source": string,"status": Database["public"]['Enums']["enrichment_status"],"tenant_id": string
+                  }
+                  Update: {
+                    "applied_fields"?: (string)[],"company_id"?: string | null,"data"?: NonNullable<Json>,"document"?: string,"fetched_at"?: string,"fetched_by"?: string | null,"id"?: string,"source"?: string,"status"?: Database["public"]['Enums']["enrichment_status"],"tenant_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "company_enrichments_tenant_id_company_id_fkey"
+      columns: ["tenant_id","company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "company_enrichments_tenant_id_fkey"
       columns: ["tenant_id"]
 isOneToOne: false
       referencedRelation: "organizations"
@@ -457,6 +529,44 @@ isOneToOne: false
       columns: ["tenant_id","template_id"]
 isOneToOne: false
       referencedRelation: "whatsapp_templates"
+      referencedColumns: ["tenant_id","id"]
+    }
+                  ]
+                },"form_submissions": {
+                  Row: {
+                    "consent_given": boolean,"consent_version": number,"contact_id": string | null,"created_at": string,"fields_received": (string)[],"form_id": string,"id": string,"ip_hash": string | null,"lead_id": string | null,"payload_hash": string,"tenant_id": string,"user_agent": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "consent_given": boolean,"consent_version": number,"contact_id"?: string | null,"created_at"?: string,"fields_received"?: (string)[],"form_id": string,"id"?: string,"ip_hash"?: string | null,"lead_id"?: string | null,"payload_hash": string,"tenant_id": string,"user_agent"?: string | null
+                  }
+                  Update: {
+                    "consent_given"?: boolean,"consent_version"?: number,"contact_id"?: string | null,"created_at"?: string,"fields_received"?: (string)[],"form_id"?: string,"id"?: string,"ip_hash"?: string | null,"lead_id"?: string | null,"payload_hash"?: string,"tenant_id"?: string,"user_agent"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "form_submissions_tenant_id_contact_id_fkey"
+      columns: ["tenant_id","contact_id"]
+isOneToOne: false
+      referencedRelation: "contacts"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "form_submissions_tenant_id_fkey"
+      columns: ["tenant_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "form_submissions_tenant_id_form_id_fkey"
+      columns: ["tenant_id","form_id"]
+isOneToOne: false
+      referencedRelation: "capture_forms"
+      referencedColumns: ["tenant_id","id"]
+    },{
+      foreignKeyName: "form_submissions_tenant_id_lead_id_fkey"
+      columns: ["tenant_id","lead_id"]
+isOneToOne: false
+      referencedRelation: "leads"
       referencedColumns: ["tenant_id","id"]
     }
                   ]
@@ -1230,6 +1340,28 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"capture_form_submit":
+{ Args: { "p_company": string,"p_consent": boolean,"p_consent_version": number,"p_email": string,"p_full_name": string,"p_ip_hash": string,"p_job_title": string,"p_message": string,"p_payload_hash": string,"p_phone_e164": string,"p_public_key": string,"p_user_agent": string }; Returns: Json
+                           },
+"company_apply_enrichment":
+{ Args: { "p_company": string,"p_data": Json,"p_document": string,"p_status": Database["public"]['Enums']["enrichment_status"],"p_tenant": string }; Returns: {
+              "applied_fields": (string)[],
+"company_id": string | null,
+"data": NonNullable<Json>,
+"document": string,
+"fetched_at": string,
+"fetched_by": string | null,
+"id": string,
+"source": string,
+"status": Database["public"]['Enums']["enrichment_status"],
+"tenant_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "company_enrichments"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "consume_rate_limit":
 { Args: { "p_key": string,"p_max": number,"p_window_seconds": number }; Returns: boolean
                            },
@@ -1369,7 +1501,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "activity_kind": "note"|"call"|"email"|"meeting"|"message"|"stage_change"|"consent_change"|"task"|"import"|"system","actor_type": "user"|"agent"|"system"|"platform_admin","agent_status": "active"|"inactive"|"testing","agent_type": "sdr"|"capture"|"followup"|"analyst","billing_mode": "manual"|"gateway","campaign_status": "draft"|"awaiting_approval"|"scheduled"|"running"|"paused"|"completed"|"canceled","consent_channel": "whatsapp"|"email"|"phone","consent_purpose": "marketing"|"sales_followup"|"service"|"transactional","consent_status": "granted"|"revoked","conversation_status": "open"|"pending_human"|"closed","discovery_stage": "company_identified"|"contact_found"|"contact_authorized"|"qualified_opportunity","execution_status": "running"|"succeeded"|"failed"|"skipped","lead_qualification": "unknown"|"cold"|"warm"|"hot","lead_source_kind": "manual"|"form"|"csv"|"ads"|"api"|"research"|"whatsapp_inbound"|"referral","legal_basis": "consent"|"legitimate_interest"|"contract"|"legal_obligation","member_status": "active"|"disabled","message_direction": "inbound"|"outbound","message_sender": "contact"|"user"|"agent"|"system"|"business_app","message_status": "received"|"queued"|"sent"|"delivered"|"read"|"failed","opportunity_status": "open"|"won"|"lost","org_role": "viewer"|"sales"|"manager"|"admin"|"owner","org_status": "active"|"suspended"|"closed","reservation_status": "reserved"|"settled"|"released","sales_visibility": "all"|"assigned","send_decision": "allowed"|"blocked","send_kind": "free_text"|"template","send_origin": "user"|"agent"|"campaign"|"followup"|"system","subscription_status": "trial"|"active"|"past_due"|"canceled"|"internal","suppression_reason": "opt_out"|"complaint"|"blocked"|"invalid"|"legal_request","task_status": "open"|"done"|"canceled","template_category": "marketing"|"utility"|"authentication","tool_decision": "executed"|"rejected"|"needs_approval","whatsapp_provider": "meta_cloud"|"sandbox"|"evolution","whatsapp_status": "pending"|"syncing"|"active"|"disconnected"|"error"
+            "activity_kind": "note"|"call"|"email"|"meeting"|"message"|"stage_change"|"consent_change"|"task"|"import"|"system","actor_type": "user"|"agent"|"system"|"platform_admin","agent_status": "active"|"inactive"|"testing","agent_type": "sdr"|"capture"|"followup"|"analyst","billing_mode": "manual"|"gateway","campaign_status": "draft"|"awaiting_approval"|"scheduled"|"running"|"paused"|"completed"|"canceled","capture_form_status": "draft"|"active"|"paused","consent_channel": "whatsapp"|"email"|"phone","consent_purpose": "marketing"|"sales_followup"|"service"|"transactional","consent_status": "granted"|"revoked","conversation_status": "open"|"pending_human"|"closed","discovery_stage": "company_identified"|"contact_found"|"contact_authorized"|"qualified_opportunity","enrichment_status": "success"|"not_found"|"error","execution_status": "running"|"succeeded"|"failed"|"skipped","lead_qualification": "unknown"|"cold"|"warm"|"hot","lead_source_kind": "manual"|"form"|"csv"|"ads"|"api"|"research"|"whatsapp_inbound"|"referral","legal_basis": "consent"|"legitimate_interest"|"contract"|"legal_obligation","member_status": "active"|"disabled","message_direction": "inbound"|"outbound","message_sender": "contact"|"user"|"agent"|"system"|"business_app","message_status": "received"|"queued"|"sent"|"delivered"|"read"|"failed","opportunity_status": "open"|"won"|"lost","org_role": "viewer"|"sales"|"manager"|"admin"|"owner","org_status": "active"|"suspended"|"closed","reservation_status": "reserved"|"settled"|"released","sales_visibility": "all"|"assigned","send_decision": "allowed"|"blocked","send_kind": "free_text"|"template","send_origin": "user"|"agent"|"campaign"|"followup"|"system","subscription_status": "trial"|"active"|"past_due"|"canceled"|"internal","suppression_reason": "opt_out"|"complaint"|"blocked"|"invalid"|"legal_request","task_status": "open"|"done"|"canceled","template_category": "marketing"|"utility"|"authentication","tool_decision": "executed"|"rejected"|"needs_approval","whatsapp_provider": "meta_cloud"|"sandbox"|"evolution","whatsapp_status": "pending"|"syncing"|"active"|"disconnected"|"error"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1485,7 +1617,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "activity_kind": ["note", "call", "email", "meeting", "message", "stage_change", "consent_change", "task", "import", "system"],"actor_type": ["user", "agent", "system", "platform_admin"],"agent_status": ["active", "inactive", "testing"],"agent_type": ["sdr", "capture", "followup", "analyst"],"billing_mode": ["manual", "gateway"],"campaign_status": ["draft", "awaiting_approval", "scheduled", "running", "paused", "completed", "canceled"],"consent_channel": ["whatsapp", "email", "phone"],"consent_purpose": ["marketing", "sales_followup", "service", "transactional"],"consent_status": ["granted", "revoked"],"conversation_status": ["open", "pending_human", "closed"],"discovery_stage": ["company_identified", "contact_found", "contact_authorized", "qualified_opportunity"],"execution_status": ["running", "succeeded", "failed", "skipped"],"lead_qualification": ["unknown", "cold", "warm", "hot"],"lead_source_kind": ["manual", "form", "csv", "ads", "api", "research", "whatsapp_inbound", "referral"],"legal_basis": ["consent", "legitimate_interest", "contract", "legal_obligation"],"member_status": ["active", "disabled"],"message_direction": ["inbound", "outbound"],"message_sender": ["contact", "user", "agent", "system", "business_app"],"message_status": ["received", "queued", "sent", "delivered", "read", "failed"],"opportunity_status": ["open", "won", "lost"],"org_role": ["viewer", "sales", "manager", "admin", "owner"],"org_status": ["active", "suspended", "closed"],"reservation_status": ["reserved", "settled", "released"],"sales_visibility": ["all", "assigned"],"send_decision": ["allowed", "blocked"],"send_kind": ["free_text", "template"],"send_origin": ["user", "agent", "campaign", "followup", "system"],"subscription_status": ["trial", "active", "past_due", "canceled", "internal"],"suppression_reason": ["opt_out", "complaint", "blocked", "invalid", "legal_request"],"task_status": ["open", "done", "canceled"],"template_category": ["marketing", "utility", "authentication"],"tool_decision": ["executed", "rejected", "needs_approval"],"whatsapp_provider": ["meta_cloud", "sandbox", "evolution"],"whatsapp_status": ["pending", "syncing", "active", "disconnected", "error"]
+            "activity_kind": ["note", "call", "email", "meeting", "message", "stage_change", "consent_change", "task", "import", "system"],"actor_type": ["user", "agent", "system", "platform_admin"],"agent_status": ["active", "inactive", "testing"],"agent_type": ["sdr", "capture", "followup", "analyst"],"billing_mode": ["manual", "gateway"],"campaign_status": ["draft", "awaiting_approval", "scheduled", "running", "paused", "completed", "canceled"],"capture_form_status": ["draft", "active", "paused"],"consent_channel": ["whatsapp", "email", "phone"],"consent_purpose": ["marketing", "sales_followup", "service", "transactional"],"consent_status": ["granted", "revoked"],"conversation_status": ["open", "pending_human", "closed"],"discovery_stage": ["company_identified", "contact_found", "contact_authorized", "qualified_opportunity"],"enrichment_status": ["success", "not_found", "error"],"execution_status": ["running", "succeeded", "failed", "skipped"],"lead_qualification": ["unknown", "cold", "warm", "hot"],"lead_source_kind": ["manual", "form", "csv", "ads", "api", "research", "whatsapp_inbound", "referral"],"legal_basis": ["consent", "legitimate_interest", "contract", "legal_obligation"],"member_status": ["active", "disabled"],"message_direction": ["inbound", "outbound"],"message_sender": ["contact", "user", "agent", "system", "business_app"],"message_status": ["received", "queued", "sent", "delivered", "read", "failed"],"opportunity_status": ["open", "won", "lost"],"org_role": ["viewer", "sales", "manager", "admin", "owner"],"org_status": ["active", "suspended", "closed"],"reservation_status": ["reserved", "settled", "released"],"sales_visibility": ["all", "assigned"],"send_decision": ["allowed", "blocked"],"send_kind": ["free_text", "template"],"send_origin": ["user", "agent", "campaign", "followup", "system"],"subscription_status": ["trial", "active", "past_due", "canceled", "internal"],"suppression_reason": ["opt_out", "complaint", "blocked", "invalid", "legal_request"],"task_status": ["open", "done", "canceled"],"template_category": ["marketing", "utility", "authentication"],"tool_decision": ["executed", "rejected", "needs_approval"],"whatsapp_provider": ["meta_cloud", "sandbox", "evolution"],"whatsapp_status": ["pending", "syncing", "active", "disconnected", "error"]
           }
         }
 } as const

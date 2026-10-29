@@ -25,6 +25,7 @@ const SERVER_ONLY: Record<string, Record<string, unknown>> = {
   consume_rate_limit: { p_key: "x:y", p_window_seconds: 60, p_max: 1 },
   whatsapp_set_connection_state: { p_phone_number_id: "evolution-xxxx", p_status: "active" },
   campaign_claim_recipients: { p_campaign: ZERO, p_limit: 1 },
+  capture_form_submit: { p_public_key: "0".repeat(32), p_full_name: "x", p_phone_e164: null, p_email: "a@b.c", p_company: null, p_job_title: null, p_message: null, p_consent: true, p_consent_version: 1, p_payload_hash: "0".repeat(64), p_ip_hash: null, p_user_agent: null },
 };
 
 const SIGNED_IN_ONLY: Record<string, Record<string, unknown>> = {
@@ -34,6 +35,7 @@ const SIGNED_IN_ONLY: Record<string, Record<string, unknown>> = {
   record_export: { p_tenant: ZERO, p_entity: "x", p_rows: 1, p_filters: {} },
   campaign_build_audience: { p_tenant: ZERO, p_campaign: ZERO },
   campaign_transition: { p_tenant: ZERO, p_campaign: ZERO, p_to: "canceled", p_reason: "xxx" },
+  company_apply_enrichment: { p_tenant: ZERO, p_company: ZERO, p_document: "11222333000181", p_status: "success", p_data: {} },
   create_agent_version: { p_tenant: ZERO, p_agent: ZERO, p_system_prompt: "x".repeat(30), p_provider: "mock", p_model: "mock", p_max_output_tokens: 500, p_input_price: 0, p_output_price: 0, p_knowledge_base_ids: [] },
 };
 

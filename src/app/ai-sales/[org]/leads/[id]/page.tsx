@@ -14,6 +14,7 @@ import { roleAtLeast } from "@/features/ai-sales/auth/roles";
 import {
   ACTIVITY_LABELS,
   CHANNEL_LABELS,
+  DISCOVERY_LABELS,
   formatCents,
   LEGAL_BASIS_LABELS,
   OPPORTUNITY_LABELS,
@@ -56,6 +57,9 @@ async function LeadContent({ params }: Pick<PageProps<"/ai-sales/[org]/leads/[id
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {stage && <StageBadge name={stage.name} color={stage.color} />}
             {contact && <ContactPermission authorized={whatsappAuthorized} suppressed={whatsappSuppressed} />}
+            <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground" title="Calculado: só um consentimento válido leva a “autorizado”.">
+              {DISCOVERY_LABELS[lead.discovery_stage]}
+            </span>
           </div>
           <h1 className="font-display text-3xl font-semibold tracking-tight">{contact?.full_name ?? lead.company?.name ?? "Lead"}</h1>
           {lead.title && <p className="mt-1 text-muted-foreground">{lead.title}</p>}

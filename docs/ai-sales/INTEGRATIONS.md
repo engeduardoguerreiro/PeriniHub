@@ -16,8 +16,8 @@
 | OpenAI (geração) | ⛔ opcional | 4+ | — |
 | WhatsApp Business Platform (Cloud API) | ⛔ coexistência decidida (D-05), Embedded Signup a viabilizar | 3 | Fases 3 e 5 |
 | E-mail transacional (convites/recuperação) | 🟡 SMTP próprio da Hostinger decidido (nao-responda@perinihub.com.br); falta configurar no Supabase | 1 | convites por e-mail |
-| Fontes de dados de empresas | ⛔ (D-12) | 6 | Fase 6 |
-| Meta Lead Ads / outros anúncios | ⛔ | 6 | — |
+| Fontes de dados de empresas | ✅ BrasilAPI (CNPJ, sem chave) + formulários próprios (D-12) | 6 | — |
+| Meta Lead Ads / outros anúncios | ⛔ adiado (token de página + App Review `leads_retrieval`) | 6 | Lead Ads |
 | Gateway de pagamento | ⛔ fora do escopo atual | futura | — |
 
 ---
