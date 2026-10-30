@@ -1,6 +1,0 @@
-# Projeto Supabase "AI Sales" (separado do portal Tech, que usa ../supabase).
-# Só as migrations são usadas: `npm run db:sales:push` aplica em SALES_SUPABASE_DB_URL.
-project_id = "PERINI_HUB_AI_SALES"
-
-[db]
-major_version = 17

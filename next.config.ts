@@ -58,12 +58,7 @@ const nextConfig: NextConfig = {
       },
       {
         // Painel e APIs internas: fora de buscadores mesmo se um link vazar.
-        source: "/:prefix(admin|api|ai-sales)/:path*",
-        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
-      },
-      {
-        // AI Sales: área privada do produto, fora de buscadores (raiz inclusa).
-        source: "/ai-sales",
+        source: "/:prefix(admin|api)/:path*",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
       },
     ];
