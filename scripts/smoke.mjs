@@ -96,21 +96,6 @@ try {
   const login = await get("/admin/login");
   check(login.status === 200 && login.headers.get("x-robots-tag") === "noindex, nofollow", "/admin/login com X-Robots-Tag noindex");
 
-  // AI Sales: no CI (sem AI_SALES_ENABLED) não existe; localmente, exige login.
-  check(robots.body.includes("Disallow: /ai-sales"), "robots.txt bloqueia /ai-sales");
-  const salesEnabled = process.env.AI_SALES_ENABLED === "true";
-  const salesLogin = await get("/ai-sales/login");
-  const salesPrivate = await get("/ai-sales/empresa-teste/dashboard");
-  if (salesEnabled) {
-    check(salesLogin.status === 200 && salesLogin.headers.get("x-robots-tag") === "noindex, nofollow", "/ai-sales/login com X-Robots-Tag noindex");
-    check(
-      salesPrivate.status === 307 && salesPrivate.headers.get("location")?.includes("/ai-sales/login?next="),
-      "área privada do AI Sales sem sessão -> 307 para o login",
-    );
-  } else {
-    check(salesLogin.status === 404 && salesPrivate.status === 404, "AI Sales desligado -> 404");
-  }
-
   const revalidate = await fetch(BASE + "/api/news/revalidate", { method: "POST", body: "{}" });
   check([401, 503].includes(revalidate.status), "revalidação sem assinatura é recusada");
 
